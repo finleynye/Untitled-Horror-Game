@@ -313,9 +313,10 @@ GameObject:
   - component: {fileID: 251429569}
   - component: {fileID: 251429568}
   - component: {fileID: 251429567}
-  - component: {fileID: 251429570}
   - component: {fileID: 251429571}
   - component: {fileID: 251429572}
+  - component: {fileID: 251429570}
+  - component: {fileID: 251429573}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -412,11 +413,6 @@ MonoBehaviour:
   playerModel: {fileID: 251429565}
   cam: {fileID: 330585548}
   nametag: {fileID: 0}
-  currentInteractable: {fileID: 0}
-  interactionCheckRadius: 3
-  interactableLayer:
-    serializedVersion: 2
-    m_Bits: 128
   walkSpeed: 2.5
   sprintSpeed: 5
   crouchSpeed: 1.4
@@ -565,8 +561,8 @@ MonoBehaviour:
     m_ActionName: 'Player/Pause[/Keyboard/escape]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 251429570}
-        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+      - m_Target: {fileID: 251429573}
+        m_TargetAssemblyTypeName: PlayerInteraction, Assembly-CSharp
         m_MethodName: Interact
         m_Mode: 0
         m_Arguments:
@@ -592,6 +588,25 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &251429573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251429565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f266a2a7b45e6f4e97cc838b239c3df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  currentInteractable: {fileID: 0}
+  interactionCheckRadius: 3
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  isPaused: 0
+  isFrozen: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

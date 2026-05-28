@@ -95,13 +95,13 @@ public class Interactable : MonoBehaviour
     {
         if (!isInteractable)
         {
-            Debug.Log(gameObject.name + " cannot interact because isInteractable is false.");
+            Debug.Log(gameObject.name + " cannot interact because isInteractable is false");
             return;
         }
 
         if (hasInteracted && !isReusable)
         {
-            Debug.Log(gameObject.name + " has already been interacted with.");
+            Debug.Log(gameObject.name + " has already been interacted with");
             return;
         }
 

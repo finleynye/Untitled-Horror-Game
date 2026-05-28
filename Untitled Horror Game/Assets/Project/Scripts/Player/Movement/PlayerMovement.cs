@@ -12,11 +12,6 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController _controller;
     private InputSystem_Actions _playerInput;
 
-    [Header("Interaction")]
-    [SerializeField] private Interactable currentInteractable;
-    [SerializeField] private float interactionCheckRadius = 3f;
-    [SerializeField] private LayerMask interactableLayer;
-
     [Header("Settings")]
     [SerializeField] private float walkSpeed = 5;
     [SerializeField] private float sprintSpeed = 7;
@@ -103,9 +98,6 @@ public class PlayerMovement : MonoBehaviour
         if (_isCrouching)
             currentSpeed = crouchSpeed;
 
-        
-
-
         var moveDir = cam.transform.right * _moveInput.x + cam.transform.forward * _moveInput.y;
         _controller.Move(moveDir * (currentSpeed * Time.deltaTime));
 
@@ -134,53 +126,5 @@ public class PlayerMovement : MonoBehaviour
         _controller.height = newValue ? 1.2f : 2;
         _controller.center = newValue ? new Vector3(0, -.4f, 0) : Vector3.zero;
     }
-    public void Interact(InputAction.CallbackContext context)
-    {
-        if (isPaused) return;
-        if (isFrozen) return;
 
-        if (!context.performed)
-            return;
-
-        currentInteractable = FindClosestInteractable();
-
-        if (currentInteractable == null)
-        {
-            Debug.Log("No interactable found.");
-            return;
-        }
-
-        Debug.Log("Trying to interact with: " + currentInteractable.gameObject.name);
-
-        currentInteractable.Interact();
-    }
-
-    private Interactable FindClosestInteractable()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactionCheckRadius, interactableLayer);
-
-        Interactable closestInteractable = null;
-        float closestDistance = Mathf.Infinity;
-
-        foreach (Collider hit in hits)
-        {
-            Interactable interactable = hit.GetComponent<Interactable>();
-
-            if (interactable == null)
-                interactable = hit.GetComponentInParent<Interactable>();
-
-            if (interactable == null)
-                continue;
-
-            float distance = Vector3.Distance(transform.position, interactable.transform.position);
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestInteractable = interactable;
-            }
-        }
-
-        return closestInteractable;
-    }
 }
