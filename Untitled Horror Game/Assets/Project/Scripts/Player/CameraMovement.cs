@@ -3,12 +3,13 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
+    [Header("Refs")]
     public PlayerMovement playerMovement;
-    private InputSystem_Actions _playerInput;
+    [SerializeField] private Transform camHolder;
+    [SerializeField] private Transform playerBody;
 
     [Header("FOV Settings")]
     private Camera cam;
-    [SerializeField] private Transform camHolder;
     [SerializeField] private float defaultFOV = 70;
     [SerializeField] private float sprintFOV = 90;
     [SerializeField] private float fovSpeed = 10;
@@ -22,22 +23,29 @@ public class CameraMovement : MonoBehaviour
         cam = GetComponent<Camera>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        _playerInput = new InputSystem_Actions();
-
-        _playerInput.Enable();
     }
 
     // Update is called once per frame
     void Update()
     {
         HandleFOV();
+        HandleLook();
     }
 
     public void MouseLook(InputAction.CallbackContext context)
     {
         _lookInput = context.ReadValue<Vector2>();
+    }
+    private void HandleFOV()
+    {
+        var isMovingForward = playerMovement._moveInput.y > 0.1f;
+        var targetFOV = playerMovement._isSprinting && isMovingForward ? sprintFOV : defaultFOV;
 
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
+    }
+
+    private void HandleLook()
+    {
         var mouseX = _lookInput.x * mouseSensitivity;
         var mouseY = _lookInput.y * mouseSensitivity;
 
@@ -48,13 +56,4 @@ public class CameraMovement : MonoBehaviour
         camHolder.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
-    private void HandleFOV()
-    {
-        var isMovingForward = playerMovement._moveInput.y > 0.1f;
-        var targetFOV = playerMovement._isSprinting && isMovingForward ? sprintFOV : defaultFOV;
-
-        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
-    }
-    private void OnDisable()
-        => _playerInput?.Disable();
 }

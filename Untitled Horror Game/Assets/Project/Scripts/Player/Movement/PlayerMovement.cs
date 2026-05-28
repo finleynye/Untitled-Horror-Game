@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform nametag;
     private CharacterController _controller;
     private InputSystem_Actions _playerInput;
+    [SerializeField] private PlayerStamina playerStamina;
 
     [Header("Settings")]
     [SerializeField] private float walkSpeed = 5;
@@ -40,6 +41,9 @@ public class PlayerMovement : MonoBehaviour
     {
         canJump = true;
         _controller = GetComponent<CharacterController>();
+
+        if(playerStamina == null)
+            playerStamina = GetComponent<PlayerStamina>();
     }
 
     public void Start()
@@ -75,11 +79,19 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Sprint(InputAction.CallbackContext context)
     {
-        _isSprinting = context.performed;
+        if(context.performed)
+            _isSprinting = true;
+
+        if(context.canceled)
+            _isSprinting = false;
     }
     public void Crouch(InputAction.CallbackContext context)
     {
-        _isCrouching = context.performed;
+        if (context.performed)
+            _isCrouching = true;
+
+        if(context.canceled)
+            _isCrouching = false;
     }
     private void Movement()
     {
@@ -93,13 +105,38 @@ public class PlayerMovement : MonoBehaviour
             _coyoteTimer -= Time.deltaTime;
 
         var currentSpeed = walkSpeed;
-        if (_isSprinting)
+        bool canSprint = _isSprinting && !_isCrouching && _moveInput.magnitude > 0.1f;
+
+        if (canSprint && playerStamina != null && playerStamina.canUseStamina)
+        {
             currentSpeed = sprintSpeed;
+            playerStamina.UseStamina();
+        }
+        else
+        {
+            if (playerStamina != null)
+                playerStamina.StopUsingStamina();
+        }
+
         if (_isCrouching)
             currentSpeed = crouchSpeed;
 
-        var moveDir = cam.transform.right * _moveInput.x + cam.transform.forward * _moveInput.y;
-        _controller.Move(moveDir * (currentSpeed * Time.deltaTime));
+
+        Vector3 forward = cam.transform.forward;
+        Vector3 right = cam.transform.right;
+
+        forward.y = 0f;
+        right.y = 0f;
+
+        forward.Normalize();
+        right.Normalize();
+
+        Vector3 moveDir = right * _moveInput.x + forward * _moveInput.y;
+
+        if(moveDir.magnitude > 1f)
+            moveDir.Normalize();
+
+        _controller.Move(moveDir *(currentSpeed * Time.deltaTime));
 
         _velocity.y += gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
@@ -121,7 +158,9 @@ public class PlayerMovement : MonoBehaviour
         if (isPaused) return;
 
         var height = newValue ? .6f : 1; //size of crouched player : size of regular player
-        playerModel.transform.localScale = new Vector3(1, height, 1);;
+
+        if(playerModel != null)
+            playerModel.transform.localScale = new Vector3(1, height, 1);;
 
         _controller.height = newValue ? 1.2f : 2;
         _controller.center = newValue ? new Vector3(0, -.4f, 0) : Vector3.zero;
