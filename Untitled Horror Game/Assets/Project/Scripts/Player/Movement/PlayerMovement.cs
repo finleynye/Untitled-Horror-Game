@@ -10,8 +10,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private CameraMovement cam;
     [SerializeField] private Transform nametag;
     private CharacterController _controller;
-    private PlayerInput _playerInput;
+    private InputSystem_Actions _playerInput;
 
+    [Header("Interaction")]
+    [SerializeField] private Interactable currentInteractable;
+    [SerializeField] private float interactionCheckRadius = 3f;
+    [SerializeField] private LayerMask interactableLayer;
 
     [Header("Settings")]
     [SerializeField] private float walkSpeed = 5;
@@ -20,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpForce = 5;
     [SerializeField] private float gravity = -18f;
     [SerializeField] private float mouseSensitivity = .1f;
+
 
     private bool _isCrouching;
     public bool _isSprinting;
@@ -33,7 +38,6 @@ public class PlayerMovement : MonoBehaviour
     public bool isPaused;
     public bool isFrozen;
     public bool IsCrouching => _isCrouching;
-    private PlayerInput _playertInput;
 
     bool isOwned = false;
     bool canJump = false;
@@ -47,12 +51,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!isOwned) return;
 
-        _playerInput = new PlayerInput();
+        _playerInput = new InputSystem_Actions();
        
         _playerInput.Player.Jump.performed += _ => Jump();
 
         _playerInput.Enable();
     }
+
+    private void OnDisable()
+        => _playerInput?.Disable();
 
     private void Update()
     {
@@ -105,7 +112,6 @@ public class PlayerMovement : MonoBehaviour
         _velocity.y += gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
     }
-
     public void Jump()
     {
         if (_controller == null) return; //will throw errors without this, but still works regardless???
@@ -118,7 +124,6 @@ public class PlayerMovement : MonoBehaviour
             _coyoteTimer = 0f;
         }
     }
-
     private void CanCrouch(bool newValue)
     {
         if (isPaused) return;
@@ -128,5 +133,54 @@ public class PlayerMovement : MonoBehaviour
 
         _controller.height = newValue ? 1.2f : 2;
         _controller.center = newValue ? new Vector3(0, -.4f, 0) : Vector3.zero;
+    }
+    public void Interact(InputAction.CallbackContext context)
+    {
+        if (isPaused) return;
+        if (isFrozen) return;
+
+        if (!context.performed)
+            return;
+
+        currentInteractable = FindClosestInteractable();
+
+        if (currentInteractable == null)
+        {
+            Debug.Log("No interactable found.");
+            return;
+        }
+
+        Debug.Log("Trying to interact with: " + currentInteractable.gameObject.name);
+
+        currentInteractable.Interact();
+    }
+
+    private Interactable FindClosestInteractable()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, interactionCheckRadius, interactableLayer);
+
+        Interactable closestInteractable = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (Collider hit in hits)
+        {
+            Interactable interactable = hit.GetComponent<Interactable>();
+
+            if (interactable == null)
+                interactable = hit.GetComponentInParent<Interactable>();
+
+            if (interactable == null)
+                continue;
+
+            float distance = Vector3.Distance(transform.position, interactable.transform.position);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestInteractable = interactable;
+            }
+        }
+
+        return closestInteractable;
     }
 }

@@ -1,11 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class CameraMovement : MonoBehaviour
 {
     public PlayerMovement playerMovement;
-    private PlayerInput _playerInput;
+    private InputSystem_Actions _playerInput;
 
     [Header("FOV Settings")]
     private Camera cam;
@@ -24,7 +23,7 @@ public class CameraMovement : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        _playerInput = new PlayerInput();
+        _playerInput = new InputSystem_Actions();
 
         _playerInput.Enable();
     }
