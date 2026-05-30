@@ -5,8 +5,7 @@ using TMPro;
 public class PlayerStaminaUI : MonoBehaviour
 {
     public PlayerStamina playerStamina;
-    public Slider staminaSlider;
-    public TextMeshProUGUI staminaText;
+    public Image wheelRed, wheelGreen;
     public bool showStaminaText;
 
     void Start()
@@ -16,11 +15,7 @@ public class PlayerStaminaUI : MonoBehaviour
             playerStamina = FindAnyObjectByType<PlayerStamina>();
         }
 
-        if(staminaSlider != null && playerStamina != null)
-        {
-            staminaSlider.maxValue = playerStamina.maxStamina;
-            staminaSlider.value = playerStamina.currentStamina;
-        }
+
     }
 
     // Update is called once per frame
@@ -34,15 +29,16 @@ public class PlayerStaminaUI : MonoBehaviour
         if (playerStamina == null)
             return;
 
-        if(staminaSlider != null)
+
+        wheelGreen.fillAmount = playerStamina.currentStamina / 100;
+        if(playerStamina.currentStamina > 1 && playerStamina.isUsingStamina)
         {
-            staminaSlider.maxValue = playerStamina.maxStamina;
-            staminaSlider.value = playerStamina.currentStamina;
+            wheelRed.fillAmount = (playerStamina.currentStamina + 5) / 100;
+        }
+        else
+        {
+            wheelRed.fillAmount--;
         }
 
-        if(staminaText != null && showStaminaText)
-        {
-            staminaText.text = Mathf.RoundToInt(playerStamina.currentStamina).ToString();
-        }
     }
 }
