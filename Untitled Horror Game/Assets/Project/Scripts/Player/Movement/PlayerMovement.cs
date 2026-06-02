@@ -21,13 +21,6 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float crouchSpeed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float coyoteTime;
-
-    [Header("Camera")] 
-    [SerializeField] private Camera playerCam;
-    [SerializeField] private float mouseSensitivity;
-    [SerializeField] private float defaultFOV;
-    [SerializeField] private float sprintFOV;
-    [SerializeField] private float fovSpeed;
     
     [Header("Stamina")]
     [SerializeField] private float maxStamina;
@@ -37,7 +30,7 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private Slider staminaSlider;
     
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
-    [SyncVar] private bool _isSprinting;
+    [SyncVar] public bool _isSprinting;
     
     private float _currStamina;
     private float _regenDelayTimer;
@@ -45,7 +38,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private Vector3 _velocity;
     private float _verticalRotation;
-    private Vector2 _moveInput;
+    [HideInInspector]public Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _coyoteTimer;
 
@@ -107,8 +100,7 @@ public class PlayerMovement : NetworkBehaviour
         if (!isOwned) return;
         if (SceneManager.GetActiveScene().name == "Lobby") return;
         
-        if (!isPaused)
-            HandleRotation();
+
         
         if (isFrozen)
         {
@@ -118,9 +110,6 @@ public class PlayerMovement : NetworkBehaviour
 
         HandleStamina();
         HandleMovement();
-        
-        if (!isPaused)
-            HandleFOV();
     }
 
     private void HandleStamina()
@@ -184,19 +173,6 @@ public class PlayerMovement : NetworkBehaviour
         _controller.Move(_velocity * Time.deltaTime);
     }
 
-    private void HandleRotation()
-    {
-        _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();
-        
-        var mouseX = _lookInput.x * mouseSensitivity;
-        var mouseY = _lookInput.y * mouseSensitivity;
-        
-        _verticalRotation -= mouseY;
-        _verticalRotation = Mathf.Clamp(_verticalRotation, -90f, 90f);
-        
-        cameraHolder.localRotation = Quaternion.Euler(_verticalRotation, 0f, 0f);
-        transform.Rotate(Vector3.up * mouseX);
-    }
 
     private void Jump()
     {
@@ -210,13 +186,6 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void HandleFOV()
-    {
-        var isMovingForward = _moveInput.y > 0.1f;
-        var targetFOV = _isSprinting && isMovingForward ? sprintFOV : defaultFOV;
-        
-        playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
-    }
 
     private void TryStartSprint()
     {
