@@ -12,6 +12,7 @@ public class Interactable : MonoBehaviour
 
     [Header("Distance & Activation")]
     [SerializeField] private float activationDistance = 3f; //distance in which the UI prompt and interaction happens
+    [SerializeField] private SphereCollider interactableRadius;
     [SerializeField] private float resetTimer = 3f; //reset timer after an interaction is complete
     private float timeElapsed = 0;
 
@@ -72,10 +73,9 @@ public class Interactable : MonoBehaviour
             playerPos = playerCollider.bounds.center;
 
         //distance check from interactable to player
-        float distance = Vector3.Distance(transform.position, playerPos);
-        isNearInteractable = distance < activationDistance;
-
-        isInteractable = isNearInteractable;
+        float scaleRadius = interactableRadius.radius * interactableRadius.transform.localScale.x;
+        float distance = Vector3.Distance(interactableRadius.transform.position, playerPos);
+        isNearInteractable = distance < scaleRadius;
 
         //show or hide the interaction widget depending on whether the player is close enough
         if (interactWidget != null)

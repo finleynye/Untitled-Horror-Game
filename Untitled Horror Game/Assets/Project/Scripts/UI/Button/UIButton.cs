@@ -12,11 +12,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private float clickScale = 0.92f; //how small the button gets once clicked
     [SerializeField] private float scaleInterpSpeed = 12f; //how quickly the button scales
 
-    [Header("Audio")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip hoverSound;
-    [SerializeField] private AudioClip clickSound;
-
     [Header("Button States")]
     public bool isHovering = false;
     public bool isClicking = false;
@@ -43,8 +38,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         originalRotation = transform.localRotation;
         targetRotation = originalRotation;
 
-        if(audioSource == null)
-            audioSource = GetComponent<AudioSource>();
+
     }
 
     // Update is called once per frame
@@ -72,9 +66,8 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             targetRotation = originalRotation * Quaternion.Euler(0f, 0f, randomZ);
         }
 
-
-    
-        PlaySound(hoverSound);
+        SoundManager.PlaySound(SoundType.UI_BUTTON_HOVER, 1f);
+        
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -105,7 +98,9 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         Debug.Log("UI Button Clicked: " + gameObject.name);
 
-        PlaySound(clickSound);
+
+        SoundManager.PlaySound(SoundType.UI_BUTTON_PRESSED,1f);
+
         buttonEvent?.Invoke();
     }
 
@@ -118,14 +113,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         targetScale = originalScale;
         targetRotation = originalRotation;
-    }
-
-    public void PlaySound(AudioClip cliptoPlay)
-    {
-        if(audioSource == null) return;
-        if(cliptoPlay == null) return; 
-
-        audioSource.PlayOneShot(cliptoPlay);
     }
 
     public void SetInteractable(bool newValue)

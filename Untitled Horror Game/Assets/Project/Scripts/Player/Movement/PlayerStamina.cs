@@ -56,7 +56,7 @@ public class PlayerStamina : MonoBehaviour
             Debug.Log("Stamina is empty");
         }
 
-        Debug.Log("Using Stamina: " + currentStamina);
+        //Debug.Log("Using Stamina: " + currentStamina);
     }
 
     public void StopUsingStamina()
