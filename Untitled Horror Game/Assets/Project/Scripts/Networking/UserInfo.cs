@@ -14,6 +14,9 @@ public class UserInfo : MonoBehaviour
     public RawImage userIcon;
     public Image readyIcon;
     public bool isReady;
+
+    public Sprite greenTick;
+    public Sprite redCross;
     
     protected Callback<AvatarImageLoaded_t> IconLoaded;
 
@@ -73,5 +76,5 @@ public class UserInfo : MonoBehaviour
     }
 
     private void UpdateReadyState()
-        => readyIcon.sprite = Resources.Load<Sprite>(isReady ? "Textures/green-tick" : "Textures/red-cross");
+        => readyIcon.sprite = isReady ? greenTick : redCross;
 }

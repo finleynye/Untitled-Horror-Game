@@ -18,7 +18,7 @@ public class LobbyInfo : MonoBehaviour
         
         if (currSize <= 0)
         {
-            gameObject.SetActive(false);
+            lobbySize.text = "?/?";
             return;
         }
         

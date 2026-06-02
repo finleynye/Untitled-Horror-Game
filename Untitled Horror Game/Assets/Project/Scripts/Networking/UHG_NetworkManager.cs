@@ -47,7 +47,13 @@ public class UHG_NetworkManager : NetworkManager
     public override void OnClientSceneChanged()
     {
         base.OnClientSceneChanged();
+
+        if (SceneManager.GetActiveScene().name != "Game") return;
         
+        var localPlayer = NetworkClient.localPlayer;
+        var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
+        movement?.ClientSetHubPosition();
+
         //happens after the scene has been changed, tells the server the client is ready to spawn objects here
     }
 

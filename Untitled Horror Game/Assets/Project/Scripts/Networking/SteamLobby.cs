@@ -64,7 +64,9 @@ public class SteamLobby : MonoBehaviour
         if (!NetworkClient.isConnected)
             Manager.StartHost();
         
-        SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "GameID", "UHG"); //game ID 
+        //all developer games use the steam_appid "480", so if its a multiplayer game we can see EVERYONES lobbies.
+        //gotta filter it out by using the gameID key
+        SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "GameID", "UHG");
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddr, SteamUser.GetSteamID().ToString());
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name", $"{SteamFriends.GetPersonaName()}'s Lobby");
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "maxPlayers", "8");
@@ -85,7 +87,7 @@ public class SteamLobby : MonoBehaviour
     private void OnGetLobbyList(LobbyMatchList_t callback)
     {
         lobbyIDs.Clear();
-        //LobbyBrowser.Instance.DestroyLobbies();
+        LobbyBrowser.Instance.DestroyLobbies();
         _pendingLobbyRequests = (int)callback.m_nLobbiesMatching;
 
         if (_pendingLobbyRequests == 0)
@@ -107,7 +109,7 @@ public class SteamLobby : MonoBehaviour
         if (!_lobbyListRefreshing) return;
         if(!lobbyIDs.Exists(id => id.m_SteamID == callback.m_ulSteamIDLobby)) return;
         
-        //LobbyBrowser.Instance.DisplayLobbies(lobbyIDs, callback);
+        LobbyBrowser.Instance.DisplayLobbies(lobbyIDs, callback);
         
         _pendingLobbyRequests--;
         if (_pendingLobbyRequests <= 0)
@@ -118,6 +120,7 @@ public class SteamLobby : MonoBehaviour
     {
         _lobbyListRefreshing = true;
         
+        //only get lobbies with "UHG" gameID
         SteamMatchmaking.AddRequestLobbyListStringFilter("GameID", "UHG", ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.RequestLobbyList();
     }
