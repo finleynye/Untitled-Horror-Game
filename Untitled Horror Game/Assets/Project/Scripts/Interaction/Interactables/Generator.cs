@@ -14,11 +14,11 @@ public class Generator : MonoBehaviour
 
     private bool hasGeneratorStarted = false;
 
-   [Header("References")]
-   [SerializeField] private Interactable generatorInteractable;
-   [SerializeField] private GameObject generatorLight;
-   [SerializeField] private TMP_Text progressText;
-   [SerializeField] private TMP_Text errorText;
+    [Header("References")]
+    [SerializeField] private Interactable generatorInteractable;
+    [SerializeField] private GameObject generatorLight;
+    [SerializeField] private TMP_Text progressText;
+    [SerializeField] private TMP_Text errorText;
 
     [Header("Events")]
     public UnityEvent onMissingParts;
@@ -30,6 +30,12 @@ public class Generator : MonoBehaviour
     public Color onMissingPartsColour = Color.red;
     public Color onMissingFuelColour = Color.orange;
     public Color OnCompletionColour = Color.green;
+
+    [Header("Audio Cues & Ambience")]
+    public AudioSource au_generator;
+    public AudioClip runningSound;
+    public AudioClip addFuelSound;
+    public AudioClip addPartSound;
 
 
     void Start()
@@ -47,7 +53,7 @@ public class Generator : MonoBehaviour
         if(currentParts > requiredParts)
             currentParts = requiredParts;
 
-
+        au_generator.PlayOneShot(addPartSound);
         UpdateGeneratorUI();
         UpdateGeneratorUI();
     }
@@ -62,6 +68,8 @@ public class Generator : MonoBehaviour
         if(currentFuel > requiredFuel)
             currentFuel = requiredFuel;
 
+
+        au_generator.PlayOneShot(addFuelSound);
         UpdateGeneratorUI();
         UpdateGeneratorUI();
     }
