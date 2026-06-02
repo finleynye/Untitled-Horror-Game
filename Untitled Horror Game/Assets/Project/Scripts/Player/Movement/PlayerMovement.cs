@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private InputSystem_Actions _playerInput;
     [SerializeField] private PlayerStamina playerStamina;
     [SerializeField] private FootstepSoundSystem foostepSystem;
+    [SerializeField] private HeadBob headBob;
 
     [Header("Settings")]
     [SerializeField] private float walkSpeed = 5;
@@ -83,12 +84,18 @@ public class PlayerMovement : MonoBehaviour
         {
            _isSprinting = true;
             foostepSystem.SetSprinting(true);
+
+            if (headBob != null)
+                headBob.SetSprinting(true);
         }
 
         if (context.canceled)
         {
             _isSprinting = false;
             foostepSystem.SetSprinting(false);
+
+            if (headBob != null)
+                headBob.SetSprinting(false);
         }
     }
     public void Crouch(InputAction.CallbackContext context)

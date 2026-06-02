@@ -14,7 +14,7 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] private float sprintFOV = 90;
     [SerializeField] private float fovSpeed = 10;
 
-    private Vector2 _lookInput;
+    public Vector2 _lookInput;
     public float verticalRotation;
     public float horizontalRotation;
     public float mouseSensitivity;
@@ -36,6 +36,8 @@ public class CameraMovement : MonoBehaviour
     {
         _lookInput = context.ReadValue<Vector2>();
     }
+
+
     private void HandleFOV()
     {
         var isMovingForward = playerMovement._moveInput.y > 0.1f;
