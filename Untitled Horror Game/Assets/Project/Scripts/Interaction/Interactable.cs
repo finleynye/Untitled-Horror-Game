@@ -77,8 +77,6 @@ public class Interactable : MonoBehaviour
         float distance = Vector3.Distance(interactableRadius.transform.position, playerPos);
         isNearInteractable = distance < scaleRadius;
 
-        isInteractable = isNearInteractable;
-
         //show or hide the interaction widget depending on whether the player is close enough
         if (interactWidget != null)
         {
