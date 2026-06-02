@@ -37,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsCrouching => _isCrouching;
 
     bool canJump = false;
+    private float jumpResetTime = 0.5f;
     private void Awake()
     {
         canJump = true;
@@ -151,6 +152,7 @@ public class PlayerMovement : MonoBehaviour
 
         _velocity.y += gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
+
     }
     public void Jump()
     {
@@ -161,6 +163,7 @@ public class PlayerMovement : MonoBehaviour
         if (_coyoteTimer > 0f && !_isCrouching && canJump)
         {
             _velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+            SoundManager.PlaySound(SoundType.JUMP, 1f);
             _coyoteTimer = 0f;
         }
     }
