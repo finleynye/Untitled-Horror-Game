@@ -31,6 +31,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6507006591187275723}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1443046586885309826
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4343018600752068290}
+  - component: {fileID: 4215860998876428333}
+  m_Layer: 0
+  m_Name: FoostepAudioVolume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4343018600752068290
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443046586885309826}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5039948531641517348}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4215860998876428333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443046586885309826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 065c416a933acd54d9e7a4affff013d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FoostepAudio
 --- !u!1 &1587313713080220229
 GameObject:
   m_ObjectHideFlags: 0
@@ -79,6 +123,7 @@ GameObject:
   - component: {fileID: 1812604329966706364}
   - component: {fileID: 2706492337609226645}
   - component: {fileID: 2760746323387038639}
+  - component: {fileID: 6651731449351128379}
   - component: {fileID: 3315059704254774904}
   m_Layer: 0
   m_Name: Player
@@ -102,6 +147,7 @@ Transform:
   m_Children:
   - {fileID: 6507006591187275723}
   - {fileID: 2012566660662125158}
+  - {fileID: 4343018600752068290}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2439129983414145269
@@ -202,6 +248,7 @@ MonoBehaviour:
   cam: {fileID: 677899024737497946}
   nametag: {fileID: 8993567178079082492}
   playerStamina: {fileID: 2760746323387038639}
+  foostepSystem: {fileID: 6651731449351128379}
   walkSpeed: 2.5
   sprintSpeed: 5
   crouchSpeed: 1.4
@@ -253,6 +300,39 @@ MonoBehaviour:
   isUsingStamina: 0
   isStaminaEmpty: 0
   canUseStamina: 1
+--- !u!114 &6651731449351128379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626695852029565671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 549516ff560d01f42b5dd12ca0387958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepSoundSystem
+  characterController: {fileID: 3699729708791552567}
+  walkStepDistance: 2
+  sprintStepDistance: 1.4
+  crouchStepDistance: 2.5
+  isSprinting: 0
+  isCrouching: 0
+  onFoostep:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4215860998876428333}
+        m_TargetAssemblyTypeName: FoostepAudio, Assembly-CSharp
+        m_MethodName: PlayFootstep
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &3315059704254774904
 MonoBehaviour:
   m_ObjectHideFlags: 0

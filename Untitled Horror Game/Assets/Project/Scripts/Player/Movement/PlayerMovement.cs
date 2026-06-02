@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController _controller;
     private InputSystem_Actions _playerInput;
     [SerializeField] private PlayerStamina playerStamina;
+    [SerializeField] private FootstepSoundSystem foostepSystem;
 
     [Header("Settings")]
     [SerializeField] private float walkSpeed = 5;
@@ -77,19 +78,31 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Sprint(InputAction.CallbackContext context)
     {
-        if(context.performed)
-            _isSprinting = true;
+        if (context.performed)
+        {
+           _isSprinting = true;
+            foostepSystem.SetSprinting(true);
+        }
 
-        if(context.canceled)
+        if (context.canceled)
+        {
             _isSprinting = false;
+            foostepSystem.SetSprinting(false);
+        }
     }
     public void Crouch(InputAction.CallbackContext context)
     {
         if (context.performed)
+        {
             _isCrouching = true;
+            foostepSystem.SetCrouching(true);
+        }
 
-        if(context.canceled)
+        if (context.canceled)
+        {
             _isCrouching = false;
+            foostepSystem.SetCrouching(false);
+        }
     }
     private void Movement()
     {
