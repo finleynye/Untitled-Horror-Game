@@ -151,18 +151,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
   soundsList:
   - name: UI_BUTTON_HOVER
-    volume: 0
+    volume: 1
+    mixer: {fileID: 0}
     sounds:
     - {fileID: 8300000, guid: 179592a0335a6694f9375f44d64d5063, type: 3}
   - name: UI_BUTTON_PRESSED
-    volume: 0
+    volume: 1
+    mixer: {fileID: 0}
     sounds:
     - {fileID: 8300000, guid: 00a3ad26f3d03f44a9aaec5cf47e9723, type: 3}
   - name: INTERACT
-    volume: 0
+    volume: 1
+    mixer: {fileID: 0}
     sounds: []
   - name: JUMP
-    volume: 0
+    volume: 1
+    mixer: {fileID: 0}
     sounds: []
   audioSource: {fileID: 336740566}
 --- !u!82 &336740566

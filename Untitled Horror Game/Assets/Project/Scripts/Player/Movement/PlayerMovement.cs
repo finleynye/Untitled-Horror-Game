@@ -35,7 +35,6 @@ public class PlayerMovement : MonoBehaviour
     public bool isFrozen;
     public bool IsCrouching => _isCrouching;
 
-    bool isOwned = false;
     bool canJump = false;
     private void Awake()
     {
@@ -48,7 +47,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void Start()
     {
-        if (!isOwned) return;
 
         _playerInput = new InputSystem_Actions();
        
