@@ -25,14 +25,23 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
-        //set the global reference 
+        //stop duplicate sound managers from existing
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        //set the global reference
         instance = this;
+
+        //keep this object alive between scenes
+        DontDestroyOnLoad(gameObject);
 
         //get the audio source if it has not been assigned
         if (audioSource == null)
-        {
             audioSource = GetComponent<AudioSource>();
-        }
+        
     }
 
     public static void PlaySound(SoundType sound, float volume = 1f)

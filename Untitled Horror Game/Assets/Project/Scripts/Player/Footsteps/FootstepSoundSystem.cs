@@ -1,52 +1,73 @@
+using Mirror;
 using UnityEngine;
-using UnityEngine.Events;
 
 [RequireComponent(typeof(CharacterController))]
-public class FootstepSoundSystem : MonoBehaviour
+public class FootstepSoundSystem : NetworkBehaviour
 {
+    [Header("Refs")]
     [SerializeField] private CharacterController characterController;
+    [SerializeField] private PlayerMovement playerMovement;
+
+    [Header("Step Distance")]
     [SerializeField] private float walkStepDistance = 0.8f;
-    [SerializeField] private float sprintStepDistance = .55f;
+    [SerializeField] private float sprintStepDistance = 0.55f;
     [SerializeField] private float crouchStepDistance = 1.2f;
 
-    [SerializeField] bool isSprinting;
-    [SerializeField] bool isCrouching;
+    [SerializeField] private float minStepDelay = 0.25f;
+    private float stepDelayTimer;
 
-    public UnityEvent onFootstep;
+    [Header("Audio")]
+    [SerializeField] private SoundType footstepSound = SoundType.FOOTSTEP;
+    [SerializeField] private float footstepVolume = 1f;
 
     private Vector3 lastPosition;
     private float distanceTravelled;
 
-    void Start()
+    private void Start()
     {
-        if(characterController == null)
+        if (characterController == null)
             characterController = GetComponent<CharacterController>();
+
+        if (playerMovement == null)
+            playerMovement = GetComponent<PlayerMovement>();
 
         lastPosition = transform.position;
     }
+
     private void Update()
     {
-        HandleFoosteps();
-    }
-    private void HandleFoosteps()
-    {
-        if (characterController == null) return;
+        if (!isOwned)
+            return;
 
-        //only play footsteps whilst on the ground
-        if(characterController.isGrounded == false)
+        stepDelayTimer -= Time.deltaTime;
+
+        HandleFootsteps();
+    }
+
+    private void HandleFootsteps()
+    {
+        if (characterController == null)
+            return;
+
+        if (playerMovement == null)
+            return;
+
+        //only play footsteps while grounded
+        if (characterController.isGrounded == false)
         {
             lastPosition = transform.position;
+            distanceTravelled = 0f;
             return;
         }
 
-        //only count horizontal movements
+        //only count horizontal movement
         Vector3 currentPosition = transform.position;
         Vector3 horizontalMovement = currentPosition - lastPosition;
-        horizontalMovement.y = 0;
+        horizontalMovement.y = 0f;
 
         float movementAmount = horizontalMovement.magnitude;
 
-        //if the player is barely moving do nothing
+        //ignore tiny movement jitter
         if (movementAmount <= 0.001f)
         {
             lastPosition = currentPosition;
@@ -55,13 +76,14 @@ public class FootstepSoundSystem : MonoBehaviour
 
         distanceTravelled += movementAmount;
 
-        float currentStepDistance = GetCurrentStepDistance(); //determines whether we are walking, sprinting or crouching for how often step sound plays
+        float currentStepDistance = GetCurrentStepDistance();
 
-        if(distanceTravelled >= currentStepDistance)
+        if (distanceTravelled >= currentStepDistance && stepDelayTimer <= 0f)
         {
             distanceTravelled = 0f;
+            stepDelayTimer = minStepDelay;
 
-            onFootstep?.Invoke();
+            PlayFootstep();
         }
 
         lastPosition = currentPosition;
@@ -69,18 +91,46 @@ public class FootstepSoundSystem : MonoBehaviour
 
     private float GetCurrentStepDistance()
     {
-        if(isCrouching == true)
+        if (playerMovement.IsCrouching)
             return crouchStepDistance;
-        
 
-        if(isSprinting == true)
+        if (playerMovement._isSprinting)
             return sprintStepDistance;
-        
 
         return walkStepDistance;
     }
 
-    public void SetSprinting(bool value) => isSprinting = value;
+    private void PlayFootstep()
+    {
+        //play instantly for this player only if we are not the server/host
+        //this avoids host mode double-playing the sound
+        if (!isServer)
+        {
+            SoundManager.PlaySound(footstepSound, footstepVolume);
+        }
 
-    public void SetCrouching(bool value) => isCrouching = value;
+        // ask the server to tell the other clients
+        CmdPlayFootstep();
+    }
+
+
+    [Command]
+    private void CmdPlayFootstep()
+    {
+        //server/host plays it once here
+        SoundManager.PlaySound(footstepSound, footstepVolume);
+
+        //then tell other clients
+        RpcPlayFootstep();
+    }
+
+    [ClientRpc]
+    private void RpcPlayFootstep()
+    {
+        //do not replay the sound on the player who owns this object
+        if (isOwned)
+            return;
+
+        SoundManager.PlaySound(footstepSound, footstepVolume);
+    }
 }

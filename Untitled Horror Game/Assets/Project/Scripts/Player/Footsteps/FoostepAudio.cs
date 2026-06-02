@@ -1,8 +1,22 @@
+using Mirror;
 using UnityEngine;
 
-public class FoostepAudio : MonoBehaviour
+public class FoostepAudio : NetworkBehaviour
 {
-    public void PlayFootstep()
+    private void PlayFootstep()
+    {
+        SoundManager.PlaySound(SoundType.FOOTSTEP, 1f);
+        CmdPlayFootstep();
+    }
+
+    [Command]
+    private void CmdPlayFootstep()
+    {
+        RpcPlayFootstep();
+    }
+
+    [ClientRpc(includeOwner = false)]
+    private void RpcPlayFootstep()
     {
         SoundManager.PlaySound(SoundType.FOOTSTEP, 1f);
     }

@@ -9,12 +9,12 @@ public class HeadBob : MonoBehaviour
     [Header("Head Bob Settings")]
     [SerializeField] private bool useHeadBob = true;
     [SerializeField] private float walkBobSpeed = 8f;
-    [SerializeField] private float walkBobAmount = 0.04f;
+    [SerializeField] private float walkBobAmount = 0.06f;
 
     [Header("Sprint Bob Settings")]
     [SerializeField] private bool useSprintBob = true;
-    [SerializeField] private float sprintBobSpeed = 12f;
-    [SerializeField] private float sprintBobAmount = 0.07f;
+    [SerializeField] private float sprintBobSpeed = 15f;
+    [SerializeField] private float sprintBobAmount = 0.12f;
 
     [Header("Return Settings")]
     [SerializeField] private float returnSpeed = 8f;
@@ -47,7 +47,9 @@ public class HeadBob : MonoBehaviour
 
         if (characterController == null)
             return;
-        
+
+        if (!playerMovement.isOwned)
+            return;
 
         HandleHeadBob();
     }
