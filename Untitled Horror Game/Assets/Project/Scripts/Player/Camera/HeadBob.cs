@@ -8,13 +8,18 @@ public class HeadBob : MonoBehaviour
 
     [Header("Head Bob Settings")]
     [SerializeField] private bool useHeadBob = true;
-    [SerializeField] private float walkBobSpeed = 8f;
-    [SerializeField] private float walkBobAmount = 0.06f;
+    [SerializeField] private float walkBobSpeed = 5f;
+    [SerializeField] private float walkBobAmount = 0.045f;
 
     [Header("Sprint Bob Settings")]
     [SerializeField] private bool useSprintBob = true;
-    [SerializeField] private float sprintBobSpeed = 15f;
-    [SerializeField] private float sprintBobAmount = 0.12f;
+    [SerializeField] private float sprintBobSpeed = 7f;
+    [SerializeField] private float sprintBobAmount = 0.08f;
+
+    [Header("Crouch Bob Settings")]
+    [SerializeField] private bool useCrouchBob = true;
+    [SerializeField] private float crouchBobSpeed = 4f;
+    [SerializeField] private float crouchBobAmount = .035f;
 
     [Header("Return Settings")]
     [SerializeField] private float returnSpeed = 8f;
@@ -23,6 +28,7 @@ public class HeadBob : MonoBehaviour
     [SerializeField] private bool isSprinting;
 
     private Vector3 startLocalPosition;
+    private Vector3 lastPosition;
     private float bobTimer;
 
     private void Start()
@@ -36,6 +42,7 @@ public class HeadBob : MonoBehaviour
             playerMovement = GetComponentInParent<PlayerMovement>();
         
 
+        lastPosition = playerMovement.transform.position;
     }
     private void Update()
     {
@@ -55,14 +62,37 @@ public class HeadBob : MonoBehaviour
     }
     private void HandleHeadBob()
     {
+        Vector3 currentPosition = playerMovement.transform.position;
+
+        Vector3 horizontalMovement = currentPosition - lastPosition;
+        horizontalMovement.y = 0f;
+
+        float movementAmount = horizontalMovement.magnitude;
+        lastPosition = currentPosition;
+
         bool isMoving = playerMovement._moveInput.magnitude > 0.1f;
+        bool isMovingForward = playerMovement._moveInput.y > 0.1f;
+        bool isGrounded = characterController.isGrounded;
         bool isSprinting = playerMovement._isSprinting;
         bool isCrouching = playerMovement.IsCrouching;
 
-        if (isMoving && isCrouching == false)
+
+        if (isMoving && isGrounded)
         {
-            float currentBobSpeed = isSprinting ? sprintBobSpeed : walkBobSpeed; //sprint uses a faster bob, walk uses slower bob
-            float currentBobAmount = isSprinting ? sprintBobAmount : walkBobAmount;//sprint uses a stronger bob, walk uses weaker bob
+            float currentBobSpeed = walkBobSpeed; //default for bobbing is walking
+            float currentBobAmount = walkBobAmount;
+
+            if(isCrouching && useCrouchBob)
+            {
+                currentBobAmount = crouchBobAmount;
+                currentBobSpeed = crouchBobSpeed;
+            }
+            
+            else if (isSprinting && useSprintBob && isMovingForward)
+            {
+                currentBobSpeed = sprintBobSpeed;
+                currentBobAmount = sprintBobAmount;
+            }
 
             bobTimer += Time.deltaTime * currentBobSpeed;
 
@@ -84,10 +114,5 @@ public class HeadBob : MonoBehaviour
         bobTimer = 0f;
 
         transform.localPosition = Vector3.Lerp(transform.localPosition, startLocalPosition, returnSpeed * Time.deltaTime);
-    }
-
-    public void SetSprinting(bool sprinting)
-    {
-        isSprinting = sprinting;
     }
 }

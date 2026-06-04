@@ -94,7 +94,9 @@ public class FootstepSoundSystem : NetworkBehaviour
         if (playerMovement.IsCrouching)
             return crouchStepDistance;
 
-        if (playerMovement._isSprinting)
+        bool isMovingForward = playerMovement._moveInput.y > 0.1f;
+
+        if (playerMovement._isSprinting && isMovingForward)
             return sprintStepDistance;
 
         return walkStepDistance;

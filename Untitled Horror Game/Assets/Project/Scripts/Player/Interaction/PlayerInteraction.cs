@@ -1,28 +1,21 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Interaction")]
-    [SerializeField] private Interactable currentInteractable; //current interactable object
-    [SerializeField] private float interactionCheckRadius = 3f; //interaction radius for player
-
-    [SerializeField] private LayerMask interactableLayer; //layer of interactable objects
+    [SerializeField] private Interactable currentInteractable;
+    [SerializeField] private float interactionCheckRadius = 3f;
+    [SerializeField] private LayerMask interactableLayer;
 
     [Header("Player States")]
     public bool isPaused;
     public bool isFrozen;
 
-
-    public void Interact(InputAction.CallbackContext context)
+    public void TryInteract()
     {
-        if (isPaused) return;
-        if (isFrozen) return;
+        if (isPaused || isFrozen) return;
 
-        if (!context.performed)
-            return;
-
-        currentInteractable = FindClosestInteractable(); //finds the closest interactable
+        currentInteractable = FindClosestInteractable();
 
         if (currentInteractable == null)
         {
@@ -30,23 +23,19 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        Debug.Log("Trying to interact with: " + currentInteractable.gameObject.name);
-
-        currentInteractable.Interact(); //interacts with the closest interactable
+        currentInteractable.Interact();
     }
 
     private Interactable FindClosestInteractable()
     {
-        //checks within a sphere at the players position and check radius
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactionCheckRadius, interactableLayer);
+        Collider[] hits = Physics.OverlapSphere(transform.position, interactionCheckRadius, interactableLayer, QueryTriggerInteraction.Collide);
 
         Interactable closestInteractable = null;
         float closestDistance = Mathf.Infinity;
 
-        //loop through all collider hits within the radius and object layer
         foreach (Collider hit in hits)
         {
-            Interactable interactable = hit.GetComponent<Interactable>(); //get the objects interactable component
+            Interactable interactable = hit.GetComponent<Interactable>();
 
             if (interactable == null)
                 interactable = hit.GetComponentInParent<Interactable>();

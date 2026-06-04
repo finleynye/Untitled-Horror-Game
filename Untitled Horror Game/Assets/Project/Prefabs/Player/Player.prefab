@@ -75,6 +75,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 065c416a933acd54d9e7a4affff013d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FoostepAudio
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
 --- !u!1 &1587313713080220229
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +127,6 @@ GameObject:
   - component: {fileID: 5229806553741846576}
   - component: {fileID: 2706492337609226645}
   - component: {fileID: 2760746323387038639}
-  - component: {fileID: 6651731449351128379}
   - component: {fileID: 3315059704254774904}
   m_Layer: 0
   m_Name: Player
@@ -286,6 +288,7 @@ MonoBehaviour:
   playerCam: {fileID: 3441022514559133973}
   audioListener: {fileID: 4902510739796489931}
   mouseSensitivity: 0.9
+  unlockCursor: 1
   defaultFOV: 65
   sprintFOV: 80
   fovSpeed: 3
@@ -331,39 +334,6 @@ MonoBehaviour:
   isUsingStamina: 0
   isStaminaEmpty: 0
   canUseStamina: 1
---- !u!114 &6651731449351128379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2626695852029565671}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 549516ff560d01f42b5dd12ca0387958, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FootstepSoundSystem
-  characterController: {fileID: 3699729708791552567}
-  walkStepDistance: 2
-  sprintStepDistance: 1.4
-  crouchStepDistance: 2.5
-  isSprinting: 0
-  isCrouching: 0
-  onFootstep:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4215860998876428333}
-        m_TargetAssemblyTypeName: FoostepAudio, Assembly-CSharp
-        m_MethodName: PlayFootstep
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &3315059704254774904
 MonoBehaviour:
   m_ObjectHideFlags: 0
