@@ -1,6 +1,7 @@
 using UnityEngine;
+using Mirror;
 
-public class PlayerInteraction : MonoBehaviour
+public class PlayerInteraction : NetworkBehaviour
 {
     [Header("Interaction")]
     [SerializeField] private Interactable currentInteractable;
@@ -13,6 +14,7 @@ public class PlayerInteraction : MonoBehaviour
 
     public void TryInteract()
     {
+        if (!isOwned) return;
         if (isPaused || isFrozen) return;
 
         currentInteractable = FindClosestInteractable();
@@ -23,7 +25,11 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        currentInteractable.Interact();
+        NetworkIdentity targetIdentity = currentInteractable.GetComponentInParent<NetworkIdentity>();
+
+        if (targetIdentity == null) return;
+
+        CmdTryInteract(targetIdentity);
     }
 
     private Interactable FindClosestInteractable()
@@ -53,5 +59,26 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         return closestInteractable;
+    }
+
+
+    [Command]
+    private void CmdTryInteract(NetworkIdentity targetIdentity)
+    {
+        if (targetIdentity == null) return;
+
+        Interactable interactable = targetIdentity.GetComponentInChildren<Interactable>();
+
+        if (interactable == null) return;
+
+        float distance = Vector3.Distance(transform.position, interactable.transform.position);
+
+        if (distance > interactionCheckRadius)
+        {
+            Debug.Log("Server rejected interaction. Player too far away.");
+            return;
+        }
+
+        interactable.ServerInteract();
     }
 }

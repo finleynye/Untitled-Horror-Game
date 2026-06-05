@@ -9,7 +9,8 @@ public enum SoundType
     INTERACT,
     JUMP,
     LAND,
-    FOOTSTEP
+    FOOTSTEP,
+    STAMINA_EXHAUST
 }
 
 [RequireComponent(typeof(AudioSource))]

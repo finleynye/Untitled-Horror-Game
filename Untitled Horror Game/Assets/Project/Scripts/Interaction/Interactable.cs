@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using Mirror;
 
-public class Interactable : MonoBehaviour
+public class Interactable : NetworkBehaviour
 {
     [Header("Event System Based")]
     public UnityEvent InteractEvent;//assign event to interactable to have it perform whatever code you'd like by creating a new script for an action like shooting and assigning it here
@@ -134,6 +135,30 @@ public class Interactable : MonoBehaviour
         timeElapsed = 0f;
 
         InteractEvent?.Invoke();
+    }
+
+    [Server]
+    public void ServerInteract()
+    {
+        if (!isInteractable)
+            return;
+
+        if (hasInteracted && !isReusable)
+            return;
+
+        hasInteracted = true;
+        timeElapsed = 0f;
+
+        InteractEvent?.Invoke();
+
+        RpcAfterInteract();
+    }
+
+    [ClientRpc]
+    private void RpcAfterInteract()
+    {
+        if (interactWidget != null)
+            interactWidget.SetActive(false);
     }
 
     public void ResetInteraction()
