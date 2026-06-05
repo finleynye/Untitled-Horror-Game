@@ -2,17 +2,23 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System.Collections;
+using Mirror;
 
-public class Generator : MonoBehaviour
+public class Generator : NetworkBehaviour
 {
     [Header("Generator Parts Requirements")]
     [SerializeField] private int requiredParts = 4;
     [SerializeField] private int requiredFuel = 1;
 
+    [SyncVar(hook = nameof(OnPartsChanged))]
     private int currentParts = 0;
+
+    [SyncVar(hook = nameof(OnFuelChanged))]
     private int currentFuel = 0;
 
+    [SyncVar(hook = nameof(OnGeneratorStartedChanged))]
     private bool hasGeneratorStarted = false;
+
     private bool isShaking = false;
 
     [Header("References")]
@@ -57,6 +63,7 @@ public class Generator : MonoBehaviour
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void AddGeneratorPart()
     {
         if (hasGeneratorStarted) return;
@@ -76,6 +83,7 @@ public class Generator : MonoBehaviour
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void AddFuel()
     {
         if (hasGeneratorStarted) return;
@@ -95,6 +103,7 @@ public class Generator : MonoBehaviour
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void TryStartGenerator()
     {
         ShakeGenerator();
@@ -137,31 +146,12 @@ public class Generator : MonoBehaviour
         StartGenerator();
     }
 
+    [Server]
     public void StartGenerator()
     {
         hasGeneratorStarted = true;
 
-        if (generatorLight != null)
-            generatorLight.SetActive(true);
-
-        if (smokeParticles != null)
-            smokeParticles.Stop();
-
-        if (au_generator != null && runningSound != null)
-        {
-            au_generator.clip = runningSound;
-            au_generator.loop = true;
-            au_generator.Play();
-        }
-
-        errorText.text = "";
-
-        if (generatorInteractable != null)
-        {
-            generatorInteractable.interactionPrompt = "Generator Started";
-            generatorInteractable.isReusable = false;
-        }
-        UpdateGeneratorUI();
+        RpcGeneratorStartedEffects();
 
         onGeneratorStarted?.Invoke();
     }
@@ -259,4 +249,59 @@ public class Generator : MonoBehaviour
         generatorInteractable.interactionPrompt = "Start Generator";
     }
 
+    private void OnPartsChanged(int oldValue, int newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
+
+    private void OnFuelChanged(int oldValue, int newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
+
+    private void OnGeneratorStartedChanged(bool oldValue, bool newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+
+        if (newValue)
+            ApplyGeneratorStartedVisuals();
+    }
+
+    private void ApplyGeneratorStartedVisuals()
+    {
+        if (generatorLight != null)
+            generatorLight.SetActive(true);
+
+        if (smokeParticles != null)
+            smokeParticles.Stop();
+
+        if (au_generator != null && runningSound != null)
+        {
+            au_generator.clip = runningSound;
+            au_generator.loop = true;
+
+            if (!au_generator.isPlaying)
+                au_generator.Play();
+        }
+
+        if (generatorInteractable != null)
+        {
+            generatorInteractable.interactionPrompt = "Generator Started";
+            generatorInteractable.isReusable = false;
+        }
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcGeneratorStartedEffects()
+    {
+        ApplyGeneratorStartedVisuals();
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
 }

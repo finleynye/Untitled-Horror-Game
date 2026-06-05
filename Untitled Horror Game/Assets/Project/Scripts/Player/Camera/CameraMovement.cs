@@ -1,7 +1,7 @@
 using Mirror;
-using Mirror.Examples.BilliardsPredicted;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 public class CameraMovement : NetworkBehaviour
 {
@@ -27,8 +27,27 @@ public class CameraMovement : NetworkBehaviour
 
     private PlayerInput _playerInput;
 
+    [Header("Post Processing")]
+    [SerializeField] private Volume playerVolume;
+    private Vignette vignette;
+
+    [Header("Exhausted Vignette")]
+    [SerializeField] private float normalVignetteIntensity = 0.2f;
+    [SerializeField] private float exhaustedVignetteMin = 0.35f; //minimum for exhausted vignette amount
+    [SerializeField] private float exhaustedVignetteMax = 0.65f; //maximum for exhausted vignette amount
+    [SerializeField] private float exhaustedVignetteSpeed = 1f; //speed the exhuasted states lerps between min and max
+    [SerializeField] private float vignetteLerpSpeed = 2.5f; //how quickly the the effect appears on screen once exhuasted
+
     private void Awake()
     {
+        if (playerVolume != null)
+        {
+            playerVolume.profile = Instantiate(playerVolume.profile);
+            playerVolume.profile.TryGet(out vignette);
+        }
+
+        if (playerVolume != null)
+            playerVolume.profile.TryGet(out vignette);
 
         if (playerMovement == null)
             playerMovement = GetComponent<PlayerMovement>();
@@ -81,6 +100,7 @@ public class CameraMovement : NetworkBehaviour
 
         HandleLook();
         HandleFOV();
+        ExhaustedVignette();
     }
 
     private void HandleFOV()
@@ -89,6 +109,32 @@ public class CameraMovement : NetworkBehaviour
         var targetFOV = playerMovement._isSprinting && isMovingForward ? sprintFOV : defaultFOV;
 
         playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
+    }
+
+    private void ExhaustedVignette()
+    {
+        if (vignette == null) return;
+        if (playerMovement == null) return;
+
+        float targetIntensity = normalVignetteIntensity;
+
+        if (playerMovement.IsStaminaExhausted)
+        {
+            //creates a slow breathing pulse from min to max
+            float pulse = Mathf.Sin(Time.time * exhaustedVignetteSpeed);
+
+            //converts the pulse from -1 to 1 into 0 to 1
+            float normalisedPulse = (pulse + 1f) * 0.5f;
+
+            targetIntensity = Mathf.Lerp(exhaustedVignetteMin, exhaustedVignetteMax, normalisedPulse);
+        }
+
+        targetIntensity = Mathf.Clamp01(targetIntensity); //clamps between 0,1 just incase lerp overshoots values
+
+        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, targetIntensity, vignetteLerpSpeed * Time.deltaTime);
+
+        //clamps the final vignette amount, just in case lerp overshootts
+        vignette.intensity.value = Mathf.Clamp01(vignette.intensity.value);
     }
 
     private void HandleLook()
@@ -129,6 +175,8 @@ public class CameraMovement : NetworkBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
+
+
 
     private void SetCursorState()
     {

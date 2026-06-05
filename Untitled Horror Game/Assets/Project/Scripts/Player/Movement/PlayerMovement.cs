@@ -29,7 +29,12 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float staminaRegenDelay;
     [SerializeField] private float staminaDrainRate;
     [SerializeField] private Slider staminaSlider;
-    
+
+    [Header("Stamina Audio")]
+    [SerializeField] private float staminaExhaustSoundCooldown = 1.5f;
+
+    private float staminaExhaustSoundTimer = 0f;
+
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
     [SyncVar] public bool _isSprinting;
     
@@ -46,6 +51,7 @@ public class PlayerMovement : NetworkBehaviour
     public bool isPaused;
     public bool isFrozen;
     public bool IsCrouching => _isCrouching;
+    public bool IsStaminaExhausted => _staminaExhausted;
 
     private void Awake()
     {
@@ -105,6 +111,9 @@ public class PlayerMovement : NetworkBehaviour
         if (SceneManager.GetActiveScene().name == "Lobby") return;
         
 
+        if (staminaExhaustSoundTimer > 0f)
+            staminaExhaustSoundTimer -= Time.deltaTime;
+
         if (isFrozen)
         {
             _velocity = Vector3.zero; 
@@ -128,9 +137,11 @@ public class PlayerMovement : NetworkBehaviour
 
             if (_currentStamina <= 0f)
             {
-                _currentStamina = 0;
+                _currentStamina = 0f;
                 _staminaExhausted = true;
+
                 StopSprint();
+                PlayStaminaExhaustSound();
             }
         }
         else //increase stamina
@@ -209,8 +220,18 @@ public class PlayerMovement : NetworkBehaviour
     }
     
     private void StopSprint()
-        => CmdSetSprint(false);
-    
+    {
+        CmdSetSprint(false);
+    }
+    private void PlayStaminaExhaustSound()
+    {
+        if (staminaExhaustSoundTimer > 0f)
+            return;
+
+        SoundManager.PlaySound(SoundType.STAMINA_EXHAUST, 1f);
+        staminaExhaustSoundTimer = staminaExhaustSoundCooldown;
+    }
+
     //network commands (stop speed cheats & let others see crouching effect)
     [Command] 
     private void CmdSetSprint(bool value) 

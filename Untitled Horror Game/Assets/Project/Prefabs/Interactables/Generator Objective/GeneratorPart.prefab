@@ -68,6 +68,7 @@ GameObject:
   - component: {fileID: 6497744038860085665}
   - component: {fileID: 8774200504368194263}
   - component: {fileID: 4937916494872559107}
+  - component: {fileID: 5991471023121157665}
   m_Layer: 7
   m_Name: GeneratorPart
   m_TagString: Untagged
@@ -181,6 +182,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c98f3ed6f2f550459dcb3d146e7d79d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   InteractEvent:
     m_PersistentCalls:
       m_Calls:
@@ -197,7 +201,6 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   interactionPrompt: Interact
-  activationDistance: 2
   interactableRadius: {fileID: 4925419103334399820}
   resetTimer: 3
   playerTransform: {fileID: 0}
@@ -246,5 +249,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8adcfc5d2dda1ed47a3cf4a6d00f61f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneratorPickup
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   generatorPickUpType: 0
   generatorTask: {fileID: 0}
+  destroyOnPickup: 1
+--- !u!114 &5991471023121157665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6652619549947293648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 1689275852
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0

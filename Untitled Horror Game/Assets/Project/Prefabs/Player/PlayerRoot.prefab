@@ -674,6 +674,7 @@ GameObject:
   - component: {fileID: 8114145018490970003}
   - component: {fileID: 2430999903977072214}
   - component: {fileID: 8738311588368073485}
+  - component: {fileID: 6995027081951641689}
   m_Layer: 0
   m_Name: CameraEffectsPivotTransform
   m_TagString: Untagged
@@ -745,6 +746,23 @@ MonoBehaviour:
   sprintLeanMultiplier: 1.35
   reduceLeanWhenCrouching: 1
   crouchLeanMultiplier: 0.5
+--- !u!114 &6995027081951641689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6563687675089166336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: fa41c6b9295a7334d9423bfc99b3a97b, type: 2}
 --- !u!1 &7118866172255239338
 GameObject:
   m_ObjectHideFlags: 0
@@ -1198,6 +1216,7 @@ MonoBehaviour:
   staminaRegenDelay: 1.5
   staminaDrainRate: 20
   staminaSlider: {fileID: 0}
+  staminaExhaustSoundCooldown: 1.5
   _isSprinting: 0
   _moveInput: {x: 0, y: 0}
   isPaused: 0
@@ -1230,6 +1249,12 @@ MonoBehaviour:
   _lookInput: {x: 0, y: 0}
   verticalRotation: 0
   horizontalRotation: 0
+  playerVolume: {fileID: 6995027081951641689}
+  normalVignetteIntensity: 0.2
+  exhaustedVignetteMin: 0.35
+  exhaustedVignetteMax: 0.65
+  exhaustedVignetteSpeed: 1
+  vignetteLerpSpeed: 2.5
 --- !u!114 &4203022429870089967
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1265,6 +1290,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f266a2a7b45e6f4e97cc838b239c3df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   currentInteractable: {fileID: 0}
   interactionCheckRadius: 3
   interactableLayer:
