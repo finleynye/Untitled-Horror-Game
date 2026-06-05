@@ -21,7 +21,7 @@ public class LobbyController : MonoBehaviour
     public PlayerController localPlayerController;
     
     public Button startGameBtn;
-    public TMP_Text readyBtnText;
+    //public TMP_Text readyBtnText;
     
     private static UHG_NetworkManager Manager => NetworkManager.singleton as UHG_NetworkManager;
  
@@ -36,8 +36,8 @@ public class LobbyController : MonoBehaviour
         localPlayerController.ChangeReady();
     }
 
-    private void UpdateButton()
-        => readyBtnText.text = localPlayerController.ready ? "Unready" : "Ready";
+    /*private void UpdateButton()
+        => readyBtnText.text = localPlayerController.ready ? "Unready" : "Ready";*/
     
     private void IsEveryoneReady()
     {
@@ -152,8 +152,8 @@ public class LobbyController : MonoBehaviour
                 user.isReady = player.ready;
                 user.SetUserValues();
  
-                if (player == localPlayerController)
-                    UpdateButton();
+                /*if (player == localPlayerController)
+                    UpdateButton();*/
             }
         }
         
