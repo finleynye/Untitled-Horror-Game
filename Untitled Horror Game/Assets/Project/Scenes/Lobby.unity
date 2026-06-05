@@ -865,6 +865,7 @@ GameObject:
   - component: {fileID: 994316741}
   - component: {fileID: 994316740}
   - component: {fileID: 994316742}
+  - component: {fileID: 994316743}
   m_Layer: 5
   m_Name: StartBtn
   m_TagString: Untagged
@@ -983,9 +984,34 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Game
+          m_StringArgument: GrayBoxScene
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &994316743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994316738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac58a2506e6b424fa9b25e413d6f7a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButton
+  buttonEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  useScaleEffects: 1
+  hoverScale: 1.08
+  clickScale: 0.92
+  scaleInterpSpeed: 12
+  isHovering: 0
+  isClicking: 0
+  isInteractable: 1
+  useRotationEffects: 1
+  randomRotationAmount: 3
+  rotationInterpSpeed: 12
 --- !u!1 &1017089143
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,6 +1228,7 @@ GameObject:
   - component: {fileID: 1279668847}
   - component: {fileID: 1279668846}
   - component: {fileID: 1279668845}
+  - component: {fileID: 1279668848}
   m_Layer: 5
   m_Name: ReadyBtn
   m_TagString: Untagged
@@ -1323,6 +1350,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1279668843}
   m_CullTransparentMesh: 1
+--- !u!114 &1279668848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279668843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac58a2506e6b424fa9b25e413d6f7a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButton
+  buttonEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  useScaleEffects: 1
+  hoverScale: 1.08
+  clickScale: 0.92
+  scaleInterpSpeed: 12
+  isHovering: 0
+  isClicking: 0
+  isInteractable: 1
+  useRotationEffects: 1
+  randomRotationAmount: 3
+  rotationInterpSpeed: 12
 --- !u!1 &1285632984
 GameObject:
   m_ObjectHideFlags: 0
@@ -1474,6 +1526,7 @@ GameObject:
   - component: {fileID: 1427156167}
   - component: {fileID: 1427156166}
   - component: {fileID: 1427156165}
+  - component: {fileID: 1427156168}
   m_Layer: 5
   m_Name: LeaveBtn
   m_TagString: Untagged
@@ -1595,6 +1648,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1427156163}
   m_CullTransparentMesh: 1
+--- !u!114 &1427156168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1427156163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac58a2506e6b424fa9b25e413d6f7a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButton
+  buttonEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  useScaleEffects: 1
+  hoverScale: 1.08
+  clickScale: 0.92
+  scaleInterpSpeed: 12
+  isHovering: 0
+  isClicking: 0
+  isInteractable: 1
+  useRotationEffects: 1
+  randomRotationAmount: 3
+  rotationInterpSpeed: 12
 --- !u!1 &1456465917
 GameObject:
   m_ObjectHideFlags: 0

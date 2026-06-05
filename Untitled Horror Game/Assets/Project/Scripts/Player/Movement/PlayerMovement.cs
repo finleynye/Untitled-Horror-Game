@@ -12,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private GameObject playerModel;
     [SerializeField] private Transform cameraHolder;
     [SerializeField] private Transform nametag;
+    [SerializeField] private PlayerInteraction playerInteraction; 
     private CharacterController _controller;
     private PlayerInput _playerInput;
     
@@ -21,13 +22,6 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float crouchSpeed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float coyoteTime;
-
-    [Header("Camera")] 
-    [SerializeField] private Camera playerCam;
-    [SerializeField] private float mouseSensitivity;
-    [SerializeField] private float defaultFOV;
-    [SerializeField] private float sprintFOV;
-    [SerializeField] private float fovSpeed;
     
     [Header("Stamina")]
     [SerializeField] private float maxStamina;
@@ -37,15 +31,15 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private Slider staminaSlider;
     
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
-    [SyncVar] private bool _isSprinting;
+    [SyncVar] public bool _isSprinting;
     
-    private float _currStamina;
+    private float _currentStamina;
     private float _regenDelayTimer;
     private bool _staminaExhausted; //stops sprint when true
 
     private Vector3 _velocity;
     private float _verticalRotation;
-    private Vector2 _moveInput;
+    [HideInInspector]public Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _coyoteTimer;
 
@@ -57,8 +51,11 @@ public class PlayerMovement : NetworkBehaviour
     {
         _controller = GetComponent<CharacterController>();
         playerModel.SetActive(false);
-        
-        _currStamina = maxStamina;
+
+        if (playerInteraction == null)
+            playerInteraction = GetComponent<PlayerInteraction>();
+
+        _currentStamina = maxStamina;
     }
     
     public override void OnStartAuthority()
@@ -72,7 +69,7 @@ public class PlayerMovement : NetworkBehaviour
         _playerInput.Player.Sprint.canceled += _ => StopSprint();
         _playerInput.Player.Crouch.started += _ => CmdSetCrouch(true);
         _playerInput.Player.Crouch.canceled += _ => CmdSetCrouch(false);
-        
+
         cameraHolder.gameObject.SetActive(true);
         _playerInput.Enable();
     }
@@ -86,7 +83,7 @@ public class PlayerMovement : NetworkBehaviour
         
         staminaSlider = GameObject.Find("Stamina").GetComponent<Slider>();
         staminaSlider.maxValue = maxStamina;
-        staminaSlider.value = _currStamina;
+        staminaSlider.value = _currentStamina;
     }
 
     private void Update()
@@ -107,9 +104,7 @@ public class PlayerMovement : NetworkBehaviour
         if (!isOwned) return;
         if (SceneManager.GetActiveScene().name == "Lobby") return;
         
-        if (!isPaused)
-            HandleRotation();
-        
+
         if (isFrozen)
         {
             _velocity = Vector3.zero; 
@@ -118,9 +113,7 @@ public class PlayerMovement : NetworkBehaviour
 
         HandleStamina();
         HandleMovement();
-        
-        if (!isPaused)
-            HandleFOV();
+        HandleInteraction();
     }
 
     private void HandleStamina()
@@ -130,12 +123,12 @@ public class PlayerMovement : NetworkBehaviour
         
         if (isDrainingStamina) //decrease stamina
         {
-            _currStamina -= staminaDrainRate * Time.deltaTime;
+            _currentStamina -= staminaDrainRate * Time.deltaTime;
             _regenDelayTimer = staminaRegenDelay;
 
-            if (_currStamina <= 0f)
+            if (_currentStamina <= 0f)
             {
-                _currStamina = 0;
+                _currentStamina = 0;
                 _staminaExhausted = true;
                 StopSprint();
             }
@@ -146,16 +139,17 @@ public class PlayerMovement : NetworkBehaviour
                 _regenDelayTimer -= Time.deltaTime;
             else
             {
-                _currStamina += staminaRegenRate * Time.deltaTime;
-                if (_currStamina >= maxStamina)
+                _currentStamina += staminaRegenRate * Time.deltaTime;
+                if (_currentStamina >= maxStamina)
                 {
-                    _currStamina = maxStamina;
+                    _currentStamina = maxStamina;
                     _staminaExhausted = false;
                 }
             }
         }
         //if(staminaSlider is not null)
-            staminaSlider.value = _currStamina;
+         //   staminaSlider.value = _currentStamina; 
+         //harvey sprint script hook here TODO
     }
     
     private void HandleMovement()
@@ -184,20 +178,17 @@ public class PlayerMovement : NetworkBehaviour
         _controller.Move(_velocity * Time.deltaTime);
     }
 
-    private void HandleRotation()
+    private void HandleInteraction()
     {
-        _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();
-        
-        var mouseX = _lookInput.x * mouseSensitivity;
-        var mouseY = _lookInput.y * mouseSensitivity;
-        
-        _verticalRotation -= mouseY;
-        _verticalRotation = Mathf.Clamp(_verticalRotation, -90f, 90f);
-        
-        cameraHolder.localRotation = Quaternion.Euler(_verticalRotation, 0f, 0f);
-        transform.Rotate(Vector3.up * mouseX);
-    }
+        if (playerInteraction == null)
+            return;
 
+        if (_playerInput == null)
+            return;
+
+        if (_playerInput.Player.Interact.WasPressedThisFrame())
+            playerInteraction.TryInteract();
+    }
     private void Jump()
     {
         if (_controller == null) return; //will throw errors without this, but still works regardless???
@@ -210,13 +201,6 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void HandleFOV()
-    {
-        var isMovingForward = _moveInput.y > 0.1f;
-        var targetFOV = _isSprinting && isMovingForward ? sprintFOV : defaultFOV;
-        
-        playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
-    }
 
     private void TryStartSprint()
     {

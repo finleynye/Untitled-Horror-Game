@@ -1,22 +1,24 @@
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using System.Collections;
 
 public class Generator : MonoBehaviour
 {
+    [Header("Generator Parts Requirements")]
+    [SerializeField] private int requiredParts = 4;
+    [SerializeField] private int requiredFuel = 1;
 
-
-    private int requiredParts = 4; //required total parts for fixing it
-    private int requiredFuel = 1; //required fuel for turning on generator
-
-    private int currentParts = 0; 
-    private int currentFuel = 0; 
+    private int currentParts = 0;
+    private int currentFuel = 0;
 
     private bool hasGeneratorStarted = false;
+    private bool isShaking = false;
 
     [Header("References")]
     [SerializeField] private Interactable generatorInteractable;
     [SerializeField] private GameObject generatorLight;
+    [SerializeField] private ParticleSystem smokeParticles;
     [SerializeField] private TMP_Text progressText;
     [SerializeField] private TMP_Text errorText;
 
@@ -24,12 +26,13 @@ public class Generator : MonoBehaviour
     public UnityEvent onMissingParts;
     public UnityEvent onMissingFuel;
     public UnityEvent onGeneratorStarted;
-    public UnityEvent OnGeneratorAlreadyRunning;
+    public UnityEvent onGeneratorAlreadyRunning;
 
     [Header("Text Progress Colour")]
     public Color onMissingPartsColour = Color.red;
     public Color onMissingFuelColour = Color.orange;
-    public Color OnCompletionColour = Color.green;
+    public Color onCompletionColour = Color.green;
+    public Color normalTextColour = Color.white;
 
     [Header("Audio Cues & Ambience")]
     public AudioSource au_generator;
@@ -37,95 +40,131 @@ public class Generator : MonoBehaviour
     public AudioClip addFuelSound;
     public AudioClip addPartSound;
 
+    [Header("Shake Settings")]
+    [SerializeField] private float shakeDuration = 1f;
+    [SerializeField] private float shakeAmount = 0.04f;
 
-    void Start()
+    private void Start()
     {
-        
-        if(generatorLight != null)
+        if (smokeParticles == null)
+            smokeParticles = GetComponentInChildren<ParticleSystem>();
+
+        //generator starts off
+        if (generatorLight != null)
             generatorLight.SetActive(false);
+
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
     }
+
     public void AddGeneratorPart()
     {
-       if(hasGeneratorStarted) return;
+        if (hasGeneratorStarted) return;
 
-       currentParts++;
+        currentParts++;
 
-        if(currentParts > requiredParts)
+        if (currentParts > requiredParts)
             currentParts = requiredParts;
 
-        au_generator.PlayOneShot(addPartSound);
-        UpdateGeneratorUI();
-        UpdateGeneratorUI();
-    }
+        if (au_generator != null && addPartSound != null)
+            au_generator.PlayOneShot(addPartSound);
 
+        if (errorText != null)
+            errorText.text = "";
+
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
 
     public void AddFuel()
     {
         if (hasGeneratorStarted) return;
-        
+
         currentFuel++;
 
-        if(currentFuel > requiredFuel)
+        if (currentFuel > requiredFuel)
             currentFuel = requiredFuel;
 
+        if (au_generator != null && addFuelSound != null)
+            au_generator.PlayOneShot(addFuelSound);
 
-        au_generator.PlayOneShot(addFuelSound);
+        if (errorText != null)
+            errorText.text = "";
+
         UpdateGeneratorUI();
-        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
     }
 
     public void TryStartGenerator()
     {
-        Debug.Log("Trying generator. Parts: " + currentParts + "/" + requiredParts +
-          " Fuel: " + currentFuel + "/" + requiredFuel);
+        ShakeGenerator();
 
+        //if generator is already running
         if (hasGeneratorStarted)
         {
-            OnGeneratorAlreadyRunning?.Invoke();
-            progressText.color = OnCompletionColour;
+            onGeneratorAlreadyRunning?.Invoke();
+
+            if (errorText != null)
+                errorText.text = "Generator is already running.";
+
             return;
         }
 
+        //if not enough parts
         if (currentParts < requiredParts)
         {
-            Debug.Log("Generator needs more parts.");
             onMissingParts?.Invoke();
-            progressText.color = onMissingPartsColour;
+
+            if (errorText != null)
+                errorText.text = "Missing generator parts.";
+
             UpdateGeneratorUIPrompt();
             return;
         }
 
+        //if not enough fuel
         if (currentFuel < requiredFuel)
         {
-            Debug.Log("Generator needs fuel.");
             onMissingFuel?.Invoke();
-            progressText.color = onMissingFuelColour;
+
+            if (errorText != null)
+                errorText.text = "Missing fuel.";
+
             UpdateGeneratorUIPrompt();
             return;
         }
 
         StartGenerator();
     }
+
     public void StartGenerator()
     {
         hasGeneratorStarted = true;
 
-        if (generatorLight == null)
+        if (generatorLight != null)
             generatorLight.SetActive(true);
 
-        progressText.color = OnCompletionColour;
+        if (smokeParticles != null)
+            smokeParticles.Stop();
+
+        if (au_generator != null && runningSound != null)
+        {
+            au_generator.clip = runningSound;
+            au_generator.loop = true;
+            au_generator.Play();
+        }
+
+        errorText.text = "";
 
         if (generatorInteractable != null)
         {
             generatorInteractable.interactionPrompt = "Generator Started";
             generatorInteractable.isReusable = false;
         }
-
         UpdateGeneratorUI();
 
         onGeneratorStarted?.Invoke();
     }
-
 
     //helper methods for completion events
     public bool IsGeneratorStarted()
@@ -143,9 +182,48 @@ public class Generator : MonoBehaviour
         return currentFuel >= requiredFuel;
     }
 
+    private void ShakeGenerator()
+    {
+        if (isShaking) return;
+
+        StartCoroutine(ShakeGeneratorRoutine());
+    }
+
+    private IEnumerator ShakeGeneratorRoutine()
+    {
+        isShaking = true;
+
+        float timer = 0f;
+
+        //save the generator position when the shake starts
+        Vector3 originalPosition = transform.localPosition;
+
+        while (timer < shakeDuration)
+        {
+            //shake all axis randomly
+            float randomX = Random.Range(-shakeAmount, shakeAmount); 
+            float randomY = Random.Range(-shakeAmount, shakeAmount);
+            float randomZ = Random.Range(-shakeAmount, shakeAmount);
+
+            transform.localPosition = originalPosition + new Vector3(randomX, randomY, randomZ);
+
+            timer += Time.deltaTime;
+
+            yield return null;
+        }
+
+        //return to the position it had before this specific shake
+        transform.localPosition = originalPosition;
+
+        isShaking = false;
+
+        if (smokeParticles != null && !hasGeneratorStarted)
+            smokeParticles.Play();
+    }
+
     private void UpdateGeneratorUI()
     {
-        if (progressText != null) return;
+        if (progressText == null) return;
 
         if (hasGeneratorStarted)
         {
@@ -153,8 +231,7 @@ public class Generator : MonoBehaviour
             return;
         }
 
-        progressText.text = $"Current Parts: {currentParts} / {requiredParts}" + $"Current Fuel: {currentFuel} / {requiredFuel}"; //displays a UI prompt with the current parts
-                                                                                                                                 //out of the max available parts for machen and also current fuel and max fuel
+        progressText.text = $"Current Parts: {currentParts} / {requiredParts}\n" + $"Current Fuel: {currentFuel} / {requiredFuel}"; //on a new line now rather than before it was cramped with no space
     }
 
     private void UpdateGeneratorUIPrompt()
@@ -167,17 +244,19 @@ public class Generator : MonoBehaviour
             return;
         }
 
-        if(currentParts < requiredParts)
+        if (currentParts < requiredParts)
         {
             generatorInteractable.interactionPrompt = "Needs Parts...";
             return;
         }
 
-        if(currentFuel < requiredFuel)
+        if (currentFuel < requiredFuel)
         {
             generatorInteractable.interactionPrompt = "Needs Fuel...";
+            return;
         }
 
         generatorInteractable.interactionPrompt = "Start Generator";
     }
+
 }
