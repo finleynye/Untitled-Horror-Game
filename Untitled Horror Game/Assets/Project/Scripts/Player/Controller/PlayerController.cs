@@ -3,6 +3,15 @@ using Mirror;
 using Steamworks;
 using UnityEngine.SceneManagement;
 
+public enum PlayerRole
+{
+    Unassigned, //default role until host randomly assigns them/people manually assign them?? (maybe)
+    Role1,
+    Role2,
+    Role3,
+    Role4,
+    Killer
+}
 
 public class PlayerController : NetworkBehaviour
 {
@@ -11,6 +20,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar] public ulong steamID;
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
+    [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
     
     private static bool InLobby => SceneManager.GetActiveScene().name == "Lobby";
     public event System.Action<string> OnNameChanged;
@@ -90,6 +100,14 @@ public class PlayerController : NetworkBehaviour
         if (isServer)
             ready = newReady;
         if (isClient && InLobby)
+            LobbyController.Instance.UpdateUserList();
+    }
+
+    private void OnRoleChanged(PlayerRole oldRole, PlayerRole newRole)
+    {
+        if(isServer)
+            role = newRole;
+        if(isClient && isOwned && InLobby)
             LobbyController.Instance.UpdateUserList();
     }
     

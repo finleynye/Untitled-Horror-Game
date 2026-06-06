@@ -12,13 +12,14 @@ public class UserInfo : MonoBehaviour
     
     public TMP_Text userNameText;
     public TMP_Text userNameTextOutline;
+    public TMP_Text role;
+    public PlayerRole playerRole;
     public RawImage userIcon;
     public Image readyIcon;
     public bool isReady;
 
     public Sprite greenTick;
     public Sprite redCross;
-
     public Button readyBtn;
     
     protected Callback<AvatarImageLoaded_t> IconLoaded;
@@ -36,6 +37,8 @@ public class UserInfo : MonoBehaviour
         UpdateReadyState();
         
         readyBtn.gameObject.SetActive(steamID == SteamUser.GetSteamID().m_SteamID);
+        role.gameObject.SetActive(steamID == SteamUser.GetSteamID().m_SteamID);
+        role.text = playerRole == PlayerRole.Unassigned ? "Unassigned" : playerRole.ToString();
         
         if(!_iconReceived) 
             GetUserIcon();

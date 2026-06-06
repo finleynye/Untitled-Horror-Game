@@ -174,10 +174,10 @@ public class CameraMovement : NetworkBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        
+        _playerInput?.Disable();
     }
-
-
-
+    
     private void SetCursorState()
     {
         if (unlockCursor)
