@@ -12,19 +12,43 @@ public class PlayerInteraction : NetworkBehaviour
     public bool isPaused;
     public bool isFrozen;
 
+    public Interactable CurrentInteractable => currentInteractable;
+
+    private void Update()
+    {
+        if (!isOwned) return;
+
+        UpdateCurrentInteractable();
+    }
+
+    private void UpdateCurrentInteractable()
+    {
+        if (isPaused || isFrozen)
+        {
+            currentInteractable = null;
+            return;
+        }
+
+        currentInteractable = FindClosestInteractable();
+    }
+
     public void TryInteract()
     {
         if (!isOwned) return;
         if (isPaused || isFrozen) return;
 
-        currentInteractable = FindClosestInteractable();
+        UpdateCurrentInteractable();
 
         if (currentInteractable == null)
             return;
-        
+
+        if (!currentInteractable.CanShowPrompt())
+            return;
+
         NetworkIdentity targetIdentity = currentInteractable.GetComponentInParent<NetworkIdentity>();
 
-        if (targetIdentity == null) return;
+        if (targetIdentity == null)
+            return;
 
         CmdTryInteract(targetIdentity);
     }
@@ -44,6 +68,9 @@ public class PlayerInteraction : NetworkBehaviour
                 interactable = hit.GetComponentInParent<Interactable>();
 
             if (interactable == null)
+                continue;
+
+            if (!interactable.CanShowPrompt())
                 continue;
 
             float distance = Vector3.Distance(transform.position, interactable.transform.position);
@@ -71,7 +98,7 @@ public class PlayerInteraction : NetworkBehaviour
 
         if (distance > interactionCheckRadius)
             return;
-        
+
         interactable.ServerInteract();
     }
 }

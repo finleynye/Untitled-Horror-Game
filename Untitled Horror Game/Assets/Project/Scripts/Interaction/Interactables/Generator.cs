@@ -53,6 +53,11 @@ public class Generator : NetworkBehaviour
     [SerializeField] private float failSoundVolume = 1f;
     [SerializeField] private float hissDelay = 0.6f;
 
+    [Header("Interaction Cooldown")]
+    [SerializeField] private float startAttemptCooldown = 1.2f;
+
+    private double nextAllowedStartAttemptTime = 0;
+
     [Header("Shake Settings")]
     [SerializeField] private float shakeDuration = 1f;
     [SerializeField] private float shakeAmount = 0.04f;
@@ -105,6 +110,10 @@ public class Generator : NetworkBehaviour
     [Server]
     public void TryStartGenerator()
     {
+        //stops players spamming E and stacking sounds / smoke / shake
+        if (!CanTryStartGenerator())
+            return;
+
         if (hasGeneratorStarted)
         {
             InvokeGeneratorAlreadyRunningEvent();
@@ -173,6 +182,16 @@ public class Generator : NetworkBehaviour
     public bool IsGeneratorStarted()
     {
         return hasGeneratorStarted;
+    }
+
+    [Server]
+    private bool CanTryStartGenerator()
+    {
+        if (NetworkTime.time < nextAllowedStartAttemptTime)
+            return false;
+
+        nextAllowedStartAttemptTime = NetworkTime.time + startAttemptCooldown;
+        return true;
     }
 
     public bool HasAllTheParts()

@@ -1,9 +1,10 @@
+using Mirror;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AudioSource))]
-public class CatNPC : MonoBehaviour
+public class CatNPC : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
@@ -37,8 +38,9 @@ public class CatNPC : MonoBehaviour
     private float waitTimer;
     private float soundTimer;
 
+    [SyncVar] private bool isWalking;
+    [SyncVar] private bool isSitting;
     private bool isWaiting;
-    private bool isSitting;
 
     private void Awake()
     {
@@ -50,10 +52,26 @@ public class CatNPC : MonoBehaviour
 
         if (catAudioSource == null)
             catAudioSource = GetComponent<AudioSource>();
+    }
 
+    public override void OnStartServer()
+    {
+        //only the server controls the cat brain
+        agent.enabled = true;
         agent.speed = walkSpeed;
         agent.stoppingDistance = stoppingDistance;
         agent.updateRotation = false;
+
+        ResetSoundTimer();
+        PickNewDestination();
+    }
+
+    public override void OnStartClient()
+    {
+        //clients receive the car movement through NetworkTransform
+        //the server is the only object that should calculate navmesh movement
+        if (!isServer && agent != null)
+            agent.enabled = false;
     }
 
     private void Start()
@@ -64,12 +82,18 @@ public class CatNPC : MonoBehaviour
 
     private void Update()
     {
-        HandleMovement();
-        HandleRotation();
+        if (isServer)
+        {
+            HandleMovement();
+            HandleRotation();
+            HandleRandomSound();
+            UpdateServerAnimationState();
+        }
+
         HandleAnimation();
-        HandleRandomSound();
     }
 
+    [Server]
     //random navigation
     private void HandleMovement()
     {
@@ -93,6 +117,7 @@ public class CatNPC : MonoBehaviour
             StartWaiting();
     }
 
+    [Server]
     //picks a random direction from its wander radius
     private void PickNewDestination()
     {
@@ -110,6 +135,8 @@ public class CatNPC : MonoBehaviour
             StartWaiting();
         
     }
+
+    [Server]
     //waits between a random time (2s to 5s)
     private void StartWaiting()
     {
@@ -123,6 +150,7 @@ public class CatNPC : MonoBehaviour
         isSitting = Random.value <= sitChance;
     }
 
+    [Server]
     private void StopWaiting()
     {
         isWaiting = false;
@@ -132,6 +160,7 @@ public class CatNPC : MonoBehaviour
             agent.isStopped = false;
     }
 
+    [Server]
     private void HandleRotation()
     {
         if (agent == null)
@@ -154,18 +183,25 @@ public class CatNPC : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
     }
 
-    //walk if moving, sit if isSitting true
+    [Server]
+    private void UpdateServerAnimationState()
+    {
+        if (agent == null)
+            return;
+
+        isWalking = agent.velocity.magnitude > 0.1f && !isWaiting;
+    }
+
     private void HandleAnimation()
     {
         if (animator == null)
             return;
 
-        bool isMoving = agent.velocity.magnitude > 0.1f && !isWaiting;
-
-        animator.SetBool("isWalking", isMoving);
+        animator.SetBool("isWalking", isWalking);
         animator.SetBool("isSitting", isSitting);
     }
 
+    [Server]
     private void HandleRandomSound()
     {
         if (catAudioSource == null)
@@ -176,38 +212,43 @@ public class CatNPC : MonoBehaviour
         if (soundTimer > 0f)
             return;
 
-        PlayCatSound();
+        PlayCatClip(meowClip, audioVolume);
         ResetSoundTimer();
     }
 
-    private void PlayCatSound()
+    [Server]
+    private void ResetSoundTimer()
     {
-        //if sitting, purr instead of meow
-        if (isSitting && purrClip != null)
-        {
-            catAudioSource.PlayOneShot(purrClip, audioVolume);
-            return;
-        }
-
-        if (meowClip != null)
-            catAudioSource.PlayOneShot(meowClip, audioVolume);
+        soundTimer = Random.Range(soundTimeMin, soundTimeMax);
     }
 
+    [ClientRpc]
+    private void RpcPlayMeow()
+    {
+        PlayCatClip(meowClip, audioVolume);
+    }
+
+    [ClientRpc]
+    private void RpcPlayPurr()
+    {
+        PlayCatClip(purrClip, audioVolume);
+    }
+
+    //animation event on the walk animation for sound
     public void PlayFootstepSound()
+    {
+        PlayCatClip(footstepClip, footstepVolume);
+    }
+
+    private void PlayCatClip(AudioClip clip, float volume)
     {
         if (catAudioSource == null)
             return;
 
-        if (footstepClip == null)
+        if (clip == null)
             return;
 
-        catAudioSource.PlayOneShot(footstepClip, footstepVolume);
-    }
-
-    //a random time between (5s to 14s) of when it plays a sound
-    private void ResetSoundTimer()
-    {
-        soundTimer = Random.Range(soundTimeMin, soundTimeMax);
+        catAudioSource.PlayOneShot(clip, volume);
     }
 
 }

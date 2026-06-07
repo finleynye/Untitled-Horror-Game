@@ -32,6 +32,10 @@ public class CameraMovement : NetworkBehaviour
     [SerializeField] private Volume playerVolume;
     private Vignette vignette;
 
+    [Header("Render Texture")]
+    [SerializeField] private RenderTexture cameraRenderTexture;
+    [SerializeField] private bool useRenderTexture = true;
+
     [Header("Exhausted Vignette")]
     [SerializeField] private float normalVignetteIntensity = 0.2f;
     [SerializeField] private float exhaustedVignetteMin = 0.35f; //minimum for exhausted vignette amount
@@ -86,12 +90,12 @@ public class CameraMovement : NetworkBehaviour
         //only this players own camera turns on
         SetCameraState(true);
 
+        SetCameraRenderTexture();
+
         _playerInput = new PlayerInput();
         _playerInput.Enable();
 
-        SetCameraState(true);
         SetCursorState();
-
     }
     void Update()
     {
@@ -152,7 +156,7 @@ public class CameraMovement : NetworkBehaviour
         if (playerStamina == null) return;
         if (playerMovement.isPaused) return;
 
-        // read look input directly from the input actions
+        //read look input directly from the input actions
         _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();
 
         float mouseX = _lookInput.x * mouseSensitivity;
@@ -179,14 +183,17 @@ public class CameraMovement : NetworkBehaviour
 
     public override void OnStopAuthority()
     {
+        if (playerCam != null)
+            playerCam.targetTexture = null;
+
         SetCameraState(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        
+
         _playerInput?.Disable();
     }
-    
+
     private void SetCursorState()
     {
         if (unlockCursor)
@@ -199,5 +206,21 @@ public class CameraMovement : NetworkBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    private void SetCameraRenderTexture()
+    {
+        if (playerCam == null)
+            return;
+
+        if (!useRenderTexture)
+        {
+            playerCam.targetTexture = null;
+            return;
+        }
+
+        if (cameraRenderTexture == null) return;
+       
+        playerCam.targetTexture = cameraRenderTexture;
     }
 }
