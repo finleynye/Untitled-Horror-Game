@@ -9,8 +9,15 @@ public class PlayerStaminaUI : MonoBehaviour
     public Image wheelRed, wheelGreen;
     public bool showStaminaText;
 
+    [Header("Canvas")]
+    [SerializeField] private Canvas staminaCanvas;
+
     void Start()
     {
+
+        if (staminaCanvas == null)
+            staminaCanvas = GetComponent<Canvas>();
+
         if(playerStamina == null)
             FindLocalPlayerStamina();
     }
@@ -48,6 +55,16 @@ public class PlayerStaminaUI : MonoBehaviour
             if (stamina.isOwned)
             {
                 playerStamina = stamina;
+
+                Camera localCamera = stamina.GetComponentInChildren<Camera>(true);
+
+                if (localCamera != null && staminaCanvas != null)
+                {
+                    staminaCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    staminaCanvas.worldCamera = localCamera;
+                    staminaCanvas.planeDistance = 1f;
+                }
+
                 return;
             }
         }

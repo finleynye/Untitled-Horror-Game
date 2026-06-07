@@ -5191,7 +5191,7 @@ GameObject:
   - component: {fileID: 3782275176281903990}
   - component: {fileID: 5253771878285025915}
   - component: {fileID: 6235208176009631049}
-  - component: {fileID: 3194648009169205231}
+  - component: {fileID: 5098146096239414185}
   m_Layer: 7
   m_Name: Generator
   m_TagString: Untagged
@@ -5321,6 +5321,11 @@ MonoBehaviour:
   runningSound: {fileID: 8300000, guid: 81a974ee36ddd414d93f6abe3d0ff1a0, type: 3}
   addFuelSound: {fileID: 8300000, guid: f0a80768edb04f1438720bd528ec3a11, type: 3}
   addPartSound: {fileID: 8300000, guid: 5be2601f59668b2468f89857717e8abb, type: 3}
+  missingPartsErrorSound: {fileID: 8300000, guid: 67c4fed3fa163e9418d8d206158adb3d, type: 3}
+  missingFuelHissSound: {fileID: 8300000, guid: ceef49c939206564c9ec1e911d9ba408, type: 3}
+  tryStartGenerator: {fileID: 8300000, guid: 3da396a18e71b8541ab1914b84b20442, type: 3}
+  failSoundVolume: 1
+  hissDelay: 0.3
   shakeDuration: 1
   shakeAmount: 0.04
 --- !u!54 &6235208176009631049
@@ -5350,7 +5355,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &3194648009169205231
+--- !u!114 &5098146096239414185
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

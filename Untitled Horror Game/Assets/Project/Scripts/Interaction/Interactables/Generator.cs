@@ -46,6 +46,13 @@ public class Generator : NetworkBehaviour
     public AudioClip addFuelSound;
     public AudioClip addPartSound;
 
+    [Header("Fail Feedback Audio")]
+    [SerializeField] private AudioClip missingPartsErrorSound;
+    [SerializeField] private AudioClip missingFuelHissSound;
+    [SerializeField] private AudioClip tryStartGenerator;
+    [SerializeField] private float failSoundVolume = 1f;
+    [SerializeField] private float hissDelay = 0.6f;
+
     [Header("Shake Settings")]
     [SerializeField] private float shakeDuration = 1f;
     [SerializeField] private float shakeAmount = 0.04f;
@@ -307,6 +314,17 @@ public class Generator : NetworkBehaviour
             errorText.text = "";
     }
 
+    private void PlayGeneratorOneShot(AudioClip clip, float volume)
+    {
+        if (au_generator == null)
+            return;
+
+        if (clip == null)
+            return;
+
+        au_generator.PlayOneShot(clip, volume);
+    }
+
     [ClientRpc]
     private void RpcPlayAddPartFeedback()
     {
@@ -336,6 +354,12 @@ public class Generator : NetworkBehaviour
             errorText.color = onMissingPartsColour;
         }
 
+        //failed start: error noise, smoke, and shake
+        PlayGeneratorOneShot(missingPartsErrorSound, failSoundVolume);
+
+        if (smokeParticles != null)
+            smokeParticles.Play();
+
         ShakeGenerator();
         UpdateGeneratorUIPrompt();
     }
@@ -348,6 +372,11 @@ public class Generator : NetworkBehaviour
             errorText.text = "Missing fuel.";
             errorText.color = onMissingFuelColour;
         }
+
+        //no fuel shake and hiss sound
+        PlayGeneratorOneShot(tryStartGenerator, failSoundVolume);
+
+        StartCoroutine(PlayHissAfterDelay());
 
         ShakeGenerator();
         UpdateGeneratorUIPrompt();
@@ -371,5 +400,12 @@ public class Generator : NetworkBehaviour
         ApplyGeneratorStartedVisuals();
         UpdateGeneratorUI();
         UpdateGeneratorUIPrompt();
+    }
+
+    private IEnumerator PlayHissAfterDelay()
+    {
+        yield return new WaitForSeconds(hissDelay);
+
+        PlayGeneratorOneShot(missingFuelHissSound, failSoundVolume);
     }
 }

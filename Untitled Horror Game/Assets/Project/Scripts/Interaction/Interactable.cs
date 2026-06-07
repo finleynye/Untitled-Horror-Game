@@ -117,10 +117,7 @@ public class Interactable : NetworkBehaviour
         if (interactWidget == null)
             return;
 
-        bool canShowPrompt =
-            isNearInteractable &&
-            isInteractable &&
-            (!hasInteracted || isReusable);
+        bool canShowPrompt = isNearInteractable && isInteractable && (!hasInteracted || isReusable);
 
         interactWidget.SetActive(canShowPrompt);
     }
