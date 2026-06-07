@@ -38,7 +38,7 @@ public class CatNPC : NetworkBehaviour
     private float waitTimer;
     private float soundTimer;
 
-    [SyncVar] private bool isWalking;
+    [SyncVar] private float syncedSpeed;
     [SyncVar] private bool isSitting;
     private bool isWaiting;
 
@@ -72,12 +72,6 @@ public class CatNPC : NetworkBehaviour
         //the server is the only object that should calculate navmesh movement
         if (!isServer && agent != null)
             agent.enabled = false;
-    }
-
-    private void Start()
-    {
-        ResetSoundTimer();
-        PickNewDestination();
     }
 
     private void Update()
@@ -189,30 +183,40 @@ public class CatNPC : NetworkBehaviour
         if (agent == null)
             return;
 
-        isWalking = agent.velocity.magnitude > 0.1f && !isWaiting;
+        if (isWaiting || isSitting)
+        {
+            syncedSpeed = 0f;
+            return;
+        }
+
+        //normalises the navmesh speed into a 0 to 1 blend tree value
+        syncedSpeed = agent.velocity.magnitude / walkSpeed;
+        syncedSpeed = Mathf.Clamp01(syncedSpeed);
     }
+
 
     private void HandleAnimation()
     {
         if (animator == null)
             return;
 
-        animator.SetBool("isWalking", isWalking);
+        animator.SetFloat("Speed", syncedSpeed);
         animator.SetBool("isSitting", isSitting);
     }
 
     [Server]
     private void HandleRandomSound()
     {
-        if (catAudioSource == null)
-            return;
-
         soundTimer -= Time.deltaTime;
 
         if (soundTimer > 0f)
             return;
 
-        PlayCatClip(meowClip, audioVolume);
+        if (isSitting)
+            RpcPlayPurr();
+        else
+            RpcPlayMeow();
+
         ResetSoundTimer();
     }
 

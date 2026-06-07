@@ -204,6 +204,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34fac8ae3764fdd4990609c43496b53f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatNPC
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   agent: {fileID: 1089936342006312085}
   animator: {fileID: 4659851324103915643}
   catAudioSource: {fileID: 0}
