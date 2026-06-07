@@ -28,7 +28,7 @@ public class Generator : NetworkBehaviour
     [SerializeField] private TMP_Text progressText;
     [SerializeField] private TMP_Text errorText;
 
-    [Header("Events")]
+    [Header("Server Events")]
     public UnityEvent onMissingParts;
     public UnityEvent onMissingFuel;
     public UnityEvent onGeneratorStarted;
@@ -55,7 +55,7 @@ public class Generator : NetworkBehaviour
         if (smokeParticles == null)
             smokeParticles = GetComponentInChildren<ParticleSystem>();
 
-        //generator starts off
+        // generator starts off
         if (generatorLight != null)
             generatorLight.SetActive(false);
 
@@ -73,11 +73,7 @@ public class Generator : NetworkBehaviour
         if (currentParts > requiredParts)
             currentParts = requiredParts;
 
-        if (au_generator != null && addPartSound != null)
-            au_generator.PlayOneShot(addPartSound);
-
-        if (errorText != null)
-            errorText.text = "";
+        RpcPlayAddPartFeedback();
 
         UpdateGeneratorUI();
         UpdateGeneratorUIPrompt();
@@ -93,11 +89,7 @@ public class Generator : NetworkBehaviour
         if (currentFuel > requiredFuel)
             currentFuel = requiredFuel;
 
-        if (au_generator != null && addFuelSound != null)
-            au_generator.PlayOneShot(addFuelSound);
-
-        if (errorText != null)
-            errorText.text = "";
+        RpcPlayAddFuelFeedback();
 
         UpdateGeneratorUI();
         UpdateGeneratorUIPrompt();
@@ -106,40 +98,27 @@ public class Generator : NetworkBehaviour
     [Server]
     public void TryStartGenerator()
     {
-        ShakeGenerator();
-
-        //if generator is already running
         if (hasGeneratorStarted)
         {
-            onGeneratorAlreadyRunning?.Invoke();
+            InvokeGeneratorAlreadyRunningEvent();
 
-            if (errorText != null)
-                errorText.text = "Generator is already running.";
-
+            RpcAlreadyRunningFeedback();
             return;
         }
 
-        //if not enough parts
         if (currentParts < requiredParts)
         {
-            onMissingParts?.Invoke();
+            InvokeMissingPartsEvent();
 
-            if (errorText != null)
-                errorText.text = "Missing generator parts.";
-
-            UpdateGeneratorUIPrompt();
+            RpcMissingPartsFeedback();
             return;
         }
 
-        //if not enough fuel
         if (currentFuel < requiredFuel)
         {
-            onMissingFuel?.Invoke();
+            InvokeMissingFuelEvent();
 
-            if (errorText != null)
-                errorText.text = "Missing fuel.";
-
-            UpdateGeneratorUIPrompt();
+            RpcMissingFuelFeedback();
             return;
         }
 
@@ -149,11 +128,38 @@ public class Generator : NetworkBehaviour
     [Server]
     public void StartGenerator()
     {
+        if (hasGeneratorStarted) return;
+
         hasGeneratorStarted = true;
 
-        RpcGeneratorStartedEffects();
+        InvokeGeneratorStartedEvent();
 
+        RpcGeneratorStartedEffects();
+    }
+
+    //server event wrappers (these events are server only, used for objective logic and game states)
+    [Server]
+    private void InvokeMissingPartsEvent()
+    {
+        onMissingParts?.Invoke();
+    }
+
+    [Server]
+    private void InvokeMissingFuelEvent()
+    {
+        onMissingFuel?.Invoke();
+    }
+
+    [Server]
+    private void InvokeGeneratorStartedEvent()
+    {
         onGeneratorStarted?.Invoke();
+    }
+
+    [Server]
+    private void InvokeGeneratorAlreadyRunningEvent()
+    {
+        onGeneratorAlreadyRunning?.Invoke();
     }
 
     //helper methods for completion events
@@ -185,13 +191,12 @@ public class Generator : NetworkBehaviour
 
         float timer = 0f;
 
-        //save the generator position when the shake starts
+        //shake around the current local position, then return to it
         Vector3 originalPosition = transform.localPosition;
 
         while (timer < shakeDuration)
         {
-            //shake all axis randomly
-            float randomX = Random.Range(-shakeAmount, shakeAmount); 
+            float randomX = Random.Range(-shakeAmount, shakeAmount);
             float randomY = Random.Range(-shakeAmount, shakeAmount);
             float randomZ = Random.Range(-shakeAmount, shakeAmount);
 
@@ -202,7 +207,6 @@ public class Generator : NetworkBehaviour
             yield return null;
         }
 
-        //return to the position it had before this specific shake
         transform.localPosition = originalPosition;
 
         isShaking = false;
@@ -218,10 +222,15 @@ public class Generator : NetworkBehaviour
         if (hasGeneratorStarted)
         {
             progressText.text = "Generator Online";
+            progressText.color = onCompletionColour;
             return;
         }
 
-        progressText.text = $"Current Parts: {currentParts} / {requiredParts}\n" + $"Current Fuel: {currentFuel} / {requiredFuel}"; //on a new line now rather than before it was cramped with no space
+        progressText.color = normalTextColour;
+
+        progressText.text =
+            $"Current Parts: {currentParts} / {requiredParts}\n" +
+            $"Current Fuel: {currentFuel} / {requiredFuel}";
     }
 
     private void UpdateGeneratorUIPrompt()
@@ -270,6 +279,7 @@ public class Generator : NetworkBehaviour
             ApplyGeneratorStartedVisuals();
     }
 
+    //runs feedback on every client
     private void ApplyGeneratorStartedVisuals()
     {
         if (generatorLight != null)
@@ -295,6 +305,64 @@ public class Generator : NetworkBehaviour
 
         if (errorText != null)
             errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcPlayAddPartFeedback()
+    {
+        if (au_generator != null && addPartSound != null)
+            au_generator.PlayOneShot(addPartSound);
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcPlayAddFuelFeedback()
+    {
+        if (au_generator != null && addFuelSound != null)
+            au_generator.PlayOneShot(addFuelSound);
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcMissingPartsFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Missing generator parts.";
+            errorText.color = onMissingPartsColour;
+        }
+
+        ShakeGenerator();
+        UpdateGeneratorUIPrompt();
+    }
+
+    [ClientRpc]
+    private void RpcMissingFuelFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Missing fuel.";
+            errorText.color = onMissingFuelColour;
+        }
+
+        ShakeGenerator();
+        UpdateGeneratorUIPrompt();
+    }
+
+    [ClientRpc]
+    private void RpcAlreadyRunningFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Generator is already running.";
+            errorText.color = onCompletionColour;
+        }
+
+        UpdateGeneratorUIPrompt();
     }
 
     [ClientRpc]
