@@ -1,12 +1,13 @@
 using Mirror;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(AudioSource))]
 public class FootstepSoundSystem : NetworkBehaviour
 {
     [Header("Refs")]
     [SerializeField] private CharacterController characterController;
     [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private AudioSource footstepAudioSource;
 
     [Header("Step Distance")]
     [SerializeField] private float walkStepDistance = 0.8f;
@@ -16,22 +17,50 @@ public class FootstepSoundSystem : NetworkBehaviour
     [SerializeField] private float minStepDelay = 0.25f;
     private float stepDelayTimer;
 
-    [Header("Audio")]
-    [SerializeField] private SoundType footstepSound = SoundType.FOOTSTEP;
+    [Header("Footstep Audio")]
+    [SerializeField] private AudioClip[] footstepClips;
     [SerializeField] private float footstepVolume = 1f;
 
+    [Header("Jump & Land Audio")]
+    [SerializeField] private AudioClip jumpClip;
+    [SerializeField] private AudioClip landClip;
+    [SerializeField] private float jumpVolume = 1f;
+    [SerializeField] private float landVolume = 1f;
+
+    [Header("Pitch")]
+    [SerializeField] private float minPitch = 0.9f;
+    [SerializeField] private float maxPitch = 1.1f;
+
+    private Transform playerRoot;
     private Vector3 lastPosition;
     private float distanceTravelled;
 
-    private void Start()
+    private bool wasGroundedLastFrame;
+
+    private void Awake()
     {
-        if (characterController == null)
-            characterController = GetComponent<CharacterController>();
+        if (footstepAudioSource == null)
+            footstepAudioSource = GetComponent<AudioSource>();
 
         if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
+            playerMovement = GetComponentInParent<PlayerMovement>();
 
-        lastPosition = transform.position;
+        if (characterController == null)
+            characterController = GetComponentInParent<CharacterController>();
+
+        if (playerMovement != null)
+            playerRoot = playerMovement.transform;
+        else
+            playerRoot = transform.root;
+    }
+
+    private void Start()
+    {
+        if (playerRoot != null)
+            lastPosition = playerRoot.position;
+
+        if (characterController != null)
+            wasGroundedLastFrame = characterController.isGrounded;
     }
 
     private void Update()
@@ -39,8 +68,12 @@ public class FootstepSoundSystem : NetworkBehaviour
         if (!isOwned)
             return;
 
+        if (playerRoot == null)
+            return;
+
         stepDelayTimer -= Time.deltaTime;
 
+        HandleLanding();
         HandleFootsteps();
     }
 
@@ -52,22 +85,19 @@ public class FootstepSoundSystem : NetworkBehaviour
         if (playerMovement == null)
             return;
 
-        //only play footsteps while grounded
-        if (characterController.isGrounded == false)
+        if (!characterController.isGrounded)
         {
-            lastPosition = transform.position;
+            lastPosition = playerRoot.position;
             distanceTravelled = 0f;
             return;
         }
 
-        //only count horizontal movement
-        Vector3 currentPosition = transform.position;
+        Vector3 currentPosition = playerRoot.position;
         Vector3 horizontalMovement = currentPosition - lastPosition;
         horizontalMovement.y = 0f;
 
         float movementAmount = horizontalMovement.magnitude;
 
-        //ignore tiny movement jitter
         if (movementAmount <= 0.001f)
         {
             lastPosition = currentPosition;
@@ -89,6 +119,20 @@ public class FootstepSoundSystem : NetworkBehaviour
         lastPosition = currentPosition;
     }
 
+    private void HandleLanding()
+    {
+        if (characterController == null)
+            return;
+
+        bool isGroundedNow = characterController.isGrounded;
+
+        if (!wasGroundedLastFrame && isGroundedNow)
+            PlayLandSound();
+        
+
+        wasGroundedLastFrame = isGroundedNow;
+    }
+
     private float GetCurrentStepDistance()
     {
         if (playerMovement.IsCrouching)
@@ -104,35 +148,136 @@ public class FootstepSoundSystem : NetworkBehaviour
 
     private void PlayFootstep()
     {
-        //play instantly for this player only if we are not the server/host
-        //this avoids host mode double-playing the sound
-        if (!isServer)
-        {
-            SoundManager.PlaySound(footstepSound, footstepVolume);
-        }
+        int clipIndex = GetRandomFootstepClipIndex();
 
-        // ask the server to tell the other clients
-        CmdPlayFootstep();
+        if (clipIndex < 0)
+            return;
+
+        if (!isServer)
+            PlayFootstepLocal(clipIndex);
+
+        CmdPlayFootstep(clipIndex);
     }
 
+    public void PlayJumpSound()
+    {
+        if (jumpClip == null)
+            return;
+
+        if (!isOwned)
+            return;
+
+        if (!isServer)
+            PlayJumpSoundLocal();
+
+        CmdPlayJumpSound();
+    }
+
+    private void PlayLandSound()
+    {
+        if (landClip == null)
+            return;
+
+        if (!isServer)
+            PlayLandSoundLocal();
+
+        CmdPlayLandSound();
+    }
 
     [Command]
-    private void CmdPlayFootstep()
+    private void CmdPlayFootstep(int clipIndex)
     {
-        //server/host plays it once here
-        SoundManager.PlaySound(footstepSound, footstepVolume);
-
-        //then tell other clients
-        RpcPlayFootstep();
+        PlayFootstepLocal(clipIndex);
+        RpcPlayFootstep(clipIndex);
     }
 
     [ClientRpc]
-    private void RpcPlayFootstep()
+    private void RpcPlayFootstep(int clipIndex)
     {
-        //do not replay the sound on the player who owns this object
         if (isOwned)
             return;
 
-        SoundManager.PlaySound(footstepSound, footstepVolume);
+        PlayFootstepLocal(clipIndex);
+    }
+
+    [Command]
+    private void CmdPlayJumpSound()
+    {
+        PlayJumpSoundLocal();
+        RpcPlayJumpSound();
+    }
+
+    [ClientRpc]
+    private void RpcPlayJumpSound()
+    {
+        if (isOwned)
+            return;
+
+        PlayJumpSoundLocal();
+    }
+
+    [Command]
+    private void CmdPlayLandSound()
+    {
+        PlayLandSoundLocal();
+        RpcPlayLandSound();
+    }
+
+    [ClientRpc]
+    private void RpcPlayLandSound()
+    {
+        if (isOwned)
+            return;
+
+        PlayLandSoundLocal();
+    }
+
+    private void PlayFootstepLocal(int clipIndex)
+    {
+        if (footstepAudioSource == null)
+            return;
+
+        if (footstepClips == null || footstepClips.Length == 0)
+            return;
+
+        if (clipIndex < 0 || clipIndex >= footstepClips.Length)
+            return;
+
+        AudioClip selectedClip = footstepClips[clipIndex];
+
+        if (selectedClip == null)
+            return;
+
+        PlayClipLocal(selectedClip, footstepVolume);
+    }
+
+    private void PlayJumpSoundLocal()
+    {
+        PlayClipLocal(jumpClip, jumpVolume);
+    }
+
+    private void PlayLandSoundLocal()
+    {
+        PlayClipLocal(landClip, landVolume);
+    }
+
+    private void PlayClipLocal(AudioClip clip, float volume)
+    {
+        if (footstepAudioSource == null)
+            return;
+
+        if (clip == null)
+            return;
+
+        footstepAudioSource.pitch = Random.Range(minPitch, maxPitch);
+        footstepAudioSource.PlayOneShot(clip, volume);
+    }
+
+    private int GetRandomFootstepClipIndex()
+    {
+        if (footstepClips == null || footstepClips.Length == 0)
+            return -1;
+
+        return Random.Range(0, footstepClips.Length);
     }
 }

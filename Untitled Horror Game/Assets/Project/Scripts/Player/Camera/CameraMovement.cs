@@ -7,6 +7,7 @@ public class CameraMovement : NetworkBehaviour
 {
     [Header("Refs")]
     [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerStamina playerStamina;
     [SerializeField] private Transform camHolder;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Camera playerCam;
@@ -40,17 +41,11 @@ public class CameraMovement : NetworkBehaviour
 
     private void Awake()
     {
-        if (playerVolume != null)
-        {
-            playerVolume.profile = Instantiate(playerVolume.profile);
-            playerVolume.profile.TryGet(out vignette);
-        }
-
-        if (playerVolume != null)
-            playerVolume.profile.TryGet(out vignette);
-
         if (playerMovement == null)
             playerMovement = GetComponent<PlayerMovement>();
+
+        if (playerStamina == null)
+            playerStamina = GetComponent<PlayerStamina>();
 
         if (playerBody == null)
             playerBody = transform;
@@ -68,8 +63,16 @@ public class CameraMovement : NetworkBehaviour
 
         if (audioListener == null)
             audioListener = GetComponentInChildren<AudioListener>(true);
-    }
 
+        if (playerVolume == null)
+            playerVolume = GetComponentInChildren<Volume>(true);
+
+        if (playerVolume != null && playerVolume.profile != null)
+        {
+            playerVolume.profile = Instantiate(playerVolume.profile);
+            playerVolume.profile.TryGet(out vignette);
+        }
+    }
     public override void OnStartClient()
     {
         //every player starts with their camera disabled
@@ -96,7 +99,13 @@ public class CameraMovement : NetworkBehaviour
         if (SceneManager.GetActiveScene().name == "Lobby") return;
 
         if (playerMovement == null) return;
-        if (playerMovement.isPaused) return;
+        if (playerStamina == null) return;
+
+        if (playerMovement.isPaused)
+        {
+            ExhaustedVignette();
+            return;
+        }
 
         HandleLook();
         HandleFOV();
@@ -114,11 +123,11 @@ public class CameraMovement : NetworkBehaviour
     private void ExhaustedVignette()
     {
         if (vignette == null) return;
-        if (playerMovement == null) return;
+        if (playerStamina == null) return;
 
         float targetIntensity = normalVignetteIntensity;
 
-        if (playerMovement.IsStaminaExhausted)
+        if (playerStamina.IsStaminaEmpty)
         {
             //creates a slow breathing pulse from min to max
             float pulse = Mathf.Sin(Time.time * exhaustedVignetteSpeed);
@@ -139,9 +148,9 @@ public class CameraMovement : NetworkBehaviour
 
     private void HandleLook()
     {
-        if (_playerInput == null) return;
-        if (camHolder == null) return;
-        if (playerBody == null) return;
+        if (playerMovement == null) return;
+        if (playerStamina == null) return;
+        if (playerMovement.isPaused) return;
 
         // read look input directly from the input actions
         _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();

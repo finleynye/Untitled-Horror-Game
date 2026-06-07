@@ -20,11 +20,8 @@ public class PlayerInteraction : NetworkBehaviour
         currentInteractable = FindClosestInteractable();
 
         if (currentInteractable == null)
-        {
-            Debug.Log("No interactable found.");
             return;
-        }
-
+        
         NetworkIdentity targetIdentity = currentInteractable.GetComponentInParent<NetworkIdentity>();
 
         if (targetIdentity == null) return;
@@ -61,7 +58,6 @@ public class PlayerInteraction : NetworkBehaviour
         return closestInteractable;
     }
 
-
     [Command]
     private void CmdTryInteract(NetworkIdentity targetIdentity)
     {
@@ -74,11 +70,8 @@ public class PlayerInteraction : NetworkBehaviour
         float distance = Vector3.Distance(transform.position, interactable.transform.position);
 
         if (distance > interactionCheckRadius)
-        {
-            Debug.Log("Server rejected interaction. Player too far away.");
             return;
-        }
-
+        
         interactable.ServerInteract();
     }
 }

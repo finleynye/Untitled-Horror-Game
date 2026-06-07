@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Mirror;
 
 public class PlayerStaminaUI : MonoBehaviour
 {
@@ -11,11 +12,7 @@ public class PlayerStaminaUI : MonoBehaviour
     void Start()
     {
         if(playerStamina == null)
-        {
-            playerStamina = FindAnyObjectByType<PlayerStamina>();
-        }
-
-
+            FindLocalPlayerStamina();
     }
 
     // Update is called once per frame
@@ -40,5 +37,19 @@ public class PlayerStaminaUI : MonoBehaviour
             wheelRed.fillAmount--;
         }
 
+    }
+
+    private void FindLocalPlayerStamina()
+    {
+        PlayerStamina[] staminaScripts = FindObjectsByType<PlayerStamina>(FindObjectsSortMode.None);
+
+        foreach (PlayerStamina stamina in staminaScripts)
+        {
+            if (stamina.isOwned)
+            {
+                playerStamina = stamina;
+                return;
+            }
+        }
     }
 }

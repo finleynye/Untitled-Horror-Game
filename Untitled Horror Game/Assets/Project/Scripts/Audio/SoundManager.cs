@@ -6,11 +6,7 @@ public enum SoundType
 {
     UI_BUTTON_HOVER,
     UI_BUTTON_PRESSED,
-    INTERACT,
-    JUMP,
-    LAND,
-    FOOTSTEP,
-    STAMINA_EXHAUST
+    INTERACT
 }
 
 [RequireComponent(typeof(AudioSource))]
