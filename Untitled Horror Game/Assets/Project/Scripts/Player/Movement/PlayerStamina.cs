@@ -1,120 +1,67 @@
 using UnityEngine;
-using UnityEngine.UI;
-using Mirror;
-using UnityEngine.SceneManagement;
 
-public class PlayerStamina : NetworkBehaviour
+public class PlayerStamina : MonoBehaviour
 {
     [Header("Stamina Settings")]
-    [SerializeField] private float maxStamina = 100f;
-    public float currentStamina = 100f;
+    public float maxStamina = 100f; //max stamina allowed
+    public float currentStamina = 100f; //current stamina value
 
     [Header("Drain & Regen")]
-    [SerializeField] private float staminaDrainRate = 25f;
-    [SerializeField] private float staminaRegenRate = 20f;
-    [SerializeField] private float staminaRegenDelay = 1f;
+    [SerializeField] private float staminaDrainRate = 25f; //how fast stamina drains while sprinting
+    [SerializeField] private float staminaRegenRate = 20f; //how fast stamina comes back
+    [SerializeField] private float staminaRegenDelay = 1f; //how long before stamina starts regenerating
 
-    [Header("Recovery State Rules")]
-    [SerializeField] private float staminaUseRecoveryThreshold = 10f;
-
-    [Header("Stamina Audio")]
-    [SerializeField] private AudioSource staminaAudioSource;
-    [SerializeField] private AudioClip staminaExhaustClip;
-    [SerializeField] private float staminaExhaustVolume = 1f;
-    [SerializeField] private float staminaExhaustSoundCooldown = 1.5f;
-
-    private float regenTimer = 0f;
-    private float staminaExhaustSoundTimer = 0f;
-
+    [Header("Stamina States")]
     public bool isUsingStamina = false;
     public bool isStaminaEmpty = false;
     public bool canUseStamina = true;
 
-    public bool IsStaminaEmpty => isStaminaEmpty;
-    public bool CanUseStamina => canUseStamina;
-    public float CurrentStamina => currentStamina;
-    public float MaxStamina => maxStamina;
+    private float regenTimer = 0f;
 
     private void Start()
     {
         currentStamina = maxStamina;
     }
 
-    public override void OnStartLocalPlayer()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
     private void Update()
     {
-        if (!isOwned) return;
-
-        if (staminaExhaustSoundTimer > 0f)
-            staminaExhaustSoundTimer -= Time.deltaTime;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (!isOwned) return;
-        if (scene.name != "Game") return;
-    }
-
-    public bool TickStamina(bool shouldUseStamina)
-    {
-        if (!isOwned) return false;
-
-        bool becameExhaustedThisFrame = false;
-
-        if (shouldUseStamina && canUseStamina)
+        if (!isUsingStamina)
         {
-            UseStamina();
+            regenTimer += Time.deltaTime;
 
-            if (currentStamina <= 0f && !isStaminaEmpty)
-            {
-                currentStamina = 0f;
-                isStaminaEmpty = true;
-                canUseStamina = false;
-                becameExhaustedThisFrame = true;
-
-                PlayStaminaExhaustSound();
-
-                Debug.Log("Stamina is empty");
-            }
-        }
-        else
-        {
-            StopUsingStamina();
-            HandleStaminaRegen();
+            if (regenTimer >= staminaRegenDelay)
+                RegenStamina();
         }
 
         CheckStaminaState();
-
-        return becameExhaustedThisFrame;
     }
 
-    private void UseStamina()
+    public void UseStamina()
     {
+        if (!canUseStamina)
+            return;
+
         isUsingStamina = true;
         regenTimer = 0f;
 
         currentStamina -= staminaDrainRate * Time.deltaTime;
         currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+
+        if (currentStamina <= 0f)
+        {
+            currentStamina = 0f;
+            isStaminaEmpty = true;
+            canUseStamina = false;
+
+            Debug.Log("Stamina is empty");
+        }
+
+        //Debug.Log("Using Stamina: " + currentStamina);
     }
 
-    private void StopUsingStamina()
+    public void StopUsingStamina()
     {
         isUsingStamina = false;
-    }
-
-    private void HandleStaminaRegen()
-    {
-        if (isUsingStamina)
-            return;
-
-        regenTimer += Time.deltaTime;
-
-        if (regenTimer >= staminaRegenDelay)
-            RegenStamina();
     }
 
     private void RegenStamina()
@@ -128,31 +75,15 @@ public class PlayerStamina : NetworkBehaviour
 
     private void CheckStaminaState()
     {
-        if (currentStamina > staminaUseRecoveryThreshold)
+        if (currentStamina > 10f)
         {
             isStaminaEmpty = false;
             canUseStamina = true;
         }
     }
 
-    private void PlayStaminaExhaustSound()
+    public float GetStaminaPercent()
     {
-        if (staminaExhaustSoundTimer > 0f)
-            return;
-
-        if (staminaAudioSource == null)
-            return;
-
-        if (staminaExhaustClip == null)
-            return;
-
-        staminaAudioSource.PlayOneShot(staminaExhaustClip, staminaExhaustVolume);
-
-        staminaExhaustSoundTimer = staminaExhaustSoundCooldown;
-    }
-
-    public override void OnStopLocalPlayer()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        return currentStamina / maxStamina;
     }
 }

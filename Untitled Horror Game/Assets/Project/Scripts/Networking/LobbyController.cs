@@ -21,9 +21,7 @@ public class LobbyController : MonoBehaviour
     public PlayerController localPlayerController;
     
     public Button startGameBtn;
-    public Button randomiseRolesBtn;
-    
-    public TMP_Text refreshCount;
+    public TMP_Text readyBtnText;
     
     private static UHG_NetworkManager Manager => NetworkManager.singleton as UHG_NetworkManager;
  
@@ -38,8 +36,8 @@ public class LobbyController : MonoBehaviour
         localPlayerController.ChangeReady();
     }
 
-    /*private void UpdateButton()
-        => readyBtn.text = localPlayerController.ready ? "Unready" : "Ready";*/
+    private void UpdateButton()
+        => readyBtnText.text = localPlayerController.ready ? "Unready" : "Ready";
     
     private void IsEveryoneReady()
     {
@@ -57,34 +55,10 @@ public class LobbyController : MonoBehaviour
             }
         }
  
-        //show start button for host only
-        if (localPlayerController.playerID == 1)
-        {
-            startGameBtn.gameObject.SetActive(true);
-            startGameBtn.interactable = isEveryoneReady;
-        }
-        else startGameBtn.gameObject.SetActive(false);
-    }
-
-    public void OnRandomiseClicked()
-    {
-        if (localPlayerController == null) return;
-        if (localPlayerController.playerID != 1) return; //only host can press
-
-        RoleManager.Instance?.TryAssignRoles();
-    }
-    
-    public void UpdateRefreshButton(bool locked, int rerollsRemaining)
-    {
-        if (randomiseRolesBtn == null) return;
-        
-        var isHost = localPlayerController.playerID == 1;
-        randomiseRolesBtn.gameObject.SetActive(isHost);
-        randomiseRolesBtn.interactable = isHost && !locked;
-        
-        refreshCount.text = locked
-            ? "Roles locked"
-            : $"Refreshes left: {rerollsRemaining}";
+        if (isEveryoneReady)
+            startGameBtn.interactable = localPlayerController.playerID == 1;
+        else
+            startGameBtn.interactable = false; 
     }
     
     public void UpdateLobbyName()
@@ -123,12 +97,6 @@ public class LobbyController : MonoBehaviour
     {
         localPlayerController = controller;
         localPlayerObj = controller.gameObject;
-        
-        //hide buttons for other clients
-        //they dont deserve luxuries
-        var isHost = controller.playerID == 1;
-        randomiseRolesBtn.gameObject.SetActive(isHost);
-        startGameBtn.gameObject.SetActive(isHost);
     }
 
     private void CreateHostUserInfo()
@@ -182,11 +150,10 @@ public class LobbyController : MonoBehaviour
             {
                 user.userName = player.playerName;
                 user.isReady = player.ready;
-                user.playerRole = player.role;
                 user.SetUserValues();
  
-                /*if (player == localPlayerController)
-                    UpdateButton();*/
+                if (player == localPlayerController)
+                    UpdateButton();
             }
         }
         
@@ -207,8 +174,6 @@ public class LobbyController : MonoBehaviour
                 objToRemove = null;
             }
         }
-        
-        RoleManager.Instance?.ResetRoles();
     }
  
     public void StartGame(string sceneName)

@@ -12,12 +12,10 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private GameObject playerModel;
     [SerializeField] private Transform cameraHolder;
     [SerializeField] private Transform nametag;
-    [SerializeField] private PlayerInteraction playerInteraction;
-    [SerializeField] private PlayerStamina playerStamina;
+    [SerializeField] private PlayerInteraction playerInteraction; 
     private CharacterController _controller;
     private PlayerInput _playerInput;
-
-
+    
     [Header("Movement")]
     [SerializeField] private float walkSpeed;
     [SerializeField] private float sprintSpeed;
@@ -25,12 +23,20 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private float coyoteTime;
     
-    [Header("Movement Audio")]
-    [SerializeField] private FootstepSoundSystem footstepSoundSystem;
-
+    [Header("Stamina")]
+    [SerializeField] private float maxStamina;
+    [SerializeField] private float staminaRegenRate;
+    [SerializeField] private float staminaRegenDelay;
+    [SerializeField] private float staminaDrainRate;
+    [SerializeField] private Slider staminaSlider;
+    
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
     [SyncVar] public bool _isSprinting;
     
+    private float _currentStamina;
+    private float _regenDelayTimer;
+    private bool _staminaExhausted; //stops sprint when true
+
     private Vector3 _velocity;
     private float _verticalRotation;
     [HideInInspector]public Vector2 _moveInput;
@@ -49,12 +55,7 @@ public class PlayerMovement : NetworkBehaviour
         if (playerInteraction == null)
             playerInteraction = GetComponent<PlayerInteraction>();
 
-        if (footstepSoundSystem == null)
-            footstepSoundSystem = GetComponentInChildren<FootstepSoundSystem>();
-
-        if (playerStamina == null)
-            playerStamina = GetComponent<PlayerStamina>();
-
+        _currentStamina = maxStamina;
     }
     
     public override void OnStartAuthority()
@@ -79,6 +80,10 @@ public class PlayerMovement : NetworkBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name != "Game") return;
+        
+        staminaSlider = GameObject.Find("Stamina").GetComponent<Slider>();
+        staminaSlider.maxValue = maxStamina;
+        staminaSlider.value = _currentStamina;
     }
 
     private void Update()
@@ -98,17 +103,55 @@ public class PlayerMovement : NetworkBehaviour
     
         if (!isOwned) return;
         if (SceneManager.GetActiveScene().name == "Lobby") return;
+        
 
         if (isFrozen)
         {
             _velocity = Vector3.zero; 
             return;
         }
+
+        HandleStamina();
         HandleMovement();
         HandleInteraction();
-        HandleStamina();
     }
 
+    private void HandleStamina()
+    {
+        var isMovingForward = _moveInput.y > .1f;
+        var isDrainingStamina = _isSprinting && isMovingForward;
+        
+        if (isDrainingStamina) //decrease stamina
+        {
+            _currentStamina -= staminaDrainRate * Time.deltaTime;
+            _regenDelayTimer = staminaRegenDelay;
+
+            if (_currentStamina <= 0f)
+            {
+                _currentStamina = 0;
+                _staminaExhausted = true;
+                StopSprint();
+            }
+        }
+        else //increase stamina
+        {
+            if(_regenDelayTimer > 0f)
+                _regenDelayTimer -= Time.deltaTime;
+            else
+            {
+                _currentStamina += staminaRegenRate * Time.deltaTime;
+                if (_currentStamina >= maxStamina)
+                {
+                    _currentStamina = maxStamina;
+                    _staminaExhausted = false;
+                }
+            }
+        }
+        //if(staminaSlider is not null)
+         //   staminaSlider.value = _currentStamina; 
+         //harvey sprint script hook here TODO
+    }
+    
     private void HandleMovement()
     {
         _moveInput = isPaused ? Vector2.zero : _playerInput.Player.Move.ReadValue<Vector2>();
@@ -123,12 +166,8 @@ public class PlayerMovement : NetworkBehaviour
             _coyoteTimer -= Time.deltaTime;
         
         var currentSpeed = walkSpeed;
-
-        bool isMoving = _moveInput.magnitude > 0.1f;
-
-        if (_isSprinting && isMoving)
+        if (_isSprinting) 
             currentSpeed = sprintSpeed;
-
         if (_isCrouching) 
             currentSpeed = crouchSpeed;
 
@@ -139,22 +178,6 @@ public class PlayerMovement : NetworkBehaviour
         _controller.Move(_velocity * Time.deltaTime);
     }
 
-    private void HandleStamina()
-    {
-        if (playerStamina == null)
-            return;
-
-        //checks if the player is moving in any direction
-        bool isMoving = _moveInput.magnitude > 0.1f;
-
-        //drain stamina if sprinting and moving
-        bool isDrainingStamina = _isSprinting && isMoving;
-
-        bool becameExhausted = playerStamina.TickStamina(isDrainingStamina);
-
-        if (becameExhausted)
-            StopSprint();
-    }
     private void HandleInteraction()
     {
         if (playerInteraction == null)
@@ -175,24 +198,19 @@ public class PlayerMovement : NetworkBehaviour
         {
             _velocity.y = Mathf.Sqrt(jumpForce * -2f * Gravity);
             _coyoteTimer = 0f;
-            footstepSoundSystem.PlayJumpSound();
         }
     }
 
 
     private void TryStartSprint()
     {
-        if (playerStamina != null && !playerStamina.CanUseStamina)
-            return;
-
+        if(_staminaExhausted) return;
         CmdSetSprint(true);
     }
     
     private void StopSprint()
-    {
-        CmdSetSprint(false);
-    }
-
+        => CmdSetSprint(false);
+    
     //network commands (stop speed cheats & let others see crouching effect)
     [Command] 
     private void CmdSetSprint(bool value) 

@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
 public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
     [Header("Button Event")]
@@ -15,8 +13,9 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private float scaleInterpSpeed = 12f; //how quickly the button scales
 
     [Header("Button States")]
-    public bool isHovering;
-    public bool isClicking;
+    public bool isHovering = false;
+    public bool isClicking = false;
+    public bool isInteractable = true;
 
     [Header("Rotation Effects")]
     [SerializeField] private bool useRotationEffects = true;
@@ -25,34 +24,26 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private Quaternion originalRotation;
     private Quaternion targetRotation;
-    
+
+
     private Vector3 originalScale;
     private Vector3 targetScale;
-
-    private Button button;
-    private bool IsInteractable => button == null || button.interactable; //get the button interactable by default if it exists, else just like idk
     
-    private void Start()
+
+    void Start()
     {
-        button = GetComponent<Button>();
-        
         originalScale = transform.localScale;
         targetScale = originalScale;
 
         originalRotation = transform.localRotation;
         targetRotation = originalRotation;
+
+
     }
-    
-    private void Update()
+
+    // Update is called once per frame
+    void Update()
     {
-        if (!IsInteractable)
-        {
-            isHovering = false;
-            isClicking = false;
-            targetScale = originalScale;
-            targetRotation = originalRotation;
-        }
-        
         if (useScaleEffects)
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleInterpSpeed * Time.unscaledDeltaTime);
 
@@ -62,7 +53,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!IsInteractable) return;
+        if (!isInteractable) return;
 
         isHovering = true;
 
@@ -81,7 +72,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if(!IsInteractable) return;
+        if(!isInteractable) return;
         
         isClicking = true;
 
@@ -90,7 +81,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!IsInteractable) return;
+        if (!isInteractable) return;
 
         isClicking = false;
 
@@ -103,7 +94,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!IsInteractable) return;
+        if (!isInteractable) return;
 
         Debug.Log("UI Button Clicked: " + gameObject.name);
 
@@ -115,7 +106,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if(!IsInteractable) return;
+        if(!isInteractable) return;
 
         isHovering = false;
         isClicking = false;
@@ -123,11 +114,18 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         targetScale = originalScale;
         targetRotation = originalRotation;
     }
-    
-    public void SetInteractable(bool value)
+
+    public void SetInteractable(bool newValue)
     {
-        if (button != null)
-            button.interactable = value;
+        isInteractable = newValue;
+
+        if (!isInteractable)
+        {
+            isHovering = false;
+            isClicking = false;
+
+            targetScale = originalScale;
+            targetRotation = originalRotation;
+        }
     }
-    
 }
