@@ -53,7 +53,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1.5
   MaxDistance: 12
   Pan2D: 0
@@ -360,7 +360,7 @@ Light:
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 35.03
-  m_Range: 11.97125
+  m_Range: 25
   m_SpotAngle: 108.15299
   m_InnerSpotAngle: 65.41672
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -402,7 +402,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 4434
+  m_ColorTemperature: 3691
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
@@ -772,6 +772,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1624158643585297402}
+  - component: {fileID: 1979914108110557613}
   m_Layer: 0
   m_Name: CameraHolder
   m_TagString: Untagged
@@ -795,6 +796,23 @@ Transform:
   - {fileID: 8114145018490970003}
   m_Father: {fileID: 3024861409917234270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1979914108110557613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2726171987637071275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14801813537f22446a922d6fe5da3e82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSway
+  rotationSmooth: 0
+  rotationMultiplier: 0
+  positionSmooth: 10
+  positionMultiplier: 0.9
+  camMove: {fileID: -7915203926075422777}
 --- !u!1 &3254123031600883239
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,7 +930,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
+  m_RenderPostProcessing: 0
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -1075,6 +1093,7 @@ GameObject:
   - component: {fileID: 2430999903977072214}
   - component: {fileID: 8738311588368073485}
   - component: {fileID: 6995027081951641689}
+  - component: {fileID: 4193441760938479287}
   m_Layer: 0
   m_Name: CameraEffectsPivotTransform
   m_TagString: Untagged
@@ -1158,11 +1177,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
-  m_IsGlobal: 1
-  priority: 0
+  m_IsGlobal: 0
+  priority: 1
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: fa41c6b9295a7334d9423bfc99b3a97b, type: 2}
+--- !u!136 &4193441760938479287
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6563687675089166336}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7118866172255239338
 GameObject:
   m_ObjectHideFlags: 0
@@ -1322,8 +1364,8 @@ Camera:
   m_GameObject: {fileID: 7954794721614165237}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1650,11 +1692,16 @@ MonoBehaviour:
   playerVolume: {fileID: 6995027081951641689}
   cameraRenderTexture: {fileID: 8400000, guid: c06df53d53a23fc4fb8509bfdc56d53a, type: 2}
   useRenderTexture: 1
-  normalVignetteIntensity: 0.2
   exhaustedVignetteMin: 0.35
   exhaustedVignetteMax: 0.55
   exhaustedVignetteSpeed: 0.8
   vignetteLerpSpeed: 2.5
+  normalVignetteColor: {r: 0, g: 0, b: 0, a: 1}
+  exhaustedVignetteColor: {r: 0.45, g: 0, b: 0, a: 1}
+  normalVignetteIntensity: 0.2
+  normalVignetteSmoothness: 0.6
+  exhaustedSmoothnessMin: 0.35
+  exhaustedSmoothnessMax: 0.75
 --- !u!114 &6334917730165765022
 MonoBehaviour:
   m_ObjectHideFlags: 0

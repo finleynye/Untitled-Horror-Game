@@ -10,19 +10,18 @@ public class PlayerInteractionPromptUI : MonoBehaviour
 
     private void Start()
     {
-        if (promptPanel != null)
-            promptPanel.SetActive(false);
+        HidePrompt();
 
         if (playerInteraction == null)
             FindLocalPlayerInteraction();
+        
     }
-
 
     private void Update()
     {
         if (playerInteraction == null)
             FindLocalPlayerInteraction();
-
+        
         UpdatePromptUI();
     }
 
@@ -44,10 +43,11 @@ public class PlayerInteractionPromptUI : MonoBehaviour
     {
         if (promptPanel == null)
             return;
+        
 
         if (playerInteraction == null)
         {
-            promptPanel.SetActive(false);
+            HidePrompt();
             return;
         }
 
@@ -55,13 +55,31 @@ public class PlayerInteractionPromptUI : MonoBehaviour
 
         if (interactable == null || !interactable.CanShowPrompt())
         {
-            promptPanel.SetActive(false);
+            HidePrompt();
             return;
         }
 
+        ShowPrompt(interactable.GetInteractionPrompt());
+    }
+
+    private void ShowPrompt(string newPromptText)
+    {
         promptPanel.SetActive(true);
 
         if (promptText != null)
-            promptText.text = interactable.GetInteractionPrompt();
+        {
+            promptText.gameObject.SetActive(true);
+            promptText.text = newPromptText;
+        }
+    }
+
+    private void HidePrompt()
+    {
+        if (promptPanel != null)
+            promptPanel.SetActive(false);
+        
+
+        if (promptText != null)
+            promptText.text = "";
     }
 }
