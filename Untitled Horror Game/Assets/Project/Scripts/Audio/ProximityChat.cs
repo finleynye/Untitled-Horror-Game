@@ -17,9 +17,9 @@ public class ProximityChat : NetworkBehaviour
     {
         _audioSrc = GetComponent<AudioSource>();
         _audioSrc.spatialBlend = 1f;
-        _audioSrc.rolloffMode = AudioRolloffMode.Linear;
-        _audioSrc.minDistance = 2;
-        _audioSrc.maxDistance = 15;
+        _audioSrc.rolloffMode = AudioRolloffMode.Logarithmic;
+        _audioSrc.minDistance = 8;
+        _audioSrc.maxDistance = 25;
     }
 
     public override void OnStartLocalPlayer()
@@ -84,8 +84,8 @@ public class ProximityChat : NetworkBehaviour
         
         var clip = AudioClip.Create("voice", sampleCount,1 ,(int)sampleRateLocal, false);
         clip.SetData(samples, 0);
-        
-        _audioSrc.PlayOneShot(clip);
+
+        _audioSrc.PlayOneShot(clip, 7f);
     }
     
     public override void OnStopLocalPlayer()
