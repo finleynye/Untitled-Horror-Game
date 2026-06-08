@@ -1,12 +1,12 @@
 using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
+
 public class FlashLightController : NetworkBehaviour
 {
     [Header("Flashlight References")]
-    [SerializeField] Light flashlight_Light;
+    [SerializeField] private Light flashlight_Light;
     [SerializeField] private AudioSource flashlightAudioSource;
-
 
     [Header("Flashlight Audio")]
     [SerializeField] private AudioClip flashlightToggleSound;
@@ -20,14 +20,28 @@ public class FlashLightController : NetworkBehaviour
 
     private void Awake()
     {
-        if(flashlight_Light == null)
+        if (flashlight_Light == null)
             flashlight_Light = GetComponentInChildren<Light>(true);
 
+        if (flashlightAudioSource == null)
+            flashlightAudioSource = GetComponentInChildren<AudioSource>(true);
+        
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+
+        //make sure the light visually matches the synced bool when this player spawns
+        SetFlashlightState(flashlightActive);
     }
 
     public override void OnStartAuthority()
     {
-        if (!isOwned) return;
+        base.OnStartAuthority();
+
+        if (!isOwned)
+            return;
 
         playerInput = new PlayerInput();
 
@@ -36,9 +50,11 @@ public class FlashLightController : NetworkBehaviour
 
         playerInput.Enable();
     }
+
     private void ToggleFlashlight(InputAction.CallbackContext context)
     {
-        if (!isOwned) return;
+        if (!isOwned)
+            return;
 
         CmdToggleFlashlight();
     }
@@ -49,8 +65,6 @@ public class FlashLightController : NetworkBehaviour
         flashlightActive = !flashlightActive;
 
         RpcPlayFlashlightSound();
-
-        Debug.Log("Flashlight toggled on server: " + flashlightActive);
     }
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
@@ -60,19 +74,10 @@ public class FlashLightController : NetworkBehaviour
 
     private void SetFlashlightState(bool state)
     {
-        flashlightActive = state;
-
-        if (flashlight_Light != null)
-            flashlight_Light.enabled = flashlightActive;
-    }
-
-    public override void OnStopAuthority()
-    {
-        if (playerInput != null)
-        {
-            playerInput.Player.Flashlight.performed -= ToggleFlashlight;
-            playerInput.Disable();
-        }
+        if (flashlight_Light == null)
+            return;
+        
+        flashlight_Light.enabled = state;
     }
 
     [ClientRpc]
@@ -90,5 +95,17 @@ public class FlashLightController : NetworkBehaviour
             return;
 
         flashlightAudioSource.PlayOneShot(flashlightToggleSound, flashlightVolume);
+    }
+
+    public override void OnStopAuthority()
+    {
+        base.OnStopAuthority();
+
+        if (playerInput != null)
+        {
+            playerInput.Player.Flashlight.performed -= ToggleFlashlight;
+            playerInput.Disable();
+            playerInput = null;
+        }
     }
 }

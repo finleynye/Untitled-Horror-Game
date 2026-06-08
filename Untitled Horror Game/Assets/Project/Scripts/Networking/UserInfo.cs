@@ -5,24 +5,30 @@ using Steamworks;
 
 public class UserInfo : MonoBehaviour
 {
+    [Header("Steam Info")]
     public string userName;
     public int connectionID;
     public ulong steamID;
     private bool _iconReceived;
-    
+
+    [Header("User Name Display Info")]
     public TMP_Text userNameText;
     public TMP_Text userNameTextOutline;
     public TMP_Text role;
     public PlayerRole playerRole;
     public RawImage userIcon;
-    public Image readyIcon;
     public bool isReady;
 
-    public Sprite greenTick;
-    public Sprite redCross;
+    [SerializeField] private Image readyBtnImage;
     public Button readyBtn;
-    
+
     protected Callback<AvatarImageLoaded_t> IconLoaded;
+
+    [Header("Ready Status")]
+    public TMP_Text readyStatusText;
+
+    [SerializeField] private Color readyColour = new Color(0.45f, 0.75f, 0.35f);
+    [SerializeField] private Color notReadyColour = new Color(0.8f, 0.05f, 0.05f);
 
     private void Start()
     {
@@ -38,7 +44,7 @@ public class UserInfo : MonoBehaviour
         
         readyBtn.gameObject.SetActive(steamID == SteamUser.GetSteamID().m_SteamID);
         role.gameObject.SetActive(steamID == SteamUser.GetSteamID().m_SteamID);
-        role.text = playerRole == PlayerRole.Unassigned ? "Unassigned" : playerRole.ToString();
+        role.text = playerRole == PlayerRole.Unassigned ? "Awaiting Role" : playerRole.ToString();
         
         if(!_iconReceived) 
             GetUserIcon();
@@ -111,5 +117,21 @@ public class UserInfo : MonoBehaviour
     }
 
     private void UpdateReadyState()
-        => readyIcon.sprite = isReady ? greenTick : redCross; 
+    {
+        if (readyStatusText == null)
+            return;
+
+        if (isReady)
+        {
+            readyStatusText.text = "READY";
+            readyBtnImage.color = notReadyColour;
+            readyStatusText.color = readyColour;
+        }
+        else
+        {
+            readyStatusText.text = "NOT READY";
+            readyBtnImage.color = readyColour;
+            readyStatusText.color = notReadyColour;
+        }
+    }
 }
