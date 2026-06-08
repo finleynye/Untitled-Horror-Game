@@ -1,7 +1,8 @@
-using UnityEngine;
 using Mirror;
 using Steamworks;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 [RequireComponent(typeof(AudioSource))]
 public class ProximityChat : NetworkBehaviour
@@ -11,7 +12,7 @@ public class ProximityChat : NetworkBehaviour
 
     private float _sendInterval = 0.05f;
     private float _timer;
-
+    public float volume;
     private Queue<float[]> _jitterBuffer = new();
     private const int JitterPackets = 2;
     private float[] _currentPacket;
@@ -22,7 +23,7 @@ public class ProximityChat : NetworkBehaviour
     private void Awake()
     {
         _audioSrc = GetComponent<AudioSource>();
-        _audioSrc.spatialBlend = 1f;
+        _audioSrc.spatialBlend = 0f;
         _audioSrc.rolloffMode = AudioRolloffMode.Logarithmic;
         _audioSrc.minDistance = 8f;
         _audioSrc.maxDistance = 25f;
@@ -115,11 +116,11 @@ public class ProximityChat : NetworkBehaviour
 
         var sampleCount = (int)(bytesWritten / 2);
         var samples = new float[sampleCount];
-        
+
         for (var i = 0; i < sampleCount; i++)
         {
             var sample = (short)(decompressed[i * 2] | (decompressed[i * 2 + 1] << 8));
-            samples[i] = sample / 32768f;
+            samples[i] = Mathf.Clamp(sample / 32768f * volume, -1f, 1f);
         }
 
         _jitterBuffer.Enqueue(samples);
