@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b96c4bd7-28f2-45b8-8870-a9290c859562" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Audio/ProximityChat.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Audio/ProximityChat.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +100,7 @@
       <workItem from="1780268924003" duration="11322000" />
       <workItem from="1780350109672" duration="76000" />
       <workItem from="1780946026056" duration="2221000" />
-      <workItem from="1780949089298" duration="7052000" />
+      <workItem from="1780949089298" duration="8459000" />
     </task>
     <servers />
   </component>
