@@ -1,6 +1,7 @@
 using UnityEngine;
+using Mirror;
 
-public class PlayerInteraction : MonoBehaviour
+public class PlayerInteraction : NetworkBehaviour
 {
     [Header("Interaction")]
     [SerializeField] private Interactable currentInteractable;
@@ -11,19 +12,45 @@ public class PlayerInteraction : MonoBehaviour
     public bool isPaused;
     public bool isFrozen;
 
-    public void TryInteract()
+    public Interactable CurrentInteractable => currentInteractable;
+
+    private void Update()
     {
-        if (isPaused || isFrozen) return;
+        if (!isOwned) return;
 
-        currentInteractable = FindClosestInteractable();
+        UpdateCurrentInteractable();
+    }
 
-        if (currentInteractable == null)
+    private void UpdateCurrentInteractable()
+    {
+        if (isPaused || isFrozen)
         {
-            Debug.Log("No interactable found.");
+            currentInteractable = null;
             return;
         }
 
-        currentInteractable.Interact();
+        currentInteractable = FindClosestInteractable();
+    }
+
+    public void TryInteract()
+    {
+        if (!isOwned) return;
+        if (isPaused || isFrozen) return;
+
+        UpdateCurrentInteractable();
+
+        if (currentInteractable == null)
+            return;
+
+        if (!currentInteractable.CanShowPrompt())
+            return;
+
+        NetworkIdentity targetIdentity = currentInteractable.GetComponentInParent<NetworkIdentity>();
+
+        if (targetIdentity == null)
+            return;
+
+        CmdTryInteract(targetIdentity);
     }
 
     private Interactable FindClosestInteractable()
@@ -43,6 +70,9 @@ public class PlayerInteraction : MonoBehaviour
             if (interactable == null)
                 continue;
 
+            if (!interactable.CanShowPrompt())
+                continue;
+
             float distance = Vector3.Distance(transform.position, interactable.transform.position);
 
             if (distance < closestDistance)
@@ -53,5 +83,22 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         return closestInteractable;
+    }
+
+    [Command]
+    private void CmdTryInteract(NetworkIdentity targetIdentity)
+    {
+        if (targetIdentity == null) return;
+
+        Interactable interactable = targetIdentity.GetComponentInChildren<Interactable>();
+
+        if (interactable == null) return;
+
+        float distance = Vector3.Distance(transform.position, interactable.transform.position);
+
+        if (distance > interactionCheckRadius)
+            return;
+
+        interactable.ServerInteract();
     }
 }

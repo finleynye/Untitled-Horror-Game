@@ -51,7 +51,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1.2
+  m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2052228922924351218
 GameObject:
@@ -4943,7 +4943,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 0.47
   MinDistance: 5
-  MaxDistance: 9
+  MaxDistance: 21.959597
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -5191,6 +5191,7 @@ GameObject:
   - component: {fileID: 3782275176281903990}
   - component: {fileID: 5253771878285025915}
   - component: {fileID: 6235208176009631049}
+  - component: {fileID: 5098146096239414185}
   m_Layer: 7
   m_Name: Generator
   m_TagString: Untagged
@@ -5214,7 +5215,6 @@ Transform:
   - {fileID: 8027174918458790873}
   - {fileID: 3116713780191944556}
   - {fileID: 8490579051702084598}
-  - {fileID: 6233445736484558308}
   - {fileID: 4461072038508300622}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5251,6 +5251,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c98f3ed6f2f550459dcb3d146e7d79d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   InteractEvent:
     m_PersistentCalls:
       m_Calls:
@@ -5288,6 +5291,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb5ed6b1b833f4b4ea024a13c001cc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Generator
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  requiredParts: 4
+  requiredFuel: 1
   generatorInteractable: {fileID: 3782275176281903990}
   generatorLight: {fileID: 8549796888105488226}
   smokeParticles: {fileID: 4966702815136691236}
@@ -5295,47 +5303,30 @@ MonoBehaviour:
   errorText: {fileID: 0}
   onMissingParts:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1801874225169830060}
-        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-        m_MethodName: set_clip
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 8300000, guid: 67c4fed3fa163e9418d8d206158adb3d, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Needs More Parts...
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1801874225169830060}
-        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Needs More Parts...
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   onMissingFuel:
     m_PersistentCalls:
       m_Calls: []
   onGeneratorStarted:
     m_PersistentCalls:
       m_Calls: []
-  OnGeneratorAlreadyRunning:
+  onGeneratorAlreadyRunning:
     m_PersistentCalls:
       m_Calls: []
   onMissingPartsColour: {r: 0.754717, g: 0.18867925, b: 0.18867925, a: 1}
   onMissingFuelColour: {r: 0.7169812, g: 0.48057368, b: 0.19277322, a: 1}
-  OnCompletionColour: {r: 0.08009967, g: 0.6792453, b: 0.08009967, a: 1}
+  onCompletionColour: {r: 0, g: 1, b: 0, a: 1}
+  normalTextColour: {r: 1, g: 1, b: 1, a: 1}
   au_generator: {fileID: 1801874225169830060}
   runningSound: {fileID: 8300000, guid: 81a974ee36ddd414d93f6abe3d0ff1a0, type: 3}
   addFuelSound: {fileID: 8300000, guid: f0a80768edb04f1438720bd528ec3a11, type: 3}
   addPartSound: {fileID: 8300000, guid: 5be2601f59668b2468f89857717e8abb, type: 3}
+  missingPartsErrorSound: {fileID: 8300000, guid: 67c4fed3fa163e9418d8d206158adb3d, type: 3}
+  missingFuelHissSound: {fileID: 8300000, guid: ceef49c939206564c9ec1e911d9ba408, type: 3}
+  tryStartGenerator: {fileID: 8300000, guid: 3da396a18e71b8541ab1914b84b20442, type: 3}
+  failSoundVolume: 1
+  hissDelay: 0.3
+  startAttemptCooldown: 1.2
   shakeDuration: 1
   shakeAmount: 0.04
 --- !u!54 &6235208176009631049
@@ -5365,59 +5356,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!1 &8759270253114093046
-GameObject:
+--- !u!114 &5098146096239414185
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6233445736484558308}
-  - component: {fileID: 123013367068076188}
-  m_Layer: 7
-  m_Name: TriggerZone
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6233445736484558308
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8759270253114093046}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4205568, y: 0.87435514, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1554554040721259903}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &123013367068076188
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8759270253114093046}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
+  m_GameObject: {fileID: 8645242928898428547}
   m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 2.3
-  m_Center: {x: 0, y: 0, z: 0}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 142499035
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1001 &2469907165949887492
 PrefabInstance:
   m_ObjectHideFlags: 0

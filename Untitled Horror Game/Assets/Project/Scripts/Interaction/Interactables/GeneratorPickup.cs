@@ -1,30 +1,31 @@
-using System.Runtime.CompilerServices;
+using Mirror;
 using UnityEngine;
 
 public enum GeneratorPickUpType
 {
     GeneratorPart, Fuel
 }
-public class GeneratorPickup : MonoBehaviour
+public class GeneratorPickup : NetworkBehaviour
 {
     [SerializeField]private GeneratorPickUpType generatorPickUpType;
 
     [SerializeField]private Generator generatorTask;
 
-    private bool destroyOnPickup = true;
+    [SerializeField] private bool destroyOnPickup = true;
 
+    [Server]
     public void CollectPickUp()
     {
-        if(generatorPickUpType == GeneratorPickUpType.GeneratorPart)
+        if (generatorPickUpType == GeneratorPickUpType.GeneratorPart)
             generatorTask.AddGeneratorPart();
-
+        
         else if (generatorPickUpType == GeneratorPickUpType.Fuel)
             generatorTask.AddFuel();
 
         Debug.Log(gameObject.name + "Collected");
 
         if (destroyOnPickup)
-            Destroy(gameObject);
+            NetworkServer.Destroy(gameObject);
 
     }
 }

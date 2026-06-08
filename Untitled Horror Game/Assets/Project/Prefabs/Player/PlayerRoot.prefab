@@ -324,8 +324,8 @@ GameObject:
   - component: {fileID: 4476983771794927463}
   - component: {fileID: 8594396187195955065}
   - component: {fileID: 2438037002942978998}
-  - component: {fileID: 8744769752820828943}
   - component: {fileID: 3135615954402389493}
+  - component: {fileID: 8575865948089085506}
   m_Layer: 0
   m_Name: FlashLight
   m_TagString: Untagged
@@ -459,25 +459,6 @@ MonoBehaviour:
   positionSmooth: 12
   positionMultiplier: 1.2
   camMove: {fileID: -7915203926075422777}
---- !u!114 &8744769752820828943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864337895672164097}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5c88cf1f6201a468ddc1d3c36f8224, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlashLightController
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  flashlight_Light: {fileID: 4476983771794927463}
-  flashlightAudioSource: {fileID: 3135615954402389493}
-  flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
-  flashlightVolume: 1
 --- !u!82 &3135615954402389493
 AudioSource:
   m_ObjectHideFlags: 0
@@ -575,6 +556,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8575865948089085506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864337895672164097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 2588739064
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &2045514991044592799
 GameObject:
   m_ObjectHideFlags: 0
@@ -1508,6 +1506,7 @@ GameObject:
   - component: {fileID: -7915203926075422777}
   - component: {fileID: 6334917730165765022}
   - component: {fileID: 1810973646206289900}
+  - component: {fileID: 369877499916943921}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -1752,3 +1751,22 @@ MonoBehaviour:
   isUsingStamina: 0
   isStaminaEmpty: 0
   canUseStamina: 1
+--- !u!114 &369877499916943921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671109922971069088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da5c88cf1f6201a468ddc1d3c36f8224, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlashLightController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  flashlight_Light: {fileID: 4476983771794927463}
+  flashlightAudioSource: {fileID: 3135615954402389493}
+  flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
+  flashlightVolume: 1
