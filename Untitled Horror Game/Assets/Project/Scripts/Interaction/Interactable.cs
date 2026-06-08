@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using Mirror;
 
-public class Interactable : MonoBehaviour
+public class Interactable : NetworkBehaviour
 {
     [Header("Event System Based")]
     public UnityEvent InteractEvent;//assign event to interactable to have it perform whatever code you'd like by creating a new script for an action like shooting and assigning it here
@@ -40,10 +41,8 @@ public class Interactable : MonoBehaviour
             interactableRadius.isTrigger = true;
 
         if (interactWidget != null)
-        {
             textPrompt = interactWidget.GetComponentInChildren<TextMeshProUGUI>();
-            interactWidget.SetActive(false);
-        }
+       
 
         if (textPrompt != null)
             textPrompt.text = interactionPrompt;
@@ -58,70 +57,6 @@ public class Interactable : MonoBehaviour
             if (timeElapsed >= resetTimer)
                 ResetInteraction();
         }
-
-        if (textPrompt != null)
-            textPrompt.text = interactionPrompt;
-
-        UpdatePrompt();
-    }
-
-    //using collider based triggers to get the nearest player
-    private void OnTriggerEnter(Collider other)
-    {
-        TrySetNearbyPlayer(other);
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        TrySetNearbyPlayer(other);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        PlayerMovement exitingPlayer = other.GetComponentInParent<PlayerMovement>();
-
-        if (exitingPlayer == null)
-            return;
-
-        if (!exitingPlayer.isOwned)
-            return;
-
-        if (playerTransform == exitingPlayer.transform)
-        {
-            playerTransform = null;
-            isNearInteractable = false;
-            UpdatePrompt();
-        }
-    }
-
-    private void TrySetNearbyPlayer(Collider other)
-    {
-        PlayerMovement nearbyPlayer = other.GetComponentInParent<PlayerMovement>();
-
-        if (nearbyPlayer == null)
-            return;
-
-        //only let the local player control this prompt
-        if (!nearbyPlayer.isOwned)
-            return;
-
-        playerTransform = nearbyPlayer.transform;
-        isNearInteractable = true;
-
-        UpdatePrompt();
-    }
-
-    private void UpdatePrompt()
-    {
-        if (interactWidget == null)
-            return;
-
-        bool canShowPrompt =
-            isNearInteractable &&
-            isInteractable &&
-            (!hasInteracted || isReusable);
-
-        interactWidget.SetActive(canShowPrompt);
     }
 
     public void Interact()
@@ -136,10 +71,43 @@ public class Interactable : MonoBehaviour
         InteractEvent?.Invoke();
     }
 
+    [Server]
+    public void ServerInteract()
+    {
+        if (!isInteractable)
+            return;
+
+        if (hasInteracted && !isReusable)
+            return;
+
+        hasInteracted = true;
+        timeElapsed = 0f;
+
+        InteractEvent?.Invoke();
+
+        RpcAfterInteract();
+    }
+
+    [ClientRpc]
+    private void RpcAfterInteract()
+    {
+        if (interactWidget != null)
+            interactWidget.SetActive(false);
+    }
+
     public void ResetInteraction()
     {
         hasInteracted = false;
         timeElapsed = 0f;
-        UpdatePrompt();
+    }
+
+    public string GetInteractionPrompt()
+    {
+        return interactionPrompt;
+    }
+
+    public bool CanShowPrompt()
+    {
+        return isInteractable && (!hasInteracted || isReusable);
     }
 }

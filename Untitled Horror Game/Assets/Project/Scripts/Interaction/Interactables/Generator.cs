@@ -2,17 +2,23 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System.Collections;
+using Mirror;
 
-public class Generator : MonoBehaviour
+public class Generator : NetworkBehaviour
 {
     [Header("Generator Parts Requirements")]
     [SerializeField] private int requiredParts = 4;
     [SerializeField] private int requiredFuel = 1;
 
+    [SyncVar(hook = nameof(OnPartsChanged))]
     private int currentParts = 0;
+
+    [SyncVar(hook = nameof(OnFuelChanged))]
     private int currentFuel = 0;
 
+    [SyncVar(hook = nameof(OnGeneratorStartedChanged))]
     private bool hasGeneratorStarted = false;
+
     private bool isShaking = false;
 
     [Header("References")]
@@ -22,7 +28,7 @@ public class Generator : MonoBehaviour
     [SerializeField] private TMP_Text progressText;
     [SerializeField] private TMP_Text errorText;
 
-    [Header("Events")]
+    [Header("Server Events")]
     public UnityEvent onMissingParts;
     public UnityEvent onMissingFuel;
     public UnityEvent onGeneratorStarted;
@@ -40,6 +46,18 @@ public class Generator : MonoBehaviour
     public AudioClip addFuelSound;
     public AudioClip addPartSound;
 
+    [Header("Fail Feedback Audio")]
+    [SerializeField] private AudioClip missingPartsErrorSound;
+    [SerializeField] private AudioClip missingFuelHissSound;
+    [SerializeField] private AudioClip tryStartGenerator;
+    [SerializeField] private float failSoundVolume = 1f;
+    [SerializeField] private float hissDelay = 0.6f;
+
+    [Header("Interaction Cooldown")]
+    [SerializeField] private float startAttemptCooldown = 1.2f;
+
+    private double nextAllowedStartAttemptTime = 0;
+
     [Header("Shake Settings")]
     [SerializeField] private float shakeDuration = 1f;
     [SerializeField] private float shakeAmount = 0.04f;
@@ -49,7 +67,7 @@ public class Generator : MonoBehaviour
         if (smokeParticles == null)
             smokeParticles = GetComponentInChildren<ParticleSystem>();
 
-        //generator starts off
+        // generator starts off
         if (generatorLight != null)
             generatorLight.SetActive(false);
 
@@ -57,6 +75,7 @@ public class Generator : MonoBehaviour
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void AddGeneratorPart()
     {
         if (hasGeneratorStarted) return;
@@ -66,16 +85,13 @@ public class Generator : MonoBehaviour
         if (currentParts > requiredParts)
             currentParts = requiredParts;
 
-        if (au_generator != null && addPartSound != null)
-            au_generator.PlayOneShot(addPartSound);
-
-        if (errorText != null)
-            errorText.text = "";
+        RpcPlayAddPartFeedback();
 
         UpdateGeneratorUI();
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void AddFuel()
     {
         if (hasGeneratorStarted) return;
@@ -85,91 +101,97 @@ public class Generator : MonoBehaviour
         if (currentFuel > requiredFuel)
             currentFuel = requiredFuel;
 
-        if (au_generator != null && addFuelSound != null)
-            au_generator.PlayOneShot(addFuelSound);
-
-        if (errorText != null)
-            errorText.text = "";
+        RpcPlayAddFuelFeedback();
 
         UpdateGeneratorUI();
         UpdateGeneratorUIPrompt();
     }
 
+    [Server]
     public void TryStartGenerator()
     {
-        ShakeGenerator();
+        //stops players spamming E and stacking sounds / smoke / shake
+        if (!CanTryStartGenerator())
+            return;
 
-        //if generator is already running
         if (hasGeneratorStarted)
         {
-            onGeneratorAlreadyRunning?.Invoke();
+            InvokeGeneratorAlreadyRunningEvent();
 
-            if (errorText != null)
-                errorText.text = "Generator is already running.";
-
+            RpcAlreadyRunningFeedback();
             return;
         }
 
-        //if not enough parts
         if (currentParts < requiredParts)
         {
-            onMissingParts?.Invoke();
+            InvokeMissingPartsEvent();
 
-            if (errorText != null)
-                errorText.text = "Missing generator parts.";
-
-            UpdateGeneratorUIPrompt();
+            RpcMissingPartsFeedback();
             return;
         }
 
-        //if not enough fuel
         if (currentFuel < requiredFuel)
         {
-            onMissingFuel?.Invoke();
+            InvokeMissingFuelEvent();
 
-            if (errorText != null)
-                errorText.text = "Missing fuel.";
-
-            UpdateGeneratorUIPrompt();
+            RpcMissingFuelFeedback();
             return;
         }
 
         StartGenerator();
     }
 
+    [Server]
     public void StartGenerator()
     {
+        if (hasGeneratorStarted) return;
+
         hasGeneratorStarted = true;
 
-        if (generatorLight != null)
-            generatorLight.SetActive(true);
+        InvokeGeneratorStartedEvent();
 
-        if (smokeParticles != null)
-            smokeParticles.Stop();
+        RpcGeneratorStartedEffects();
+    }
 
-        if (au_generator != null && runningSound != null)
-        {
-            au_generator.clip = runningSound;
-            au_generator.loop = true;
-            au_generator.Play();
-        }
+    //server event wrappers (these events are server only, used for objective logic and game states)
+    [Server]
+    private void InvokeMissingPartsEvent()
+    {
+        onMissingParts?.Invoke();
+    }
 
-        errorText.text = "";
+    [Server]
+    private void InvokeMissingFuelEvent()
+    {
+        onMissingFuel?.Invoke();
+    }
 
-        if (generatorInteractable != null)
-        {
-            generatorInteractable.interactionPrompt = "Generator Started";
-            generatorInteractable.isReusable = false;
-        }
-        UpdateGeneratorUI();
-
+    [Server]
+    private void InvokeGeneratorStartedEvent()
+    {
         onGeneratorStarted?.Invoke();
+    }
+
+    [Server]
+    private void InvokeGeneratorAlreadyRunningEvent()
+    {
+        onGeneratorAlreadyRunning?.Invoke();
     }
 
     //helper methods for completion events
     public bool IsGeneratorStarted()
     {
         return hasGeneratorStarted;
+    }
+
+    [Server]
+    private bool CanTryStartGenerator()
+    {
+        if (NetworkTime.time < nextAllowedStartAttemptTime)
+            return false;
+
+        nextAllowedStartAttemptTime = NetworkTime.time + startAttemptCooldown;
+        return true;
     }
 
     public bool HasAllTheParts()
@@ -195,13 +217,12 @@ public class Generator : MonoBehaviour
 
         float timer = 0f;
 
-        //save the generator position when the shake starts
+        //shake around the current local position, then return to it
         Vector3 originalPosition = transform.localPosition;
 
         while (timer < shakeDuration)
         {
-            //shake all axis randomly
-            float randomX = Random.Range(-shakeAmount, shakeAmount); 
+            float randomX = Random.Range(-shakeAmount, shakeAmount);
             float randomY = Random.Range(-shakeAmount, shakeAmount);
             float randomZ = Random.Range(-shakeAmount, shakeAmount);
 
@@ -212,7 +233,6 @@ public class Generator : MonoBehaviour
             yield return null;
         }
 
-        //return to the position it had before this specific shake
         transform.localPosition = originalPosition;
 
         isShaking = false;
@@ -228,10 +248,15 @@ public class Generator : MonoBehaviour
         if (hasGeneratorStarted)
         {
             progressText.text = "Generator Online";
+            progressText.color = onCompletionColour;
             return;
         }
 
-        progressText.text = $"Current Parts: {currentParts} / {requiredParts}\n" + $"Current Fuel: {currentFuel} / {requiredFuel}"; //on a new line now rather than before it was cramped with no space
+        progressText.color = normalTextColour;
+
+        progressText.text =
+            $"Current Parts: {currentParts} / {requiredParts}\n" +
+            $"Current Fuel: {currentFuel} / {requiredFuel}";
     }
 
     private void UpdateGeneratorUIPrompt()
@@ -259,4 +284,147 @@ public class Generator : MonoBehaviour
         generatorInteractable.interactionPrompt = "Start Generator";
     }
 
+    private void OnPartsChanged(int oldValue, int newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
+
+    private void OnFuelChanged(int oldValue, int newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
+
+    private void OnGeneratorStartedChanged(bool oldValue, bool newValue)
+    {
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+
+        if (newValue)
+            ApplyGeneratorStartedVisuals();
+    }
+
+    //runs feedback on every client
+    private void ApplyGeneratorStartedVisuals()
+    {
+        if (generatorLight != null)
+            generatorLight.SetActive(true);
+
+        if (smokeParticles != null)
+            smokeParticles.Stop();
+
+        if (au_generator != null && runningSound != null)
+        {
+            au_generator.clip = runningSound;
+            au_generator.loop = true;
+
+            if (!au_generator.isPlaying)
+                au_generator.Play();
+        }
+
+        if (generatorInteractable != null)
+        {
+            generatorInteractable.interactionPrompt = "Generator Started";
+            generatorInteractable.isReusable = false;
+        }
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    private void PlayGeneratorOneShot(AudioClip clip, float volume)
+    {
+        if (au_generator == null)
+            return;
+
+        if (clip == null)
+            return;
+
+        au_generator.PlayOneShot(clip, volume);
+    }
+
+    [ClientRpc]
+    private void RpcPlayAddPartFeedback()
+    {
+        if (au_generator != null && addPartSound != null)
+            au_generator.PlayOneShot(addPartSound);
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcPlayAddFuelFeedback()
+    {
+        if (au_generator != null && addFuelSound != null)
+            au_generator.PlayOneShot(addFuelSound);
+
+        if (errorText != null)
+            errorText.text = "";
+    }
+
+    [ClientRpc]
+    private void RpcMissingPartsFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Missing generator parts.";
+            errorText.color = onMissingPartsColour;
+        }
+
+        //failed start: error noise, smoke, and shake
+        PlayGeneratorOneShot(missingPartsErrorSound, failSoundVolume);
+
+        if (smokeParticles != null)
+            smokeParticles.Play();
+
+        ShakeGenerator();
+        UpdateGeneratorUIPrompt();
+    }
+
+    [ClientRpc]
+    private void RpcMissingFuelFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Missing fuel.";
+            errorText.color = onMissingFuelColour;
+        }
+
+        //no fuel shake and hiss sound
+        PlayGeneratorOneShot(tryStartGenerator, failSoundVolume);
+
+        StartCoroutine(PlayHissAfterDelay());
+
+        ShakeGenerator();
+        UpdateGeneratorUIPrompt();
+    }
+
+    [ClientRpc]
+    private void RpcAlreadyRunningFeedback()
+    {
+        if (errorText != null)
+        {
+            errorText.text = "Generator is already running.";
+            errorText.color = onCompletionColour;
+        }
+
+        UpdateGeneratorUIPrompt();
+    }
+
+    [ClientRpc]
+    private void RpcGeneratorStartedEffects()
+    {
+        ApplyGeneratorStartedVisuals();
+        UpdateGeneratorUI();
+        UpdateGeneratorUIPrompt();
+    }
+
+    private IEnumerator PlayHissAfterDelay()
+    {
+        yield return new WaitForSeconds(hissDelay);
+
+        PlayGeneratorOneShot(missingFuelHissSound, failSoundVolume);
+    }
 }

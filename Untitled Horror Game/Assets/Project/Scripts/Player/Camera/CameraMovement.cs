@@ -1,12 +1,13 @@
 using Mirror;
-using Mirror.Examples.BilliardsPredicted;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 public class CameraMovement : NetworkBehaviour
 {
     [Header("Refs")]
     [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerStamina playerStamina;
     [SerializeField] private Transform camHolder;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Camera playerCam;
@@ -27,11 +28,28 @@ public class CameraMovement : NetworkBehaviour
 
     private PlayerInput _playerInput;
 
+    [Header("Post Processing")]
+    [SerializeField] private Volume playerVolume;
+    private Vignette vignette;
+
+    [Header("Render Texture")]
+    [SerializeField] private RenderTexture cameraRenderTexture;
+    [SerializeField] private bool useRenderTexture = true;
+
+    [Header("Exhausted Vignette")]
+    [SerializeField] private float normalVignetteIntensity = 0.2f;
+    [SerializeField] private float exhaustedVignetteMin = 0.35f; //minimum for exhausted vignette amount
+    [SerializeField] private float exhaustedVignetteMax = 0.65f; //maximum for exhausted vignette amount
+    [SerializeField] private float exhaustedVignetteSpeed = 1f; //speed the exhuasted states lerps between min and max
+    [SerializeField] private float vignetteLerpSpeed = 2.5f; //how quickly the the effect appears on screen once exhuasted
+
     private void Awake()
     {
-
         if (playerMovement == null)
             playerMovement = GetComponent<PlayerMovement>();
+
+        if (playerStamina == null)
+            playerStamina = GetComponent<PlayerStamina>();
 
         if (playerBody == null)
             playerBody = transform;
@@ -49,8 +67,16 @@ public class CameraMovement : NetworkBehaviour
 
         if (audioListener == null)
             audioListener = GetComponentInChildren<AudioListener>(true);
-    }
 
+        if (playerVolume == null)
+            playerVolume = GetComponentInChildren<Volume>(true);
+
+        if (playerVolume != null && playerVolume.profile != null)
+        {
+            playerVolume.profile = Instantiate(playerVolume.profile);
+            playerVolume.profile.TryGet(out vignette);
+        }
+    }
     public override void OnStartClient()
     {
         //every player starts with their camera disabled
@@ -64,12 +90,12 @@ public class CameraMovement : NetworkBehaviour
         //only this players own camera turns on
         SetCameraState(true);
 
+        SetCameraRenderTexture();
+
         _playerInput = new PlayerInput();
         _playerInput.Enable();
 
-        SetCameraState(true);
         SetCursorState();
-
     }
     void Update()
     {
@@ -77,10 +103,17 @@ public class CameraMovement : NetworkBehaviour
         if (SceneManager.GetActiveScene().name == "Lobby") return;
 
         if (playerMovement == null) return;
-        if (playerMovement.isPaused) return;
+        if (playerStamina == null) return;
+
+        if (playerMovement.isPaused)
+        {
+            ExhaustedVignette();
+            return;
+        }
 
         HandleLook();
         HandleFOV();
+        ExhaustedVignette();
     }
 
     private void HandleFOV()
@@ -91,13 +124,39 @@ public class CameraMovement : NetworkBehaviour
         playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
     }
 
+    private void ExhaustedVignette()
+    {
+        if (vignette == null) return;
+        if (playerStamina == null) return;
+
+        float targetIntensity = normalVignetteIntensity;
+
+        if (playerStamina.IsStaminaEmpty)
+        {
+            //creates a slow breathing pulse from min to max
+            float pulse = Mathf.Sin(Time.time * exhaustedVignetteSpeed);
+
+            //converts the pulse from -1 to 1 into 0 to 1
+            float normalisedPulse = (pulse + 1f) * 0.5f;
+
+            targetIntensity = Mathf.Lerp(exhaustedVignetteMin, exhaustedVignetteMax, normalisedPulse);
+        }
+
+        targetIntensity = Mathf.Clamp01(targetIntensity); //clamps between 0,1 just incase lerp overshoots values
+
+        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, targetIntensity, vignetteLerpSpeed * Time.deltaTime);
+
+        //clamps the final vignette amount, just in case lerp overshootts
+        vignette.intensity.value = Mathf.Clamp01(vignette.intensity.value);
+    }
+
     private void HandleLook()
     {
-        if (_playerInput == null) return;
-        if (camHolder == null) return;
-        if (playerBody == null) return;
+        if (playerMovement == null) return;
+        if (playerStamina == null) return;
+        if (playerMovement.isPaused) return;
 
-        // read look input directly from the input actions
+        //read look input directly from the input actions
         _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();
 
         float mouseX = _lookInput.x * mouseSensitivity;
@@ -124,10 +183,15 @@ public class CameraMovement : NetworkBehaviour
 
     public override void OnStopAuthority()
     {
+        if (playerCam != null)
+            playerCam.targetTexture = null;
+
         SetCameraState(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        _playerInput?.Disable();
     }
 
     private void SetCursorState()
@@ -142,5 +206,21 @@ public class CameraMovement : NetworkBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    private void SetCameraRenderTexture()
+    {
+        if (playerCam == null)
+            return;
+
+        if (!useRenderTexture)
+        {
+            playerCam.targetTexture = null;
+            return;
+        }
+
+        if (cameraRenderTexture == null) return;
+       
+        playerCam.targetTexture = cameraRenderTexture;
     }
 }
