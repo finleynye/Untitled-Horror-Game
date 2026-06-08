@@ -6,10 +6,12 @@ using System.Collections.Generic;
 [RequireComponent(typeof(AudioSource))]
 public class ProximityChat : NetworkBehaviour
 {
+    public float voiceVolume = 5f;
+    
     private AudioSource _audioSrc;
     private bool _isRecording;
 
-    private float _sendInterval = 0.05f;
+    private float _sendInterval = 0.05f; //send data 20 times a second
     private float _timer;
 
     private Queue<float[]> _jitterBuffer = new();
@@ -22,7 +24,7 @@ public class ProximityChat : NetworkBehaviour
     private void Awake()
     {
         _audioSrc = GetComponent<AudioSource>();
-        _audioSrc.spatialBlend = 1f;
+        _audioSrc.spatialBlend = 0f; //temp, set to 1f for real proximity
         _audioSrc.rolloffMode = AudioRolloffMode.Logarithmic;
         _audioSrc.minDistance = 8f;
         _audioSrc.maxDistance = 25f;
@@ -33,7 +35,6 @@ public class ProximityChat : NetworkBehaviour
     public override void OnStartClient()
     {
         var rate = (int)SampleRate;
-        
         var streamClip = AudioClip.Create("VoiceStream", rate * 2, 1, rate, true, OnAudioRead);
         _audioSrc.clip = streamClip;
         _audioSrc.Play();
@@ -102,7 +103,7 @@ public class ProximityChat : NetworkBehaviour
         if (isLocalPlayer) return;
 
         var sampleRate = SampleRate;
-        var decompressed = new byte[sampleRate];
+        var decompressed = new byte[sampleRate * 4];
 
         var result = SteamUser.DecompressVoice
         (
@@ -111,16 +112,24 @@ public class ProximityChat : NetworkBehaviour
             out var bytesWritten, sampleRate
         );
 
-        if (result != EVoiceResult.k_EVoiceResultOK || bytesWritten == 0) return;
+        if (result != EVoiceResult.k_EVoiceResultOK || bytesWritten == 0)
+        {
+            Debug.LogWarning($"decompressVoice failed: {result}, bytesWritten: {bytesWritten}");
+            return;
+        }
 
         var sampleCount = (int)(bytesWritten / 2);
         var samples = new float[sampleCount];
-        
+        var maxSample = 0f;
+
         for (var i = 0; i < sampleCount; i++)
         {
             var sample = (short)(decompressed[i * 2] | (decompressed[i * 2 + 1] << 8));
-            samples[i] = sample / 32768f;
+            samples[i] = Mathf.Clamp(sample / 32768f * voiceVolume, -1f, 1f);
+            maxSample = Mathf.Max(maxSample, Mathf.Abs(samples[i]));
         }
+        
+        if (maxSample < 0.01f) return;
 
         _jitterBuffer.Enqueue(samples);
     }
