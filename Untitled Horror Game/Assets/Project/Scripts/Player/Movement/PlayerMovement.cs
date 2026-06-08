@@ -17,7 +17,6 @@ public class PlayerMovement : NetworkBehaviour
     private CharacterController _controller;
     private PlayerInput _playerInput;
 
-
     [Header("Movement")]
     [SerializeField] private float walkSpeed;
     [SerializeField] private float sprintSpeed;
@@ -243,7 +242,7 @@ public class PlayerMovement : NetworkBehaviour
         Cursor.visible = true;
         isPaused = false;
     }
-    
+   
     public override void OnStopAuthority()
         => _playerInput?.Disable();
 }
