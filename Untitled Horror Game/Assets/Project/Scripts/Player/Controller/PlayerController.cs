@@ -21,7 +21,17 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
-    
+
+    [Header("Role Visuals")]
+    [SerializeField] private Renderer characterRenderer;
+
+    [SerializeField] private Material role1Material;
+    [SerializeField] private Material role2Material;
+    [SerializeField] private Material role3Material;
+    [SerializeField] private Material role4Material;
+    [SerializeField] private Material killerMaterial;
+    [SerializeField] private Material unassignedMaterial;
+
     private static bool InLobby => SceneManager.GetActiveScene().name == "Lobby";
     public event System.Action<string> OnNameChanged;
  
@@ -52,7 +62,9 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartClient()
     {
         Manager.Players.Add(this);
- 
+
+        ApplyRoleMaterial(role);
+
         if (!InLobby) return;
         LobbyController.Instance.UpdateLobbyName();
         LobbyController.Instance.UpdateUserList();
@@ -105,12 +117,53 @@ public class PlayerController : NetworkBehaviour
 
     private void OnRoleChanged(PlayerRole oldRole, PlayerRole newRole)
     {
-        if(isServer)
+        if (isServer)
             role = newRole;
-        if(isClient && isOwned && InLobby)
+
+        ApplyRoleMaterial(newRole);
+
+        if (isClient && InLobby)
             LobbyController.Instance.UpdateUserList();
     }
-    
+    private void ApplyRoleMaterial(PlayerRole newRole)
+    {
+        if (characterRenderer == null)
+            return;
+
+        Material materialToUse = unassignedMaterial;
+
+        switch (newRole)
+        {
+            case PlayerRole.Role1:
+                materialToUse = role1Material;
+                break;
+
+            case PlayerRole.Role2:
+                materialToUse = role2Material;
+                break;
+
+            case PlayerRole.Role3:
+                materialToUse = role3Material;
+                break;
+
+            case PlayerRole.Role4:
+                materialToUse = role4Material;
+                break;
+
+            case PlayerRole.Killer:
+                materialToUse = killerMaterial;
+                break;
+
+            case PlayerRole.Unassigned:
+            default:
+                materialToUse = unassignedMaterial;
+                break;
+        }
+
+        if (materialToUse != null)
+            characterRenderer.sharedMaterial = materialToUse;
+    }
+
     public void CanStartGame(string sceneName)
     {
         if (isOwned)

@@ -6,36 +6,51 @@ using System.Collections.Generic;
 [RequireComponent(typeof(AudioSource))]
 public class ProximityChat : NetworkBehaviour
 {
-    public float voiceVolume = 5f;
+    public bool hearYourself;
+    [Range(0f, 2f)] public float volume = 1f; //set to (0-2) because it was too high
+    
+    //increase/decrease everyone else's volume (idk how to boost your own volume yet cut me some slack)
+    //eventually maybe fin can make a ui with everyones volume sliders so we can have separate volumes per person
+    //like in content warning or smth
+    
+    [Header("Proximity Range")]
+    [SerializeField] private float minDistance = 5; //full volume within this range
+    [SerializeField] private float maxDistance = 15; //silence beyond this
     
     private AudioSource _audioSrc;
     private bool _isRecording;
 
-    private float _sendInterval = 0.05f; //send data 20 times a second
+    private readonly float SendInterval = 0.025f; //40x per second, gives slightly lower delay
     private float _timer;
 
     private Queue<float[]> _jitterBuffer = new();
-    private const int JitterPackets = 2;
+
+    private const int JitterPackets = 1; //lower delay
+    private const int MaxJitterPackets = 4; //prevents voice delay building up forever
+
     private float[] _currentPacket;
     private int _currentPacketPos;
-
-    private static uint SampleRate => SteamUser.GetVoiceOptimalSampleRate();
+    
+    private const float SilenceThreshold = 0.003f; //packets below this amplitude gonna be ignored
+    private static uint SampleRate => SteamUser.GetVoiceOptimalSampleRate(); //dynamically changes between like 11k and 48k to reduce cpu usage during decomp
 
     private void Awake()
     {
         _audioSrc = GetComponent<AudioSource>();
-        _audioSrc.spatialBlend = 0f; //temp, set to 1f for real proximity
-        _audioSrc.rolloffMode = AudioRolloffMode.Logarithmic;
-        _audioSrc.minDistance = 8f;
-        _audioSrc.maxDistance = 25f;
+        
+        _audioSrc.spatialBlend = 1f; //0 = 2D, 1 = 3D
+        _audioSrc.rolloffMode = AudioRolloffMode.Linear;
+        _audioSrc.minDistance = minDistance;
+        _audioSrc.maxDistance = maxDistance;
         _audioSrc.loop = true;
         _audioSrc.volume = 1f;
+        _audioSrc.dopplerLevel = 0f;
     }
 
     public override void OnStartClient()
     {
         var rate = (int)SampleRate;
-        var streamClip = AudioClip.Create("VoiceStream", rate * 2, 1, rate, true, OnAudioRead);
+        var streamClip = AudioClip.Create("voice", rate * 2, 1, rate, true, OnAudioRead);
         _audioSrc.clip = streamClip;
         _audioSrc.Play();
     }
@@ -44,44 +59,43 @@ public class ProximityChat : NetworkBehaviour
     {
         SteamUser.StartVoiceRecording();
         _isRecording = true;
-        _audioSrc.mute = true;
+        _audioSrc.mute = !hearYourself;
     }
-    
+
     private void OnAudioRead(float[] data)
     {
         for (var i = 0; i < data.Length; i++)
         {
-            if (_currentPacket == null && _jitterBuffer.Count >= JitterPackets)
+            //make sure jitter buffer has enough data before starting playback x
+            if(_currentPacket == null && _jitterBuffer.Count >= JitterPackets)
                 _currentPacket = _jitterBuffer.Dequeue();
 
             if (_currentPacket != null)
             {
                 data[i] = _currentPacket[_currentPacketPos++];
-
                 if (_currentPacketPos >= _currentPacket.Length)
                 {
+                    //move onto next packet
                     _currentPacket = _jitterBuffer.Count > 0 ? _jitterBuffer.Dequeue() : null;
                     _currentPacketPos = 0;
                 }
             }
             else
-            {
                 data[i] = 0f;
-            }
         }
     }
 
     private void Update()
     {
         if (!isLocalPlayer || !_isRecording) return;
-
+        
         _timer += Time.deltaTime;
-        if (_timer < _sendInterval) return;
+        if (_timer < SendInterval) return;
         _timer = 0f;
 
         var result = SteamUser.GetAvailableVoice(out var bytesAvailable);
         if (result != EVoiceResult.k_EVoiceResultOK || bytesAvailable == 0) return;
-
+        
         var buffer = new byte[bytesAvailable];
         result = SteamUser.GetVoice(true, buffer, bytesAvailable, out var bytesWritten);
 
@@ -93,43 +107,46 @@ public class ProximityChat : NetworkBehaviour
         }
     }
 
-    [Command(requiresAuthority = true)]
+    [Command(requiresAuthority = true, channel = Channels.Unreliable)] //this channel better for voices because it doesnt wait for missing old packets
     private void CmdSendVoice(byte[] compressedData)
-        => RpcReceiveVoice(compressedData);
+    {
+        RpcReceiveVoice(compressedData);
+    }
 
-    [ClientRpc]
+    [ClientRpc(channel = Channels.Unreliable)]
     private void RpcReceiveVoice(byte[] compressedData)
     {
-        if (isLocalPlayer) return;
-
+        if (isLocalPlayer && !hearYourself) return;
+        
         var sampleRate = SampleRate;
         var decompressed = new byte[sampleRate * 4];
-
         var result = SteamUser.DecompressVoice
         (
             compressedData, (uint)compressedData.Length,
             decompressed, (uint)decompressed.Length,
             out var bytesWritten, sampleRate
         );
-
-        if (result != EVoiceResult.k_EVoiceResultOK || bytesWritten == 0)
-        {
-            Debug.LogWarning($"decompressVoice failed: {result}, bytesWritten: {bytesWritten}");
-            return;
-        }
-
+        
+        if (result != EVoiceResult.k_EVoiceResultOK || bytesWritten == 0) return;
+        
         var sampleCount = (int)(bytesWritten / 2);
         var samples = new float[sampleCount];
-        var maxSample = 0f;
+        var peakAmplitude = 0f; //the peak
 
         for (var i = 0; i < sampleCount; i++)
         {
-            var sample = (short)(decompressed[i * 2] | (decompressed[i * 2 + 1] << 8));
-            samples[i] = Mathf.Clamp(sample / 32768f * voiceVolume, -1f, 1f);
-            maxSample = Mathf.Max(maxSample, Mathf.Abs(samples[i]));
+            var raw = (short)(decompressed[i * 2] | (decompressed[i * 2 + 1] << 8));
+            var sample = raw / 32768f * volume;
+            samples[i] = Mathf.Clamp(sample, -1f, 1f);
+            peakAmplitude = Mathf.Max(peakAmplitude, Mathf.Abs(samples[i]));
         }
         
-        if (maxSample < 0.01f) return;
+        //drop packets containing silence
+        if (peakAmplitude < SilenceThreshold) return;
+
+        //this prevents the old packets building up and causing the delay
+        while (_jitterBuffer.Count >= MaxJitterPackets)
+            _jitterBuffer.Dequeue();
 
         _jitterBuffer.Enqueue(samples);
     }
@@ -145,7 +162,7 @@ public class ProximityChat : NetworkBehaviour
 
     private void OnDisable()
     {
-        if (isLocalPlayer && _isRecording)
+        if (_isRecording && isLocalPlayer)
         {
             SteamUser.StopVoiceRecording();
             _isRecording = false;

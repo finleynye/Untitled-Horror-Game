@@ -100,12 +100,6 @@ public class FlashLightController : NetworkBehaviour
     public override void OnStopAuthority()
     {
         base.OnStopAuthority();
-
-        if (playerInput != null)
-        {
-            playerInput.Player.Flashlight.performed -= ToggleFlashlight;
-            playerInput.Disable();
-            playerInput = null;
-        }
+        playerInput?.Disable();
     }
 }

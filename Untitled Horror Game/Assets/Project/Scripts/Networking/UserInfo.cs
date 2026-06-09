@@ -27,8 +27,12 @@ public class UserInfo : MonoBehaviour
     [Header("Ready Status")]
     public TMP_Text readyStatusText;
 
-    [SerializeField] private Color readyColour = new Color(0.45f, 0.75f, 0.35f);
-    [SerializeField] private Color notReadyColour = new Color(0.8f, 0.05f, 0.05f);
+    [Header("Ready Status Colours")]
+    [SerializeField] private Color readyButtonColour = new Color32(23, 36, 28, 255);
+    [SerializeField] private Color notReadyButtonColour = new Color32(36, 26, 26, 255);
+
+    [SerializeField] private Color readyTextColour = new Color32(168, 216, 160, 255);
+    [SerializeField] private Color notReadyTextColour = new Color32(224, 106, 95, 255);
 
     private void Start()
     {
@@ -121,17 +125,22 @@ public class UserInfo : MonoBehaviour
         if (readyStatusText == null)
             return;
 
+        if (readyBtnImage == null)
+            return;
+
         if (isReady)
         {
             readyStatusText.text = "READY";
-            readyBtnImage.color = notReadyColour;
-            readyStatusText.color = readyColour;
+
+            readyBtnImage.color = readyButtonColour;
+            readyStatusText.color = readyTextColour;
         }
         else
         {
-            readyStatusText.text = "NOT READY";
-            readyBtnImage.color = readyColour;
-            readyStatusText.color = notReadyColour;
+            readyStatusText.text = "WAITING";
+
+            readyBtnImage.color = notReadyButtonColour;
+            readyStatusText.color = notReadyTextColour;
         }
     }
 }
