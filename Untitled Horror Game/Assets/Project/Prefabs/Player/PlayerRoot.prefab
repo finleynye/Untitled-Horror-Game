@@ -1866,3 +1866,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  hearYourself: 0
+  volume: 8
+  minDistance: 5
+  maxDistance: 25
