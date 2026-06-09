@@ -24,7 +24,9 @@ public class LobbyController : MonoBehaviour
     public Button randomiseRolesBtn;
     
     public TMP_Text refreshCount;
-    
+
+    [Header("Lobby Player Visuals")]
+    [SerializeField] private LobbyPodiumDisplay podiumDisplay;
     private static UHG_NetworkManager Manager => NetworkManager.singleton as UHG_NetworkManager;
  
     private void Awake()
@@ -114,6 +116,8 @@ public class LobbyController : MonoBehaviour
         if (_userInfos.Count == Manager.Players.Count)
             UpdateUserInfo();
 
+        if (podiumDisplay != null)
+            podiumDisplay.RefreshVisuals();
         //unhide loading screen once you join the lobby
         /*if (_userInfos.Count > 0)
             LoadingScreen.Instance?.Hide();*/

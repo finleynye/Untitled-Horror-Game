@@ -308,15 +308,6 @@ public class PlayerMovement : NetworkBehaviour
         if (isPaused)
             return;
 
-        if (characterRenderer != null)
-        {
-            float modelHeight = newValue ? 0.6f : 1f;
-            float modelYPos = newValue ? -0.4f : 0f;
-
-            characterRenderer.transform.localScale = new Vector3(1f, modelHeight, 1f);
-            characterRenderer.transform.localPosition = new Vector3(0f, modelYPos, 0f);
-        }
-
         if (_controller != null)
         {
             _controller.height = newValue ? 1.2f : 2f;

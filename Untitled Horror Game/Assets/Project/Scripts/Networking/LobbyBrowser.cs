@@ -9,7 +9,6 @@ public class LobbyBrowser : MonoBehaviour
     public GameObject lobbyMenu;
     public GameObject lobbyInfoPref;
     public GameObject lobbyListContent;
-    public GameObject mainMenu;
 
     public List<GameObject> lobbyList;
 
@@ -63,8 +62,7 @@ public class LobbyBrowser : MonoBehaviour
     public void GetLobbies()
     {
         DestroyLobbies();
-        
-        mainMenu.SetActive(false);
+       
         lobbyMenu.SetActive(true);
         
         SteamLobby.Instance.GetLobbyList();
@@ -75,8 +73,6 @@ public class LobbyBrowser : MonoBehaviour
     public void BackToMainMenu()
     {
         DestroyLobbies();
-        
-        mainMenu.SetActive(true);
         lobbyMenu.SetActive(false);
         
         /*DiscordManager.Instance.Presence.SetPresence("In the menus");
