@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b96c4bd7-28f2-45b8-8870-a9290c859562" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Project/Scenes/Menu/Main Menu.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scenes/Menu/Main Menu.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Audio/ProximityChat.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Audio/ProximityChat.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Flashlight/FlashLightController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Flashlight/FlashLightController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +47,14 @@
   }
 }</component>
   <component name="RunManager" selected="Standalone Player.Start Unity">
+    <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="E:/Untitled Horror Game.exe" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="E:\" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <method v="2" />
+    </configuration>
     <configuration name="Start Unity" type="RunUnityExe" factoryName="Unity Executable">
       <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.3.16f1\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-projectPath &quot;C:\Users\alexp\OneDrive\Desktop\Uni\Unity Games\Untitled-Horror-Game\Untitled Horror Game&quot; -debugCodeOptimization" />
@@ -99,6 +111,9 @@
       <workItem from="1780268891507" duration="23000" />
       <workItem from="1780268924003" duration="11322000" />
       <workItem from="1780350109672" duration="76000" />
+      <workItem from="1780946026056" duration="2221000" />
+      <workItem from="1780949089298" duration="8459000" />
+      <workItem from="1780994296195" duration="5703000" />
     </task>
     <servers />
   </component>

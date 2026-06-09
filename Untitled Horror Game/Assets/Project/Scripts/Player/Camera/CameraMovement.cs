@@ -1,4 +1,5 @@
 using Mirror;
+using Steamworks;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -131,9 +132,15 @@ public class CameraMovement : NetworkBehaviour
             return;
         }
 
-        HandleLook();
+        //HandleLook();
         HandleFOV();
         ExhaustedVignette();
+    }
+
+    void LateUpdate()
+    {
+        if (!isOwned) return;
+        HandleLook();
     }
 
     private void HandleFOV()
