@@ -198,8 +198,12 @@ public class PlayerMovement : NetworkBehaviour
         if (currentInput.magnitude > 1)
             currentInput.Normalize();
 
+        //stop tiny input drift from affecting the blend tree
+        if (currentInput.magnitude < 0.1f)
+            currentInput = Vector2.zero;
+
         bool isMoving = currentInput.magnitude > 0.1f;
-        bool isRunning = _isSprinting && isMoving;
+        bool isRunning = _isSprinting && isMoving && !_isCrouching;
 
         if (isMoving)
             lastMoveDirection = currentInput;
@@ -207,13 +211,20 @@ public class PlayerMovement : NetworkBehaviour
         float movementAnimStrength = 0f;
 
         if (isMoving)
-            movementAnimStrength = isRunning ? 1f : 0.5f;
+        {
+            if (_isCrouching)
+                movementAnimStrength = 1f;
+            else
+                movementAnimStrength = isRunning ? 1f : 0.5f;
+        }
 
         Vector2 animDirection = lastMoveDirection * movementAnimStrength;
 
         //damped the SetFloat gives the blend tree a smoother transition between anims
         animator.SetFloat("MoveX", animDirection.x, 0.12f, Time.deltaTime); //.12 (smooth ish but still snappy ps1 like)
         animator.SetFloat("MoveY", animDirection.y, 0.12f, Time.deltaTime);
+        animator.SetBool("IsCrouching", _isCrouching);
+        animator.SetBool("IsSprinting", isRunning);
     }
 
     //network commands (stop speed cheats & let others see crouching effect)
@@ -221,32 +232,38 @@ public class PlayerMovement : NetworkBehaviour
     private void CmdSetSprint(bool value) 
         => _isSprinting = value;
     
-    [Command] 
-    private void CmdSetCrouch(bool value) 
-        => _isCrouching = value;
+    [Command]
+    private void CmdSetCrouch(bool value)
+    {
+        _isCrouching = value;
+
+        if (_isCrouching)
+            _isSprinting = false;
+    }
 
     private void OnCrouchChanged(bool oldValue, bool newValue)
     {
-        if (isPaused) return;
-        
-        /*
-        var height = newValue ? .6f : 1; //size of crouched player : size of regular player
-        playerModel.transform.localScale = new Vector3(1, height, 1);
-        
-        var yPos = newValue ? -.4f : 0;
-        playerModel.transform.localPosition = new Vector3(0, yPos, 0);
-        
-        _controller.height = newValue ? 1.2f : 2;
-        _controller.center = newValue ? new Vector3(0, -.4f, 0) : Vector3.zero;
-        
-        //handle outer body features otherwise they shrink on crouch (cant be a child of the player)
-        //i could just multiply the scale, but thats long
-        /*eyesQuad.localPosition = new Vector3(0, newValue ? -.2f  : .5f,  .5f);
-        mouthQuad.localPosition = new Vector3(0, newValue ? -.4f : .25f, .5f);
-        nametag.localPosition = new Vector3(0, newValue ? .6f : 1.2f,  0);
-        hatSlot.localPosition = new Vector3(0, newValue ? 0 : 1.1f,  0);*/
+        if (isPaused)
+            return;
+
+        if (playerModel != null)
+        {
+            float modelHeight = newValue ? 0.6f : 1f;
+            float modelYPos = newValue ? -0.4f : 0f;
+
+            playerModel.transform.localScale = new Vector3(1f, modelHeight, 1f);
+            playerModel.transform.localPosition = new Vector3(0f, modelYPos, 0f);
+        }
+
+        if (_controller != null)
+        {
+            _controller.height = newValue ? 1.2f : 2f;
+            _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
+        }
+
+        if (nametag != null)
+            nametag.localPosition = new Vector3(0f, newValue ? 0.6f : 1.2f, 0f);
     }
-    
     //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
     public void ClientSetHubPosition()
     {

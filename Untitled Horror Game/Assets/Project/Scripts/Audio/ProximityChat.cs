@@ -7,7 +7,9 @@ using System.Collections.Generic;
 public class ProximityChat : NetworkBehaviour
 {
     public bool hearYourself;
-    [Range(5f, 15f)] public float volume; //increase/decrease everyone else's volume (idk how to boost your own volume yet cut me some slack)
+    [Range(0f, 2f)] public float volume = 1f; //set to (0-2) because it was too high
+    
+    //increase/decrease everyone else's volume (idk how to boost your own volume yet cut me some slack)
     //eventually maybe fin can make a ui with everyones volume sliders so we can have separate volumes per person
     //like in content warning or smth
     
@@ -18,15 +20,18 @@ public class ProximityChat : NetworkBehaviour
     private AudioSource _audioSrc;
     private bool _isRecording;
 
-    private readonly float SendInterval = 0.05f; //20x per second
+    private readonly float SendInterval = 0.025f; //40x per second, gives slightly lower delay
     private float _timer;
 
     private Queue<float[]> _jitterBuffer = new();
-    private const int JitterPackets = 2; //higher = cleaner audio but more delay
+
+    private const int JitterPackets = 1; //lower delay
+    private const int MaxJitterPackets = 4; //prevents voice delay building up forever
+
     private float[] _currentPacket;
     private int _currentPacketPos;
     
-    private const float SilenceThreshold = 0.01f; //packets below this amplitude gonna be ignored
+    private const float SilenceThreshold = 0.003f; //packets below this amplitude gonna be ignored
     private static uint SampleRate => SteamUser.GetVoiceOptimalSampleRate(); //dynamically changes between like 11k and 48k to reduce cpu usage during decomp
 
     private void Awake()
@@ -101,12 +106,14 @@ public class ProximityChat : NetworkBehaviour
             CmdSendVoice(trimmed);
         }
     }
-    
-    [Command(requiresAuthority = true)]
-    private void CmdSendVoice(byte[] compressedData)
-        => RpcReceiveVoice(compressedData);
 
-    [ClientRpc]
+    [Command(requiresAuthority = true, channel = Channels.Unreliable)] //this channel better for voices because it doesnt wait for missing old packets
+    private void CmdSendVoice(byte[] compressedData)
+    {
+        RpcReceiveVoice(compressedData);
+    }
+
+    [ClientRpc(channel = Channels.Unreliable)]
     private void RpcReceiveVoice(byte[] compressedData)
     {
         if (isLocalPlayer && !hearYourself) return;
@@ -136,7 +143,11 @@ public class ProximityChat : NetworkBehaviour
         
         //drop packets containing silence
         if (peakAmplitude < SilenceThreshold) return;
-        
+
+        //this prevents the old packets building up and causing the delay
+        while (_jitterBuffer.Count >= MaxJitterPackets)
+            _jitterBuffer.Dequeue();
+
         _jitterBuffer.Enqueue(samples);
     }
 
