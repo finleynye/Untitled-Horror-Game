@@ -26,6 +26,8 @@ public class CameraMovement : NetworkBehaviour
     public float verticalRotation;
     public float horizontalRotation;
 
+    public Transform PlayerCameraTransform => playerCam != null ? playerCam.transform : null;
+
     private PlayerInput _playerInput;
 
     [Header("Post Processing")]
@@ -195,13 +197,15 @@ public class CameraMovement : NetworkBehaviour
         float mouseY = _lookInput.y * mouseSensitivity;
 
         verticalRotation -= mouseY;
-        verticalRotation = Mathf.Clamp(verticalRotation, -90f, 90f);
+        verticalRotation = Mathf.Clamp(verticalRotation, -65f, 80f);
 
-        //camera holder looks up and down
+        horizontalRotation += mouseX;
+
+        //camera looks up and down
         camHolder.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
 
-        //player body turns left and right
-        playerBody.Rotate(Vector3.up * mouseX);
+        //player root/body turns left and right
+        playerBody.rotation = Quaternion.Euler(0f, horizontalRotation, 0f);
     }
 
     private void SetCameraState(bool state)
