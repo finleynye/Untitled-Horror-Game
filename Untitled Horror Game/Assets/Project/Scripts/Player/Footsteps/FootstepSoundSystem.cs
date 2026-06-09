@@ -1,6 +1,13 @@
 using Mirror;
 using UnityEngine;
 
+
+[System.Serializable]
+public class FootstepSurfaceAudio
+{
+    public FootstepSurfaceType surfaceType;
+    public AudioClip[] clips;
+}
 [RequireComponent(typeof(AudioSource))]
 public class FootstepSoundSystem : NetworkBehaviour
 {
@@ -18,8 +25,13 @@ public class FootstepSoundSystem : NetworkBehaviour
     private float stepDelayTimer;
 
     [Header("Footstep Audio")]
-    [SerializeField] private AudioClip[] footstepClips;
+    [SerializeField] private FootstepSurfaceAudio[] surfaceFootsteps;
+    [SerializeField] private AudioClip[] defaultFootstepClips;
     [SerializeField] private float footstepVolume = 1f;
+
+    [Header("Surface Detection")]
+    [SerializeField] private float surfaceRayDistance = 2f;
+    [SerializeField] private LayerMask groundLayerMask = ~0;
 
     [Header("Jump & Land Audio")]
     [SerializeField] private AudioClip jumpClip;
@@ -148,15 +160,16 @@ public class FootstepSoundSystem : NetworkBehaviour
 
     private void PlayFootstep()
     {
-        int clipIndex = GetRandomFootstepClipIndex();
+        FootstepSurfaceType surfaceType = GetCurrentSurfaceType();
+        int clipIndex = GetRandomFootstepClipIndex(surfaceType);
 
         if (clipIndex < 0)
             return;
 
         if (!isServer)
-            PlayFootstepLocal(clipIndex);
+            PlayFootstepLocal(surfaceType, clipIndex);
 
-        CmdPlayFootstep(clipIndex);
+        CmdPlayFootstep(surfaceType, clipIndex);
     }
 
     public void PlayJumpSound()
@@ -185,19 +198,19 @@ public class FootstepSoundSystem : NetworkBehaviour
     }
 
     [Command]
-    private void CmdPlayFootstep(int clipIndex)
+    private void CmdPlayFootstep(FootstepSurfaceType surfaceType, int clipIndex)
     {
-        PlayFootstepLocal(clipIndex);
-        RpcPlayFootstep(clipIndex);
+        PlayFootstepLocal(surfaceType, clipIndex);
+        RpcPlayFootstep(surfaceType, clipIndex);
     }
 
     [ClientRpc]
-    private void RpcPlayFootstep(int clipIndex)
+    private void RpcPlayFootstep(FootstepSurfaceType surfaceType, int clipIndex)
     {
         if (isOwned)
             return;
 
-        PlayFootstepLocal(clipIndex);
+        PlayFootstepLocal(surfaceType, clipIndex);
     }
 
     [Command]
@@ -232,25 +245,26 @@ public class FootstepSoundSystem : NetworkBehaviour
         PlayLandSoundLocal();
     }
 
-    private void PlayFootstepLocal(int clipIndex)
+    private void PlayFootstepLocal(FootstepSurfaceType surfaceType, int clipIndex)
     {
         if (footstepAudioSource == null)
             return;
 
-        if (footstepClips == null || footstepClips.Length == 0)
+        AudioClip[] clips = GetClipsForSurface(surfaceType);
+
+        if (clips == null || clips.Length == 0)
             return;
 
-        if (clipIndex < 0 || clipIndex >= footstepClips.Length)
+        if (clipIndex < 0 || clipIndex >= clips.Length)
             return;
 
-        AudioClip selectedClip = footstepClips[clipIndex];
+        AudioClip selectedClip = clips[clipIndex];
 
         if (selectedClip == null)
             return;
 
         PlayClipLocal(selectedClip, footstepVolume);
     }
-
     private void PlayJumpSoundLocal()
     {
         PlayClipLocal(jumpClip, jumpVolume);
@@ -273,11 +287,45 @@ public class FootstepSoundSystem : NetworkBehaviour
         footstepAudioSource.PlayOneShot(clip, volume);
     }
 
-    private int GetRandomFootstepClipIndex()
+    private int GetRandomFootstepClipIndex(FootstepSurfaceType surfaceType)
     {
-        if (footstepClips == null || footstepClips.Length == 0)
+        AudioClip[] clips = GetClipsForSurface(surfaceType);
+
+        if (clips == null || clips.Length == 0)
             return -1;
 
-        return Random.Range(0, footstepClips.Length);
+        return Random.Range(0, clips.Length);
+    }
+
+    private FootstepSurfaceType GetCurrentSurfaceType()
+    {
+        if (playerRoot == null)
+            return FootstepSurfaceType.Default;
+
+        Vector3 rayStart = playerRoot.position + Vector3.up * 0.2f;
+
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, surfaceRayDistance, groundLayerMask))
+        {
+            FootstepSurfaceTypeDetection surface = hit.collider.GetComponent<FootstepSurfaceTypeDetection>();
+
+            if (surface != null)
+                return surface.surfaceType;
+        }
+
+        return FootstepSurfaceType.Default;
+    }
+
+    private AudioClip[] GetClipsForSurface(FootstepSurfaceType surfaceType)
+    {
+        if (surfaceFootsteps != null)
+        {
+            for (int i = 0; i < surfaceFootsteps.Length; i++)
+            {
+                if (surfaceFootsteps[i].surfaceType == surfaceType)
+                    return surfaceFootsteps[i].clips;
+            }
+        }
+
+        return defaultFootstepClips;
     }
 }

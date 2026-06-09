@@ -23,6 +23,11 @@ public class CameraMovement : NetworkBehaviour
     [SerializeField] private float sprintFOV = 90;
     [SerializeField] private float fovSpeed = 10;
 
+    [Header("Crouch Camera")]
+    [SerializeField] private float standingCameraY = 0.8f;
+    [SerializeField] private float crouchingCameraY = 0.25f;
+    [SerializeField] private float crouchCameraSpeed = 12f;
+
     public Vector2 _lookInput;
     public float verticalRotation;
     public float horizontalRotation;
@@ -132,14 +137,16 @@ public class CameraMovement : NetworkBehaviour
             return;
         }
 
-        //HandleLook();
         HandleFOV();
         ExhaustedVignette();
+        HandleCrouchCamera();
     }
 
     void LateUpdate()
     {
         if (!isOwned) return;
+        if (SceneManager.GetActiveScene().name == "Lobby") return;
+
         HandleLook();
     }
 
@@ -215,6 +222,19 @@ public class CameraMovement : NetworkBehaviour
         playerBody.rotation = Quaternion.Euler(0f, horizontalRotation, 0f);
     }
 
+    private void HandleCrouchCamera()
+    {
+        if (camHolder == null) return;
+        if (playerMovement == null) return;
+
+        float targetY = playerMovement.IsCrouching ? crouchingCameraY : standingCameraY;
+
+        Vector3 currentPosition = camHolder.localPosition;
+
+        currentPosition.y = Mathf.Lerp(currentPosition.y, targetY, crouchCameraSpeed * Time.deltaTime);
+
+        camHolder.localPosition = currentPosition;
+    }
     private void SetCameraState(bool state)
     {
         if (playerCam != null)

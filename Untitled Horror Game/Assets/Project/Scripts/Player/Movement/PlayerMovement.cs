@@ -7,9 +7,8 @@ using UnityEngine.UI;
 public class PlayerMovement : NetworkBehaviour
 {
     private const float Gravity = -18f;
-    
+
     [Header("Refs")]
-    [SerializeField] private GameObject playerModel;
     [SerializeField] private Transform cameraHolder;
     [SerializeField] private Transform nametag;
     [SerializeField] private PlayerInteraction playerInteraction;
@@ -17,13 +16,17 @@ public class PlayerMovement : NetworkBehaviour
     private CharacterController _controller;
     private PlayerInput _playerInput;
 
+    [Header("Visuals")]
+    [SerializeField] private GameObject characterRenderer; //visible character mesh
+    [SerializeField] private GameObject firstPersonView; //camera holder / view stuff
+
     [Header("Movement")]
     [SerializeField] private float walkSpeed;
     [SerializeField] private float sprintSpeed;
     [SerializeField] private float crouchSpeed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float coyoteTime;
-    
+
     [Header("Movement Audio")]
     [SerializeField] private FootstepSoundSystem footstepSoundSystem;
 
@@ -32,11 +35,17 @@ public class PlayerMovement : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
     [SyncVar] public bool _isSprinting;
-    
+
+    //networked animation parameters for the states
+    [SyncVar] private float _networkMoveX;
+    [SyncVar] private float _networkMoveY;
+    [SyncVar] private bool _networkIsGrounded;
+    [SyncVar] private bool _networkIsMoving;
+
     private Vector3 _velocity;
     private float _verticalRotation;
-    [HideInInspector]public Vector2 _moveInput;
-    [HideInInspector]public Vector2 lastMoveDirection;
+    [HideInInspector] public Vector2 _moveInput;
+    [HideInInspector] public Vector2 lastMoveDirection;
     private Vector2 _lookInput;
     private float _coyoteTimer;
 
@@ -47,7 +56,11 @@ public class PlayerMovement : NetworkBehaviour
     private void Awake()
     {
         _controller = GetComponent<CharacterController>();
-        playerModel.SetActive(false);
+
+        //disable player camera/view objects while in lobby
+        //do not disable the actual character mesh
+        if (firstPersonView != null)
+            firstPersonView.SetActive(false);
 
         if (playerInteraction == null)
             playerInteraction = GetComponent<PlayerInteraction>();
@@ -62,7 +75,7 @@ public class PlayerMovement : NetworkBehaviour
     public override void OnStartAuthority()
     {
         if (!isOwned) return;
-        
+
         _playerInput = new PlayerInput();
 
         _playerInput.Player.Jump.performed += _ => Jump();
@@ -71,43 +84,41 @@ public class PlayerMovement : NetworkBehaviour
         _playerInput.Player.Crouch.started += _ => CmdSetCrouch(true);
         _playerInput.Player.Crouch.canceled += _ => CmdSetCrouch(false);
 
-        cameraHolder.gameObject.SetActive(true);
         _playerInput.Enable();
     }
     public override void OnStartLocalPlayer()
         => SceneManager.sceneLoaded += OnSceneLoaded;
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != "Game") return;
+        ApplySceneVisualState();
     }
 
     private void Update()
     {
-        if (SceneManager.GetActiveScene().name != "Lobby")
-        {
-            if (playerModel.activeSelf == false)
-            {
-                if (isOwned)
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    /*DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");*/
-                }
-                playerModel.SetActive(true);
-            }
-        }
-    
-        if (!isOwned) return;
-        if (SceneManager.GetActiveScene().name == "Lobby") return;
+        ApplySceneVisualState();
 
-        if (isFrozen)
-        {
-            _velocity = Vector3.zero; 
+        if (SceneManager.GetActiveScene().name == "Lobby")
             return;
+
+        //owner controls movement/input
+        if (isOwned)
+        {
+            if (isFrozen)
+            {
+                _velocity = Vector3.zero;
+                return;
+            }
+
+            HandleMovement();
+            HandleInteraction();
+            HandleStamina();
+            HandleMovementAnimation();
         }
-        HandleMovement();
-        HandleInteraction();
-        HandleStamina();
-        HandleMovementAnimation();
+        else
+        {
+            //remote clients only display synced animation data
+            HandleRemoteAnimation();
+        }
     }
     private void HandleMovement()
     {
@@ -121,7 +132,7 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
             _coyoteTimer -= Time.deltaTime;
-        
+
         var currentSpeed = walkSpeed;
 
         bool isMoving = _moveInput.magnitude > 0.1f;
@@ -129,7 +140,7 @@ public class PlayerMovement : NetworkBehaviour
         if (_isSprinting && isMoving)
             currentSpeed = sprintSpeed;
 
-        if (_isCrouching) 
+        if (_isCrouching)
             currentSpeed = crouchSpeed;
 
         var moveDir = transform.right * _moveInput.x + transform.forward * _moveInput.y;
@@ -174,7 +185,9 @@ public class PlayerMovement : NetworkBehaviour
         {
             _velocity.y = Mathf.Sqrt(jumpForce * -2f * Gravity);
             _coyoteTimer = 0f;
-            footstepSoundSystem.PlayJumpSound();
+
+            if (footstepSoundSystem != null)
+                footstepSoundSystem.PlayJumpSound();
         }
     }
     private void TryStartSprint()
@@ -187,6 +200,19 @@ public class PlayerMovement : NetworkBehaviour
     private void StopSprint()
     {
         CmdSetSprint(false);
+    }
+    private void HandleRemoteAnimation()
+    {
+        if (animator == null)
+            return;
+
+        float animSmoothTime = _networkIsGrounded ? 0.06f : 0.12f;
+
+        animator.SetFloat("MoveX", _networkMoveX, animSmoothTime, Time.deltaTime);
+        animator.SetFloat("MoveY", _networkMoveY, animSmoothTime, Time.deltaTime);
+        animator.SetBool("IsCrouching", _isCrouching);
+        animator.SetBool("IsSprinting", _isSprinting && _networkIsMoving && !_isCrouching);
+        animator.SetBool("IsGrounded", _networkIsGrounded);
     }
     private void HandleMovementAnimation()
     {
@@ -220,18 +246,54 @@ public class PlayerMovement : NetworkBehaviour
 
         Vector2 animDirection = lastMoveDirection * movementAnimStrength;
 
-        //damped the SetFloat gives the blend tree a smoother transition between anims
-        animator.SetFloat("MoveX", animDirection.x, 0.12f, Time.deltaTime); //.12 (smooth ish but still snappy ps1 like)
-        animator.SetFloat("MoveY", animDirection.y, 0.12f, Time.deltaTime);
+        float animSmoothTime = _controller.isGrounded ? 0.06f : 0.12f; //lower dampen for jump animation because of weird transition timings?
+
+        animator.SetFloat("MoveX", animDirection.x, animSmoothTime, Time.deltaTime);
+        animator.SetFloat("MoveY", animDirection.y, animSmoothTime, Time.deltaTime);
         animator.SetBool("IsCrouching", _isCrouching);
         animator.SetBool("IsSprinting", isRunning);
+        animator.SetBool("IsGrounded", _controller.isGrounded);
+
+        //send values to server so other clients can see them
+        CmdSetAnimationValues(animDirection.x, animDirection.y, _controller.isGrounded, isMoving);
+    }
+    private void ApplySceneVisualState()
+    {
+        bool inLobby = SceneManager.GetActiveScene().name == "Lobby";
+
+        //player mesh should stay active in the actual game
+        if (characterRenderer != null)
+            characterRenderer.SetActive(!inLobby);
+
+        //only the owning player should ever have the first-person camera active
+        if (firstPersonView != null)
+            firstPersonView.SetActive(isOwned && !inLobby);
+
+        if (cameraHolder != null)
+            cameraHolder.gameObject.SetActive(isOwned && !inLobby);
+
+        if (isOwned)
+        {
+            Cursor.lockState = inLobby ? CursorLockMode.None : CursorLockMode.Locked;
+            /*DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");*/
+            Cursor.visible = inLobby;
+        }
     }
 
     //network commands (stop speed cheats & let others see crouching effect)
-    [Command] 
-    private void CmdSetSprint(bool value) 
+    [Command]
+    private void CmdSetAnimationValues(float moveX, float moveY, bool isGrounded, bool isMoving)
+    {
+        _networkMoveX = moveX;
+        _networkMoveY = moveY;
+        _networkIsGrounded = isGrounded;
+        _networkIsMoving = isMoving;
+    }
+
+    [Command]
+    private void CmdSetSprint(bool value)
         => _isSprinting = value;
-    
+
     [Command]
     private void CmdSetCrouch(bool value)
     {
@@ -246,13 +308,13 @@ public class PlayerMovement : NetworkBehaviour
         if (isPaused)
             return;
 
-        if (playerModel != null)
+        if (characterRenderer != null)
         {
             float modelHeight = newValue ? 0.6f : 1f;
             float modelYPos = newValue ? -0.4f : 0f;
 
-            playerModel.transform.localScale = new Vector3(1f, modelHeight, 1f);
-            playerModel.transform.localPosition = new Vector3(0f, modelYPos, 0f);
+            characterRenderer.transform.localScale = new Vector3(1f, modelHeight, 1f);
+            characterRenderer.transform.localPosition = new Vector3(0f, modelYPos, 0f);
         }
 
         if (_controller != null)
@@ -276,13 +338,13 @@ public class PlayerMovement : NetworkBehaviour
         => SceneManager.sceneLoaded -= OnSceneLoaded;
     public override void OnStopClient()
     {
-        if(!isOwned) return;
-        
+        if (!isOwned) return;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         isPaused = false;
     }
-   
+
     public override void OnStopAuthority()
         => _playerInput?.Disable();
 }
