@@ -28,6 +28,15 @@ public class CameraMovement : NetworkBehaviour
     [SerializeField] private float crouchingCameraY = 0.25f;
     [SerializeField] private float crouchCameraSpeed = 12f;
 
+    [Header("Emote Camera")]
+    [SerializeField] private Transform emoteCameraTransform;
+    [SerializeField] private float emoteCameraMoveSpeed = 8f;
+    [SerializeField] private float emoteCameraRotateSpeed = 8f;
+
+    private bool isUsingEmoteCamera;
+    private Vector3 normalCameraLocalPosition;
+    private Quaternion normalCameraLocalRotation;
+
     public Vector2 _lookInput;
     public float verticalRotation;
     public float horizontalRotation;
@@ -102,6 +111,22 @@ public class CameraMovement : NetworkBehaviour
                 vignette.smoothness.value = normalVignetteSmoothness;
             }
         }
+
+        if (camHolder != null)
+        {
+            normalCameraLocalPosition = camHolder.localPosition;
+            normalCameraLocalRotation = camHolder.localRotation;
+        }
+    }
+
+    public void SetEmoteCamera(bool value)
+    {
+        isUsingEmoteCamera = value;
+        if (!isUsingEmoteCamera && camHolder != null)
+        {
+            camHolder.localPosition = normalCameraLocalPosition;
+            camHolder.localRotation = normalCameraLocalRotation;
+        }
     }
     public override void OnStartClient()
     {
@@ -126,7 +151,16 @@ public class CameraMovement : NetworkBehaviour
     void Update()
     {
         if (!isOwned) return;
-        if (SceneManager.GetActiveScene().name == "Lobby") return;
+
+        bool isLobby = SceneManager.GetActiveScene().name == "Lobby";
+
+        if (isLobby)
+        {
+            if (isUsingEmoteCamera)
+                HandleEmoteCamera();
+     
+            return;
+        }
 
         if (playerMovement == null) return;
         if (playerStamina == null) return;
@@ -139,14 +173,15 @@ public class CameraMovement : NetworkBehaviour
 
         HandleFOV();
         ExhaustedVignette();
+
+        if (isUsingEmoteCamera)
+        {
+            HandleEmoteCamera();
+            return;
+        }
+
         HandleCrouchCamera();
         HandleLook();
-    }
-
-    void LateUpdate()
-    {
-        if (!isOwned) return;
-        if (SceneManager.GetActiveScene().name == "Lobby") return;
     }
 
     private void HandleFOV()
@@ -284,5 +319,15 @@ public class CameraMovement : NetworkBehaviour
         if (cameraRenderTexture == null) return;
        
         playerCam.targetTexture = cameraRenderTexture;
+    }
+
+    private void HandleEmoteCamera()
+    {
+        if (camHolder == null) return;
+        if (emoteCameraTransform == null) return;
+
+        camHolder.position = Vector3.Lerp(camHolder.position, emoteCameraTransform.position, emoteCameraMoveSpeed * Time.deltaTime);
+
+        camHolder.rotation = Quaternion.Lerp(camHolder.rotation, emoteCameraTransform.rotation, emoteCameraRotateSpeed * Time.deltaTime);
     }
 }

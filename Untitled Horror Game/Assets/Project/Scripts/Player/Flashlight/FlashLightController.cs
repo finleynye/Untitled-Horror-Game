@@ -64,7 +64,7 @@ public class FlashLightController : NetworkBehaviour
     {
         flashlightActive = !flashlightActive;
 
-        RpcPlayFlashlightSound(flashlightActive);
+        RpcPlayFlashlightSound();
     }
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
@@ -81,10 +81,9 @@ public class FlashLightController : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcPlayFlashlightSound(bool state)
+    private void RpcPlayFlashlightSound()
     {
         PlayFlashlightSound();
-        SetFlashlightState(state);
     }
 
     private void PlayFlashlightSound()

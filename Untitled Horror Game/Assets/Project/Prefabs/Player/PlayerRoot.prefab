@@ -972,7 +972,7 @@ MonoBehaviour:
   rotationSmooth: 6
   rotationMultiplier: 2.3
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.9
   camMove: {fileID: -7915203926075422777}
 --- !u!82 &3135615954402389493
 AudioSource:
@@ -2885,6 +2885,7 @@ GameObject:
   - component: {fileID: 5415371727979420511}
   - component: {fileID: 3225017836658436827}
   - component: {fileID: 2407566539175740308}
+  - component: {fileID: 2706185997595415248}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -3077,6 +3078,9 @@ MonoBehaviour:
   standingCameraY: 0.8
   crouchingCameraY: 0.25
   crouchCameraSpeed: 12
+  emoteCameraTransform: {fileID: 2496253429793175463}
+  emoteCameraMoveSpeed: 8
+  emoteCameraRotateSpeed: 8
   _lookInput: {x: 0, y: 0}
   verticalRotation: 0
   horizontalRotation: 0
@@ -3177,8 +3181,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  playerMeshRenderer: {fileID: 3299573749241315667}
-  hideForLocalPlayer: 0
+  playerMeshRenderers:
+  - {fileID: 3299573749241315667}
+  hideForLocalPlayer: 1
 --- !u!82 &3225017836658436827
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3295,6 +3300,38 @@ MonoBehaviour:
   volume: 2
   minDistance: 5
   maxDistance: 15
+--- !u!114 &2706185997595415248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671109922971069088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfad023c2e833e8478214928128a8053, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerEmoteController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  animator: {fileID: 4077927531031754720}
+  playerMovement: {fileID: 1840632953507238446}
+  cameraMovement: {fileID: -7915203926075422777}
+  emoteTriggerNames:
+  - Emote_One
+  - Emote_Two
+  - Emote_Three
+  isEmoting: 0
+  movementCancelThreshold: 0.1
+  movementCancelDelay: 0.25
+  localPlayerMeshVisibility: {fileID: 5415371727979420511}
+  emoteAudioSource: {fileID: 9090301109629842756}
+  emoteJingles:
+  - {fileID: 8300000, guid: 83c4102c734fb244e8bbb2b0fa892792, type: 3}
+  - {fileID: 8300000, guid: c1583f42f32942046ab51846bcccb0cd, type: 3}
+  - {fileID: 8300000, guid: 2566708fc20dae34b9c0c5e600d1d089, type: 3}
+  emoteJingleVolume: 1
 --- !u!1 &8726234840520910661
 GameObject:
   m_ObjectHideFlags: 0
