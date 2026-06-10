@@ -34,8 +34,8 @@ ModelImporter:
       name: Dance 3
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 0
-      lastFrame: 450
+      firstFrame: 10
+      lastFrame: 303
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
