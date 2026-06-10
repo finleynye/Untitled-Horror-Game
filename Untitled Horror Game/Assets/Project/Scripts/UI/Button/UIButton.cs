@@ -16,14 +16,17 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [Header("Button Colours")]
     [SerializeField] private bool useColourEffects = true;
 
-    [SerializeField] private Color normalBackgroundColour = new Color32(216, 208, 189, 255); //SO MANY FUCKING COLOURS IDK GOO GOO HELPED ME
-    [SerializeField] private Color normalTextColour = new Color32(23, 19, 19, 255);
-    [SerializeField] private Color hoverBackgroundColour = new Color32(139, 30, 30, 255);
-    [SerializeField] private Color hoverTextColour = new Color32(242, 232, 216, 255);
-    [SerializeField] private Color clickedBackgroundColour = new Color32(74, 13, 13, 255);
+    [SerializeField] private Color normalBackgroundColour = new Color32(216, 208, 189, 170);
+    [SerializeField] private Color normalTextColour = new Color32(20, 16, 14, 255);
+
+    [SerializeField] private Color hoverBackgroundColour = new Color32(120, 18, 18, 210);
+    [SerializeField] private Color hoverTextColour = new Color32(255, 238, 220, 255);
+
+    [SerializeField] private Color clickedBackgroundColour = new Color32(60, 8, 8, 230);
     [SerializeField] private Color clickedTextColour = new Color32(255, 245, 230, 255);
-    [SerializeField] private Color disabledBackgroundColour = new Color32(74, 69, 64, 255);
-    [SerializeField] private Color disabledTextColour = new Color32(138, 129, 119, 255);
+
+    [SerializeField] private Color disabledBackgroundColour = new Color32(45, 42, 39, 120);
+    [SerializeField] private Color disabledTextColour = new Color32(120, 110, 100, 180);
 
     [SerializeField] private float colourInterpSpeed = 12f;
 

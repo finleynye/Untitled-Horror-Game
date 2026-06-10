@@ -25,7 +25,7 @@ public class FlashLightController : NetworkBehaviour
 
         if (flashlightAudioSource == null)
             flashlightAudioSource = GetComponentInChildren<AudioSource>(true);
-        
+
     }
 
     public override void OnStartClient()
@@ -64,7 +64,7 @@ public class FlashLightController : NetworkBehaviour
     {
         flashlightActive = !flashlightActive;
 
-        RpcPlayFlashlightSound();
+        RpcPlayFlashlightSound(flashlightActive);
     }
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
@@ -76,14 +76,15 @@ public class FlashLightController : NetworkBehaviour
     {
         if (flashlight_Light == null)
             return;
-        
+
         flashlight_Light.enabled = state;
     }
 
     [ClientRpc]
-    private void RpcPlayFlashlightSound()
+    private void RpcPlayFlashlightSound(bool state)
     {
         PlayFlashlightSound();
+        SetFlashlightState(state);
     }
 
     private void PlayFlashlightSound()

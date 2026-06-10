@@ -13,7 +13,6 @@ public class UserInfo : MonoBehaviour
 
     [Header("User Name Display Info")]
     public TMP_Text userNameText;
-    public TMP_Text userNameTextOutline;
     public TMP_Text role;
     public PlayerRole playerRole;
     public RawImage userIcon;
@@ -43,7 +42,6 @@ public class UserInfo : MonoBehaviour
     public void SetUserValues()
     {
         userNameText.text = userName;
-        userNameTextOutline.text = userName;
         UpdateReadyState();
         
         readyBtn.gameObject.SetActive(steamID == SteamUser.GetSteamID().m_SteamID);
