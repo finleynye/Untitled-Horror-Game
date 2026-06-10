@@ -143,12 +143,6 @@ public class CameraMovement : NetworkBehaviour
         HandleLook();
     }
 
-    void LateUpdate()
-    {
-        if (!isOwned) return;
-        if (SceneManager.GetActiveScene().name == "Lobby") return;
-    }
-
     private void HandleFOV()
     {
         var isMovingForward = playerMovement._moveInput.y > 0.1f;

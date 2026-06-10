@@ -7,7 +7,8 @@ using UnityEngine.SceneManagement;
 
 public class UHG_NetworkManager : NetworkManager
 {
-    [SerializeField] private PlayerController playerObj;
+    [SerializeField] private PlayerController playerRootObj;
+    //[SerializeField] private PlayerController rolePrefObj;
     public List<PlayerController> Players { get; } = new();
 
     public override void Awake()
@@ -28,7 +29,7 @@ public class UHG_NetworkManager : NetworkManager
     {
         if (SceneManager.GetActiveScene().name == "Lobby")
         {
-            var steamPlayer = Instantiate(playerObj);
+            var steamPlayer = Instantiate(playerRootObj);
             steamPlayer.connectionID = conn.connectionId;
             steamPlayer.playerID = GetNextPlayerID();
             steamPlayer.steamID =

@@ -125,6 +125,8 @@ public class PlayerController : NetworkBehaviour
         if (isClient && InLobby)
             LobbyController.Instance.UpdateUserList();
     }
+    
+    //when go into game scene
     private void ApplyRoleMaterial(PlayerRole newRole)
     {
         if (characterRenderer == null)
