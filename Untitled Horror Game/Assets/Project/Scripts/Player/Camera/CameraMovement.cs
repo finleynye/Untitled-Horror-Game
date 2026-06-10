@@ -140,14 +140,13 @@ public class CameraMovement : NetworkBehaviour
         HandleFOV();
         ExhaustedVignette();
         HandleCrouchCamera();
+        HandleLook();
     }
 
     void LateUpdate()
     {
         if (!isOwned) return;
         if (SceneManager.GetActiveScene().name == "Lobby") return;
-
-        HandleLook();
     }
 
     private void HandleFOV()
