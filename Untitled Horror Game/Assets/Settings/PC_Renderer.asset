@@ -15,9 +15,9 @@ MonoBehaviour:
   m_Active: 1
   _settings:
     _shader: {fileID: 4800000, guid: eb732616613fa2d4ab375752805c9e6c, type: 3}
-    _targetResolution: {x: 320, y: 240}
-    _colorBits: 5
-    _ditherStrength: 0.8
+    _targetResolution: {x: 960, y: 540}
+    _colorBits: 7
+    _ditherStrength: 0.2
     _renderPassEvent: 500
 --- !u!114 &11400000
 MonoBehaviour:

@@ -176,7 +176,7 @@ MonoBehaviour:
     volume: 1
     minPitch: 0.95
     maxPitch: 1.05
-    mixer: {fileID: 0}
+    mixer: {fileID: -5361028145471459034, guid: 98c30370ce4084f42839508b5964ed5f, type: 2}
     sounds:
     - {fileID: 8300000, guid: 00a3ad26f3d03f44a9aaec5cf47e9723, type: 3}
   - name: INTERACT
@@ -3453,6 +3453,7 @@ GameObject:
   - component: {fileID: 910895304}
   - component: {fileID: 910895307}
   - component: {fileID: 910895308}
+  - component: {fileID: 910895309}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3600,8 +3601,39 @@ MonoBehaviour:
   fovBreathSpeed: 0.35
   useMicroJolt: 1
   joltChance: 0.005
-  joltAmount: 0.6
+  joltAmount: 0.1
   joltReturnSpeed: 4
+--- !u!114 &910895309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910895303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 946cab0d2ada0ad4b9ca8aac5ed2c62f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PSXStyleShader.PSXRetroGlobals
+  _enabled: 1
+  _snapResolution: {x: 320, y: 240}
+  _useScreenResolution: 0
+  _snapStrength: 1
+  _jitterSpeed: 30
+  _jitterPixels: 1
+  _depthSteps: 48
+  _depthStrength: 0.75
+  _depthNoise: 0.0015
+  _uvPrecision: 96
+  _uvSnapStrength: 1
+  _uvWarpStrength: 0.35
+  _affineSwim: 0.25
+  _affineUvInterpolation: 1
+  _mipBias: -1
+  _vertexLighting: 1
+  _lightSteps: 6
+  _colorBits: 5
+  _ditherStrength: 0.65
 --- !u!1001 &946581037
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5690,7 +5722,6 @@ MonoBehaviour:
   lobbyMenu: {fileID: 124184943}
   lobbyInfoPref: {fileID: 8031853412711484490, guid: 1db7bf2f5fde257478c87a1f7c183576, type: 3}
   lobbyListContent: {fileID: 57545549}
-  mainMenu: {fileID: 0}
   lobbyList: []
 --- !u!4 &1276421471
 Transform:
@@ -9046,7 +9077,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1924337460}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 6107898501423568686, guid: 98c30370ce4084f42839508b5964ed5f, type: 2}
   m_audioClip: {fileID: 0}
