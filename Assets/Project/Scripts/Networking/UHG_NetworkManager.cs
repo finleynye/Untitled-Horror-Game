@@ -49,13 +49,14 @@ public class UHG_NetworkManager : NetworkManager
     {
         base.OnClientSceneChanged();
 
-        if (SceneManager.GetActiveScene().name != gameplaySceneName) return;
-        
-        var localPlayer = NetworkClient.localPlayer;
-        if (localPlayer == null) return;
+        if (SceneManager.GetActiveScene().name != "GrayBoxScene") return;
 
-        var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
-        movement?.ClientSetHubPosition();
+        foreach (var player in Players)
+            player.AttachRolePref();
+
+
+        /*var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
+        movement?.ClientSetHubPosition();*/ //use to give players a proper spawn point later on
 
         //happens after the scene has been changed, tells the server the client is ready to spawn objects here
     }
