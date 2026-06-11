@@ -77,8 +77,6 @@ public class PlayerStamina : NetworkBehaviour
                 becameExhaustedThisFrame = true;
 
                 PlayStaminaExhaustSound();
-
-                Debug.Log("Stamina is empty");
             }
         }
         else
@@ -146,9 +144,16 @@ public class PlayerStamina : NetworkBehaviour
         if (staminaExhaustClip == null)
             return;
 
-        staminaAudioSource.PlayOneShot(staminaExhaustClip, staminaExhaustVolume);
-
+        //set cooldown before playing so this cannot be called twice in the same moment
         staminaExhaustSoundTimer = staminaExhaustSoundCooldown;
+
+        //stop any existing stamina exhaust sound before replaying it
+        staminaAudioSource.Stop();
+
+        staminaAudioSource.clip = staminaExhaustClip;
+        staminaAudioSource.volume = staminaExhaustVolume;
+        staminaAudioSource.loop = false;
+        staminaAudioSource.Play();
     }
 
     public override void OnStopLocalPlayer()
