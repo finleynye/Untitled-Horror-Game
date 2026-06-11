@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class LobbyController : MonoBehaviour
 {
+    public GameObject rolePrefab;
+    
     public static LobbyController Instance;
 
     public TMP_Text lobbyName;
@@ -219,6 +221,8 @@ public class LobbyController : MonoBehaviour
     {
         localPlayerController.CanStartGame(sceneName);
         //AudioManager.Instance.Play(AudioManager.Instance.buttonClick);
+        
+        //get all players, their roles, and assign a roleprefabobj
     }
  
     public void LeaveLobby()

@@ -10,7 +10,6 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("Refs")]
     [SerializeField] private Transform cameraHolder;
-    [SerializeField] private Transform nametag;
     [SerializeField] private PlayerInteraction playerInteraction;
     [SerializeField] private PlayerStamina playerStamina;
     private CharacterController _controller;
@@ -86,8 +85,10 @@ public class PlayerMovement : NetworkBehaviour
 
         _playerInput.Enable();
     }
+    
     public override void OnStartLocalPlayer()
         => SceneManager.sceneLoaded += OnSceneLoaded;
+    
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         ApplySceneVisualState();
@@ -266,8 +267,8 @@ public class PlayerMovement : NetworkBehaviour
             characterRenderer.SetActive(!inLobby);
 
         //only the owning player should ever have the first-person camera active
-        if (firstPersonView != null)
-            firstPersonView.SetActive(isOwned && !inLobby);
+        /*if (firstPersonView != null)
+            firstPersonView.SetActive(isOwned && !inLobby);*/
 
         if (cameraHolder != null)
             cameraHolder.gameObject.SetActive(isOwned && !inLobby);
@@ -313,9 +314,6 @@ public class PlayerMovement : NetworkBehaviour
             _controller.height = newValue ? 1.2f : 2f;
             _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
         }
-
-        if (nametag != null)
-            nametag.localPosition = new Vector3(0f, newValue ? 0.6f : 1.2f, 0f);
     }
     //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
     public void ClientSetHubPosition()
