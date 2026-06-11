@@ -6,12 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="b96c4bd7-28f2-45b8-8870-a9290c859562" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Untitled Horror Game/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/DefaultRole.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/DefaultRole.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/KillerRole.prefab" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/KillerRole.prefab.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Prefabs/Player/PlayerRoot.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Scenes/Main Menu.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scenes/Main Menu.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Networking/LobbyController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Networking/LobbyController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Networking/UHG_NetworkManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Networking/UHG_NetworkManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Camera/CameraMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Camera/CameraMovement.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Camera/CameraLean.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Camera/CameraLean.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Controller/PlayerController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Controller/PlayerController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Movement/PlayerMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/Scripts/Player/Movement/PlayerMovement.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Project/UI/Fonts/SpecialElite-Regular SDF.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,6 +120,7 @@
       <workItem from="1780946026056" duration="2221000" />
       <workItem from="1780949089298" duration="8459000" />
       <workItem from="1780994296195" duration="5703000" />
+      <workItem from="1781210239364" duration="2453000" />
     </task>
     <servers />
   </component>

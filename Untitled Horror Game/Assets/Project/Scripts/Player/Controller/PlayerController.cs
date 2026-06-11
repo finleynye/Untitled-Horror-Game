@@ -21,6 +21,8 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
+    
+    [SerializeField] private GameObject rolePrefObj;
 
     [Header("Role Visuals")]
     [SerializeField] private Renderer characterRenderer;
@@ -124,6 +126,13 @@ public class PlayerController : NetworkBehaviour
 
         if (isClient && InLobby)
             LobbyController.Instance.UpdateUserList();
+    }
+
+    public void AttachRolePref()
+    {
+        var roleObj = Instantiate(rolePrefObj, transform);
+        roleObj.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        NetworkServer.Spawn(roleObj, connectionToClient);
     }
     
     //when go into game scene

@@ -8,7 +8,6 @@ using UnityEngine.SceneManagement;
 public class UHG_NetworkManager : NetworkManager
 {
     [SerializeField] private PlayerController playerRootObj;
-    //[SerializeField] private PlayerController rolePrefObj;
     public List<PlayerController> Players { get; } = new();
 
     public override void Awake()
@@ -42,6 +41,7 @@ public class UHG_NetworkManager : NetworkManager
     public void StartGame(string nextScene)
     {
         SteamLobby.Instance.SetLobbyPrivate();
+        
         ServerChangeScene(nextScene);
     }
 
@@ -49,11 +49,14 @@ public class UHG_NetworkManager : NetworkManager
     {
         base.OnClientSceneChanged();
 
-        if (SceneManager.GetActiveScene().name != "Game") return;
+        if (SceneManager.GetActiveScene().name != "GrayBoxScene") return;
         
-        var localPlayer = NetworkClient.localPlayer;
-        var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
-        movement?.ClientSetHubPosition();
+        foreach (var player in Players)
+            player.AttachRolePref();
+        
+        
+        /*var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
+        movement?.ClientSetHubPosition();*/ //use to give players a proper spawn point later on
 
         //happens after the scene has been changed, tells the server the client is ready to spawn objects here
     }
