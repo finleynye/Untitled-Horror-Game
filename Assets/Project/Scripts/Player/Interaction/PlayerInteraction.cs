@@ -73,7 +73,7 @@ public class PlayerInteraction : NetworkBehaviour
             if (!interactable.CanShowPrompt())
                 continue;
 
-            float distance = Vector3.Distance(transform.position, interactable.transform.position);
+            float distance = interactable.GetDistanceFrom(transform.position);
 
             if (distance < closestDistance)
             {
@@ -94,7 +94,7 @@ public class PlayerInteraction : NetworkBehaviour
 
         if (interactable == null) return;
 
-        float distance = Vector3.Distance(transform.position, interactable.transform.position);
+        float distance = interactable.GetDistanceFrom(transform.position);
 
         if (distance > interactionCheckRadius)
             return;

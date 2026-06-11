@@ -320,9 +320,7 @@ public class PlayerMovement : NetworkBehaviour
     //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
     public void ClientSetHubPosition()
     {
-        _controller.enabled = false;
-        transform.position = new Vector3(Random.Range(10f, -10f), Random.Range(5f, 1f), Random.Range(10f, -10f));
-        _controller.enabled = true;
+        LocalPlayerSpawner.SpawnAtScenePoint(transform, _controller, name);
         //LoadingScreen.Instance?.Hide();
     }
     public override void OnStopLocalPlayer()

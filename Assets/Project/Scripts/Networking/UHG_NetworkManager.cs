@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 public class UHG_NetworkManager : NetworkManager
 {
     [SerializeField] private PlayerController playerObj;
+    [SerializeField] private string gameplaySceneName = "GrayBoxScene";
     public List<PlayerController> Players { get; } = new();
 
     public override void Awake()
@@ -48,9 +49,11 @@ public class UHG_NetworkManager : NetworkManager
     {
         base.OnClientSceneChanged();
 
-        if (SceneManager.GetActiveScene().name != "Game") return;
+        if (SceneManager.GetActiveScene().name != gameplaySceneName) return;
         
         var localPlayer = NetworkClient.localPlayer;
+        if (localPlayer == null) return;
+
         var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
         movement?.ClientSetHubPosition();
 
