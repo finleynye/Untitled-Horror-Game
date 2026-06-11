@@ -1039,7 +1039,8 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
-  playerRootObj: {fileID: 4120952200945428604, guid: 43f90c3f34a79974b8fd3dd5d8c0fd95, type: 3}
+  playerObj: {fileID: 4120952200945428604, guid: 43f90c3f34a79974b8fd3dd5d8c0fd95, type: 3}
+  gameplaySceneName: GrayBoxScene
 --- !u!4 &155078477
 Transform:
   m_ObjectHideFlags: 0

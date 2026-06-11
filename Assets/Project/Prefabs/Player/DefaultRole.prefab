@@ -1513,6 +1513,9 @@ MonoBehaviour:
   standingCameraY: 0.8
   crouchingCameraY: 0.25
   crouchCameraSpeed: 12
+  emoteCameraTransform: {fileID: 0}
+  emoteCameraMoveSpeed: 8
+  emoteCameraRotateSpeed: 8
   _lookInput: {x: 0, y: 0}
   verticalRotation: 0
   horizontalRotation: 0
@@ -1613,7 +1616,8 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  playerMeshRenderer: {fileID: 1023768925412995261}
+  playerMeshRenderers:
+  - {fileID: 1023768925412995261}
   hideForLocalPlayer: 1
 --- !u!114 &-1567703981240854026
 MonoBehaviour:

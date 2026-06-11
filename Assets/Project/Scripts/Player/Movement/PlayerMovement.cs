@@ -84,6 +84,7 @@ public class PlayerMovement : NetworkBehaviour
         _playerInput.Player.Crouch.canceled += _ => CmdSetCrouch(false);
 
         _playerInput.Enable();
+        ClientSetupAfterSceneLoad();
     }
     
     public override void OnStartLocalPlayer()
@@ -91,7 +92,7 @@ public class PlayerMovement : NetworkBehaviour
     
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        ApplySceneVisualState();
+        ClientSetupAfterSceneLoad();
     }
 
     private void Update()
@@ -104,6 +105,9 @@ public class PlayerMovement : NetworkBehaviour
         //owner controls movement/input
         if (isOwned)
         {
+            if (_playerInput == null)
+                return;
+
             if (isFrozen)
             {
                 _velocity = Vector3.zero;
@@ -315,9 +319,23 @@ public class PlayerMovement : NetworkBehaviour
             _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
         }
     }
+    public void ClientSetupAfterSceneLoad()
+    {
+        if (!isOwned)
+            return;
+
+        ApplySceneVisualState();
+    }
+
     //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
     public void ClientSetHubPosition()
     {
+        if (!isOwned)
+            return;
+
+        if (_controller == null)
+            return;
+        
         LocalPlayerSpawner.SpawnAtScenePoint(transform, _controller, name);
         //LoadingScreen.Instance?.Hide();
     }

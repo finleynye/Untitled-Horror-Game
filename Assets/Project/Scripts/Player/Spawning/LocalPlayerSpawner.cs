@@ -8,19 +8,42 @@ public static class LocalPlayerSpawner
 
     public static void SpawnAtScenePoint(Transform playerTransform, CharacterController controller, string playerName)
     {
-        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag(PlayerSpawnPointTag);
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("Could not move local player because the player transform was missing.");
+            return;
+        }
+
+        GameObject[] spawnPoints = null;
+        try
+        {
+            spawnPoints = GameObject.FindGameObjectsWithTag(PlayerSpawnPointTag);
+        }
+        catch (UnityException)
+        {
+            Debug.LogWarning($"Tag '{PlayerSpawnPointTag}' does not exist. Add it in Unity's Tag Manager.");
+        }
 
         Vector3 spawnPosition;
-        if (spawnPoints.Length > 0)
+        if (spawnPoints != null && spawnPoints.Length > 0)
         {
             GameObject selectedSpawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
             spawnPosition = selectedSpawnPoint.transform.position + Vector3.up * SpawnPointVerticalOffset;
         }
         else
-            spawnPosition = new Vector3(Random.Range(10f, -10f), Random.Range(5f, 1f), Random.Range(10f, -10f));
+        {
+            Debug.LogWarning($"No objects tagged '{PlayerSpawnPointTag}' were found in {SceneManager.GetActiveScene().name}. Using a random fallback position for {playerName}.");
+            spawnPosition = new Vector3(Random.Range(-10f, 10f), Random.Range(1f, 5f), Random.Range(-10f, 10f));
+        }
         
-        controller.enabled = false;
+
+        bool controllerWasEnabled = controller != null && controller.enabled;
+        if (controllerWasEnabled)
+            controller.enabled = false;
+
         playerTransform.position = spawnPosition;
-        controller.enabled = true;
+
+        if (controller != null)
+            controller.enabled = controllerWasEnabled;
     }
 }

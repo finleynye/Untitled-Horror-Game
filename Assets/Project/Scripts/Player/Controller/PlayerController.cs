@@ -1,7 +1,8 @@
-using UnityEngine;
 using Mirror;
 using Steamworks;
+using System.Globalization;
 using UnityEngine.SceneManagement;
+using UnityEngine;
 
 public enum PlayerRole
 {
@@ -21,8 +22,9 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
-    
+
     [SerializeField] private GameObject rolePrefObj;
+    private GameObject _spawnedRoleObj;
 
     [Header("Role Visuals")]
     [SerializeField] private Renderer characterRenderer;
@@ -36,7 +38,7 @@ public class PlayerController : NetworkBehaviour
 
     private static bool InLobby => SceneManager.GetActiveScene().name == "Lobby";
     public event System.Action<string> OnNameChanged;
- 
+
     private UHG_NetworkManager _manager;
     private UHG_NetworkManager Manager
     {
@@ -47,23 +49,24 @@ public class PlayerController : NetworkBehaviour
             return _manager = NetworkManager.singleton as UHG_NetworkManager;
         }
     }
- 
+
     private void Start()
         => DontDestroyOnLoad(gameObject);
-    
+
     public override void OnStartAuthority()
     {
         CmdSetPlayerName(SteamFriends.GetPersonaName());
         gameObject.name = "LocalPlayer";
- 
+
         if (!InLobby) return;
         LobbyController.Instance.SetLocalPlayer(this);
         LobbyController.Instance.UpdateLobbyName();
     }
-    
+
     public override void OnStartClient()
     {
-        Manager.Players.Add(this);
+        if (!Manager.Players.Contains(this))
+            Manager.Players.Add(this);
 
         ApplyRoleMaterial(role);
 
@@ -71,32 +74,32 @@ public class PlayerController : NetworkBehaviour
         LobbyController.Instance.UpdateLobbyName();
         LobbyController.Instance.UpdateUserList();
     }
- 
+
     public override void OnStopClient()
     {
         Manager.Players.Remove(this);
         if (!InLobby) return;
         LobbyController.Instance?.UpdateUserList();
     }
- 
-    [Command] 
-    private void CmdSetPlayerName(string name) 
+
+    [Command]
+    private void CmdSetPlayerName(string name)
         => PlayerNameUpdate(playerName, name);
-    
-    [Command] 
-    private void CmdSetPlayerReady() 
+
+    [Command]
+    private void CmdSetPlayerReady()
         => PlayerReady(ready, !ready);
-    
-    [Command] 
-    private void CmdCanStartGame(string sceneName) 
+
+    [Command]
+    private void CmdCanStartGame(string sceneName)
         => Manager.StartGame(sceneName);
-    
+
     public void ChangeReady()
     {
         if (isOwned)
             CmdSetPlayerReady();
     }
-    
+
     private void PlayerNameUpdate(string oldName, string newName)
     {
         if (isServer)
@@ -108,7 +111,7 @@ public class PlayerController : NetworkBehaviour
                 LobbyController.Instance.UpdateUserList();
         }
     }
-    
+
     private void PlayerReady(bool oldReady, bool newReady)
     {
         if (isServer)
@@ -128,13 +131,37 @@ public class PlayerController : NetworkBehaviour
             LobbyController.Instance.UpdateUserList();
     }
 
-    public void AttachRolePref()
+    [Server]
+    public void ServerAttachRolePref()
     {
-        var roleObj = Instantiate(rolePrefObj, transform);
-        roleObj.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        NetworkServer.Spawn(roleObj, connectionToClient);
+        if (_spawnedRoleObj != null)
+            return;
+
+        if (rolePrefObj == null)
+        {
+            Debug.LogWarning($"No role prefab has been assigned on {name}.");
+            return;
+        }
+
+        if (rolePrefObj.GetComponent<NetworkIdentity>() == null)
+        {
+            Debug.LogWarning($"Role prefab on {name} needs a NetworkIdentity before it can be spawned.");
+            return;
+        }
+
+        if (connectionToClient == null)
+        {
+            Debug.LogWarning($"Could not spawn role prefab for {name} because connectionToClient is missing.");
+            return;
+        }
+
+        _spawnedRoleObj = Instantiate(rolePrefObj, transform);
+        _spawnedRoleObj.transform.localPosition = Vector3.zero;
+        _spawnedRoleObj.transform.localRotation = Quaternion.identity;
+
+        NetworkServer.Spawn(_spawnedRoleObj, connectionToClient);
     }
-    
+
     //when go into game scene
     private void ApplyRoleMaterial(PlayerRole newRole)
     {

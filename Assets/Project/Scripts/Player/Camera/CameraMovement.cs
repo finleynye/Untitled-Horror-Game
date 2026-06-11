@@ -71,8 +71,7 @@ public class CameraMovement : NetworkBehaviour
 
     private void Awake()
     {
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
+       
 
         if (playerStamina == null)
             playerStamina = GetComponent<PlayerStamina>();
