@@ -16,6 +16,10 @@ public class FlashLightController : NetworkBehaviour
     [SyncVar(hook = nameof(OnFlashlightStateChanged))]
     private bool flashlightActive = false;
 
+    [Header("Pause Check")]
+    [SerializeField] private PlayerMovement playerMovement;
+    private bool isPaused = false;
+
     private PlayerInput playerInput;
 
     private void Awake()
@@ -26,6 +30,8 @@ public class FlashLightController : NetworkBehaviour
         if (flashlightAudioSource == null)
             flashlightAudioSource = GetComponentInChildren<AudioSource>(true);
 
+        if (playerMovement == null)
+            playerMovement = GetComponent<PlayerMovement>();
     }
 
     public override void OnStartClient()
@@ -53,18 +59,30 @@ public class FlashLightController : NetworkBehaviour
 
     private void ToggleFlashlight(InputAction.CallbackContext context)
     {
+
         if (!isOwned)
             return;
 
-        CmdToggleFlashlight();
+        if (playerMovement != null && playerMovement.isPaused)
+            return;
+
+        if (isPaused)
+            return;
+
+        bool newState = !flashlightActive;
+
+        SetFlashlightState(newState);
+        PlayFlashlightSound();
+
+        CmdSetFlashlight(newState);
     }
 
     [Command]
-    private void CmdToggleFlashlight()
+    private void CmdSetFlashlight(bool newState)
     {
-        flashlightActive = !flashlightActive;
+        flashlightActive = newState;
 
-        RpcPlayFlashlightSound();
+        RpcPlayFlashlightSound(newState);
     }
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
@@ -80,9 +98,10 @@ public class FlashLightController : NetworkBehaviour
         flashlight_Light.enabled = state;
     }
 
-    [ClientRpc]
-    private void RpcPlayFlashlightSound()
+    [ClientRpc(includeOwner = false)]
+    private void RpcPlayFlashlightSound(bool newState)
     {
+        SetFlashlightState(newState);
         PlayFlashlightSound();
     }
 
@@ -96,7 +115,10 @@ public class FlashLightController : NetworkBehaviour
 
         flashlightAudioSource.PlayOneShot(flashlightToggleSound, flashlightVolume);
     }
-
+    public void SetPaused(bool value)
+    {
+        isPaused = value;
+    }
     public override void OnStopAuthority()
     {
         base.OnStopAuthority();

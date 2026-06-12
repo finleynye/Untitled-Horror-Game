@@ -10,7 +10,6 @@ public class PlayerMovement : NetworkBehaviour
 
     [Header("Refs")]
     [SerializeField] private Transform cameraHolder;
-    [SerializeField] private Transform nametag;
     [SerializeField] private PlayerInteraction playerInteraction;
     [SerializeField] private PlayerStamina playerStamina;
     private CharacterController _controller;
@@ -33,6 +32,11 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Animator")]
     [SerializeField] private Animator animator;
 
+    [Header("Network Sync")]
+    [SerializeField] private float transformSyncRate = 20f;
+    [SerializeField] private float animationSyncRate = 15f;
+    [SerializeField] private float remoteTransformLerpSpeed = 12f;
+
     [SyncVar(hook = nameof(OnCrouchChanged))] private bool _isCrouching;
     [SyncVar] public bool _isSprinting;
 
@@ -48,6 +52,11 @@ public class PlayerMovement : NetworkBehaviour
     [HideInInspector] public Vector2 lastMoveDirection;
     private Vector2 _lookInput;
     private float _coyoteTimer;
+    private float _nextTransformSyncTime;
+    private float _nextAnimationSyncTime;
+    private Vector3 _targetNetworkPosition;
+    private Quaternion _targetNetworkRotation;
+    private bool _hasNetworkTransformTarget;
 
     public bool isPaused;
     public bool isFrozen;
@@ -81,16 +90,19 @@ public class PlayerMovement : NetworkBehaviour
         _playerInput.Player.Jump.performed += _ => Jump();
         _playerInput.Player.Sprint.started += _ => TryStartSprint();
         _playerInput.Player.Sprint.canceled += _ => StopSprint();
-        _playerInput.Player.Crouch.started += _ => CmdSetCrouch(true);
-        _playerInput.Player.Crouch.canceled += _ => CmdSetCrouch(false);
+        _playerInput.Player.Crouch.started += _ => SetCrouch(true);
+        _playerInput.Player.Crouch.canceled += _ => SetCrouch(false);
 
         _playerInput.Enable();
+        ClientSetupAfterSceneLoad();
     }
+    
     public override void OnStartLocalPlayer()
         => SceneManager.sceneLoaded += OnSceneLoaded;
+    
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        ApplySceneVisualState();
+        ClientSetupAfterSceneLoad();
     }
 
     private void Update()
@@ -103,6 +115,9 @@ public class PlayerMovement : NetworkBehaviour
         //owner controls movement/input
         if (isOwned)
         {
+            if (_playerInput == null)
+                return;
+
             if (isFrozen)
             {
                 _velocity = Vector3.zero;
@@ -117,9 +132,30 @@ public class PlayerMovement : NetworkBehaviour
         else
         {
             //remote clients only display synced animation data
+            SmoothRemoteTransform();
             HandleRemoteAnimation();
         }
     }
+
+    private void LateUpdate()
+    {
+        if (!isOwned)
+            return;
+
+        if (SceneManager.GetActiveScene().name == "Lobby")
+            return;
+
+        if (Time.time < _nextTransformSyncTime)
+            return;
+
+        _nextTransformSyncTime = Time.time + 1f / Mathf.Max(1f, transformSyncRate);
+
+        if (isServer)
+            RpcSyncTransform(transform.position, transform.rotation);
+        else
+            CmdSyncTransform(transform.position, transform.rotation);
+    }
+
     private void HandleMovement()
     {
         _moveInput = isPaused ? Vector2.zero : _playerInput.Player.Move.ReadValue<Vector2>();
@@ -195,11 +231,11 @@ public class PlayerMovement : NetworkBehaviour
         if (playerStamina != null && !playerStamina.CanUseStamina)
             return;
 
-        CmdSetSprint(true);
+        SetSprint(true);
     }
     private void StopSprint()
     {
-        CmdSetSprint(false);
+        SetSprint(false);
     }
     private void HandleRemoteAnimation()
     {
@@ -254,8 +290,35 @@ public class PlayerMovement : NetworkBehaviour
         animator.SetBool("IsSprinting", isRunning);
         animator.SetBool("IsGrounded", _controller.isGrounded);
 
-        //send values to server so other clients can see them
-        CmdSetAnimationValues(animDirection.x, animDirection.y, _controller.isGrounded, isMoving);
+        TrySyncAnimationValues(animDirection.x, animDirection.y, _controller.isGrounded, isMoving);
+    }
+
+    private void TrySyncAnimationValues(float moveX, float moveY, bool isGrounded, bool isMoving)
+    {
+        if (Time.time < _nextAnimationSyncTime)
+            return;
+
+        _nextAnimationSyncTime = Time.time + 1f / Mathf.Max(1f, animationSyncRate);
+
+        if (isServer)
+        {
+            _networkMoveX = moveX;
+            _networkMoveY = moveY;
+            _networkIsGrounded = isGrounded;
+            _networkIsMoving = isMoving;
+        }
+        else
+            CmdSetAnimationValues(moveX, moveY, isGrounded, isMoving);
+    }
+
+    private void SmoothRemoteTransform()
+    {
+        if (!_hasNetworkTransformTarget)
+            return;
+
+        float t = remoteTransformLerpSpeed * Time.deltaTime;
+        transform.position = Vector3.Lerp(transform.position, _targetNetworkPosition, t);
+        transform.rotation = Quaternion.Slerp(transform.rotation, _targetNetworkRotation, t);
     }
     private void ApplySceneVisualState()
     {
@@ -266,8 +329,8 @@ public class PlayerMovement : NetworkBehaviour
             characterRenderer.SetActive(!inLobby);
 
         //only the owning player should ever have the first-person camera active
-        if (firstPersonView != null)
-            firstPersonView.SetActive(isOwned && !inLobby);
+        /*if (firstPersonView != null)
+            firstPersonView.SetActive(isOwned && !inLobby);*/
 
         if (cameraHolder != null)
             cameraHolder.gameObject.SetActive(isOwned && !inLobby);
@@ -281,13 +344,41 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     //network commands (stop speed cheats & let others see crouching effect)
-    [Command]
+    [Command(channel = Channels.Unreliable)]
     private void CmdSetAnimationValues(float moveX, float moveY, bool isGrounded, bool isMoving)
     {
         _networkMoveX = moveX;
         _networkMoveY = moveY;
         _networkIsGrounded = isGrounded;
         _networkIsMoving = isMoving;
+    }
+
+    private void SetSprint(bool value)
+    {
+        if (_isSprinting == value)
+            return;
+
+        _isSprinting = value;
+
+        if (!isServer)
+            CmdSetSprint(value);
+    }
+
+    private void SetCrouch(bool value)
+    {
+        if (_isCrouching == value)
+            return;
+
+        bool oldValue = _isCrouching;
+        _isCrouching = value;
+
+        if (_isCrouching)
+            _isSprinting = false;
+
+        OnCrouchChanged(oldValue, _isCrouching);
+
+        if (!isServer)
+            CmdSetCrouch(value);
     }
 
     [Command]
@@ -303,6 +394,26 @@ public class PlayerMovement : NetworkBehaviour
             _isSprinting = false;
     }
 
+    [Command(channel = Channels.Unreliable)]
+    private void CmdSyncTransform(Vector3 position, Quaternion rotation)
+    {
+        transform.SetPositionAndRotation(position, rotation);
+        RpcSyncTransform(position, rotation);
+    }
+
+    [ClientRpc(channel = Channels.Unreliable, includeOwner = false)]
+    private void RpcSyncTransform(Vector3 position, Quaternion rotation)
+    {
+        _targetNetworkPosition = position;
+        _targetNetworkRotation = rotation;
+
+        if (!_hasNetworkTransformTarget)
+        {
+            transform.SetPositionAndRotation(position, rotation);
+            _hasNetworkTransformTarget = true;
+        }
+    }
+
     private void OnCrouchChanged(bool oldValue, bool newValue)
     {
         if (isPaused)
@@ -313,16 +424,25 @@ public class PlayerMovement : NetworkBehaviour
             _controller.height = newValue ? 1.2f : 2f;
             _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
         }
-
-        if (nametag != null)
-            nametag.localPosition = new Vector3(0f, newValue ? 0.6f : 1.2f, 0f);
     }
+    public void ClientSetupAfterSceneLoad()
+    {
+        if (!isOwned)
+            return;
+
+        ApplySceneVisualState();
+    }
+
     //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
     public void ClientSetHubPosition()
     {
-        _controller.enabled = false;
-        transform.position = new Vector3(Random.Range(10f, -10f), Random.Range(5f, 1f), Random.Range(10f, -10f));
-        _controller.enabled = true;
+        if (!isOwned)
+            return;
+
+        if (_controller == null)
+            return;
+        
+        LocalPlayerSpawner.SpawnAtScenePoint(transform, _controller, name);
         //LoadingScreen.Instance?.Hide();
     }
     public override void OnStopLocalPlayer()

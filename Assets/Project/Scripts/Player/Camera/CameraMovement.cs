@@ -71,9 +71,6 @@ public class CameraMovement : NetworkBehaviour
 
     private void Awake()
     {
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
-
         if (playerStamina == null)
             playerStamina = GetComponent<PlayerStamina>();
 
@@ -119,6 +116,14 @@ public class CameraMovement : NetworkBehaviour
         }
     }
 
+    private void SetupInput()
+    {
+        if (_playerInput != null)
+            return;
+
+        _playerInput = new PlayerInput();
+        _playerInput.Enable();
+    }
     public void SetEmoteCamera(bool value)
     {
         isUsingEmoteCamera = value;
@@ -143,8 +148,7 @@ public class CameraMovement : NetworkBehaviour
 
         SetCameraRenderTexture();
 
-        _playerInput = new PlayerInput();
-        _playerInput.Enable();
+        SetupInput();
 
         SetCursorState();
     }
@@ -186,6 +190,9 @@ public class CameraMovement : NetworkBehaviour
 
     private void HandleFOV()
     {
+        if (playerCam == null) return;
+        if (playerMovement == null) return;
+
         var isMovingForward = playerMovement._moveInput.y > 0.1f;
         var targetFOV = playerMovement._isSprinting && isMovingForward ? sprintFOV : defaultFOV;
 
@@ -237,6 +244,20 @@ public class CameraMovement : NetworkBehaviour
         if (playerMovement == null) return;
         if (playerStamina == null) return;
         if (playerMovement.isPaused) return;
+
+        if (_playerInput == null)
+        {
+            SetupInput();
+
+            if (_playerInput == null)
+                return;
+        }
+
+        if (camHolder == null)
+            return;
+
+        if (playerBody == null)
+            return;
 
         //read look input directly from the input actions
         _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();

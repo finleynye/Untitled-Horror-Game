@@ -88,6 +88,17 @@ public class Interactable : NetworkBehaviour
         RpcAfterInteract();
     }
 
+    public float GetDistanceFrom(Vector3 worldPosition)
+    {
+        if (interactableRadius != null)
+        {
+            Vector3 closestPoint = interactableRadius.ClosestPoint(worldPosition);
+            return Vector3.Distance(worldPosition, closestPoint);
+        }
+
+        return Vector3.Distance(worldPosition, transform.position);
+    }
+
     [ClientRpc]
     private void RpcAfterInteract()
     {
