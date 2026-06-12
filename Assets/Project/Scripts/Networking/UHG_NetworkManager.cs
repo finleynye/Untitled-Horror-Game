@@ -82,17 +82,6 @@ public class UHG_NetworkManager : NetworkManager
             Debug.LogWarning("No local player yet after scene change");
             return;
         }
-        var localPlayer = NetworkClient.localPlayer;
-        var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
-
-
-        if (movement == null)
-        {
-            Debug.LogWarning("No PlayerMovement found yet");
-            return;
-        }
-
-        movement.ClientSetupAfterSceneLoad();
     }
 
     private bool TryGetSpawnPosition(out Vector3 spawnPosition)

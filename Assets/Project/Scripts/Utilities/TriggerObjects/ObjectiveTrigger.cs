@@ -1,12 +1,11 @@
-using System.Collections;
 using Mirror;
 using UnityEngine;
-
-public class LocalPopupTrigger : MonoBehaviour
+using System.Collections;
+public class ObjectiveTrigger : MonoBehaviour
 {
     [Header("Popup Text")]
-    [SerializeField] private string locationText = "Welcome to Camp HardWood";
-    [SerializeField] private string objectiveText = "Call for Help - Find a Payphone";
+    [SerializeField] private string locationText = "Camp Hardwood";
+    [SerializeField] private string objectiveText = "Find a Payphone";
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
@@ -14,7 +13,9 @@ public class LocalPopupTrigger : MonoBehaviour
     [SerializeField] private float popupSoundVolume = 1f;
 
     [Header("Trigger Settings")]
-    [SerializeField] private bool destroyAfterLocalTrigger = true;
+    [SerializeField] private bool triggerOnce = true;
+    [SerializeField] private bool disableColliderAfterTrigger = true;
+    [SerializeField] private bool destroyAfterAudio = false;
 
     private bool hasTriggeredLocally;
     private Collider triggerCollider;
@@ -29,41 +30,48 @@ public class LocalPopupTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (hasTriggeredLocally) return;
+        if (triggerOnce && hasTriggeredLocally)
+            return;
 
         NetworkIdentity networkIdentity = other.GetComponentInParent<NetworkIdentity>();
 
-        if (networkIdentity == null) return;
+        if (networkIdentity == null)
+            return;
 
-        //only trigger for the local client's own player
-        if (!networkIdentity.isLocalPlayer) return;
+        //only the local players body should trigger this popup
+        if (!networkIdentity.isLocalPlayer && !networkIdentity.isOwned)
+            return;
 
         hasTriggeredLocally = true;
-
-        //stop this trigger being used again, but keep the object alive for audio
-        if (triggerCollider != null)
-            triggerCollider.enabled = false;
 
         ShowPopup();
         PlayPopupSound();
 
-        if (destroyAfterLocalTrigger)
+        if (disableColliderAfterTrigger && triggerCollider != null)
+            triggerCollider.enabled = false;
+
+        if (destroyAfterAudio)
             StartCoroutine(DestroyAfterAudioRoutine());
     }
 
     private void ShowPopup()
     {
-        if (LocalPopupUI.Instance != null)
+        if (LocalPopupUI.Instance == null)
         {
-            LocalPopupUI.Instance.ShowPopup(locationText, objectiveText);
+            Debug.LogWarning("No LocalPopupUI found in scene.");
             return;
         }
+
+        LocalPopupUI.Instance.ShowPopup(locationText, objectiveText);
     }
 
     private void PlayPopupSound()
     {
-        if (audioSource == null) return;
-        if (popupSound == null) return;
+        if (audioSource == null)
+            return;
+
+        if (popupSound == null)
+            return;
 
         audioSource.PlayOneShot(popupSound, popupSoundVolume);
     }

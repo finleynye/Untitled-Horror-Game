@@ -513,8 +513,6 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!114 &45921934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1573,8 +1571,6 @@ MonoBehaviour:
   rotationInterpSpeed: 12
   isHovering: 0
   isClicking: 0
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!114 &119978879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4343,7 +4339,6 @@ GameObject:
   - component: {fileID: 373816506}
   - component: {fileID: 373816505}
   - component: {fileID: 373816504}
-  - component: {fileID: 373816508}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -4430,7 +4425,6 @@ RectTransform:
   - {fileID: 380930319}
   - {fileID: 124184944}
   - {fileID: 934493391}
-  - {fileID: 981568407}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4438,23 +4432,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &373816508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 373816503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d67be654435736a44ba7ef12cd4462bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScreenFade
-  fadeImage: {fileID: 981568410}
-  fadeInTime: 1
-  fadeOutTime: 0.75
-  fadeColour: {r: 0, g: 0, b: 0, a: 1}
-  fadeInOnStart: 1
 --- !u!1 &380930318
 GameObject:
   m_ObjectHideFlags: 0
@@ -6877,8 +6854,6 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!1 &702583242
 GameObject:
   m_ObjectHideFlags: 0
@@ -9628,81 +9603,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 967970892}
   m_Mesh: {fileID: 5558665869084134741, guid: 9bfac1aaa7c4aef46a2192636c8cd569, type: 3}
---- !u!1 &981568406
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 981568407}
-  - component: {fileID: 981568409}
-  - component: {fileID: 981568410}
-  m_Layer: 5
-  m_Name: ScreenFade
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &981568407
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 981568406}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 373816507}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &981568409
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 981568406}
-  m_CullTransparentMesh: 1
---- !u!114 &981568410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 981568406}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &988390603
 GameObject:
   m_ObjectHideFlags: 0
@@ -11139,8 +11039,6 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!1 &1078107407
 GameObject:
   m_ObjectHideFlags: 0
@@ -12297,8 +12195,6 @@ MonoBehaviour:
   rotationInterpSpeed: 12
   isHovering: 0
   isClicking: 0
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!1 &1168903988
 GameObject:
   m_ObjectHideFlags: 0
@@ -13910,8 +13806,6 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  fadeBeforeClickEvent: 0
-  screenFade: {fileID: 0}
 --- !u!114 &1300158190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19273,8 +19167,6 @@ MonoBehaviour:
   rotationInterpSpeed: 12
   isHovering: 0
   isClicking: 0
-  fadeBeforeClickEvent: 1
-  screenFade: {fileID: 373816508}
 --- !u!1001 &1796756733
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21768,8 +21660,6 @@ MonoBehaviour:
   rotationInterpSpeed: 12
   isHovering: 0
   isClicking: 0
-  fadeBeforeClickEvent: 1
-  screenFade: {fileID: 373816508}
 --- !u!1 &2002454482
 GameObject:
   m_ObjectHideFlags: 0

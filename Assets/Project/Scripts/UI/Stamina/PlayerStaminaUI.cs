@@ -19,9 +19,14 @@ public class PlayerStaminaUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (playerStamina == null)
+        {
+            FindLocalPlayerStamina();
+            return;
+        }
+
         UpdateStaminaUI();
     }
-
     private void UpdateStaminaUI()
     {
         if (playerStamina == null)
@@ -46,7 +51,9 @@ public class PlayerStaminaUI : MonoBehaviour
 
         foreach (PlayerStamina stamina in staminaScripts)
         {
-            if (stamina.isOwned)
+            NetworkIdentity identity = stamina.GetComponentInParent<NetworkIdentity>();
+
+            if (identity != null && (identity.isLocalPlayer || identity.isOwned))
             {
                 playerStamina = stamina;
 

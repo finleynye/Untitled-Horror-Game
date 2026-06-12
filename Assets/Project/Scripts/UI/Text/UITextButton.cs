@@ -4,72 +4,81 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
+public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
     [Header("Button Event")]
-    public UnityEvent buttonEvent; //assign whatever you want the button doing here
+    public UnityEvent buttonEvent;
 
-    [Header("Button References")]
-    [SerializeField] private Image buttonImage;
+    [Header("Text Reference")]
     [SerializeField] private TextMeshProUGUI buttonText;
 
-    [Header("Button Colours")]
+    [Header("Text Colours")]
     [SerializeField] private bool useColourEffects = true;
 
-    [SerializeField] private Color normalBackgroundColour = new Color32(216, 208, 189, 170);
-    [SerializeField] private Color normalTextColour = new Color32(20, 16, 14, 255);
-
-    [SerializeField] private Color hoverBackgroundColour = new Color32(120, 18, 18, 210);
-    [SerializeField] private Color hoverTextColour = new Color32(255, 238, 220, 255);
-
-    [SerializeField] private Color clickedBackgroundColour = new Color32(60, 8, 8, 230);
-    [SerializeField] private Color clickedTextColour = new Color32(255, 245, 230, 255);
-
-    [SerializeField] private Color disabledBackgroundColour = new Color32(45, 42, 39, 120);
+    [SerializeField] private Color normalTextColour = new Color32(235, 220, 190, 255);
+    [SerializeField] private Color hoverTextColour = new Color32(255, 80, 70, 255);
+    [SerializeField] private Color clickedTextColour = new Color32(170, 20, 20, 255);
     [SerializeField] private Color disabledTextColour = new Color32(120, 110, 100, 180);
 
     [SerializeField] private float colourInterpSpeed = 12f;
 
     [Header("Scale Effects")]
     [SerializeField] private bool useScaleEffects = true;
-    [SerializeField] private float hoverScale = 1.08f; //how big the button gets when hovered
-    [SerializeField] private float clickScale = 0.92f; //how small the button gets once clicked
-    [SerializeField] private float scaleInterpSpeed = 12f; //how quickly the button scales
-
-    [Header("Button States")]
-    public bool isHovering;
-    public bool isClicking;
+    [SerializeField] private float hoverScale = 1.08f;
+    [SerializeField] private float clickScale = 0.92f;
+    [SerializeField] private float scaleInterpSpeed = 12f;
 
     [Header("Rotation Effects")]
     [SerializeField] private bool useRotationEffects = true;
-    [SerializeField] private float randomRotationAmount = 3f; //small random tilt amount
-    [SerializeField] private float rotationInterpSpeed = 12f; //how quickly the button rotates
+    [SerializeField] private float randomRotationAmount = 3f;
+    [SerializeField] private float rotationInterpSpeed = 12f;
 
     [Header("Fade Settings")]
     [SerializeField] private bool fadeBeforeClickEvent = false;
     [SerializeField] private ScreenFade screenFade;
 
-    private Quaternion originalRotation;
-    private Quaternion targetRotation;
+    [Header("Unity Button Support")]
+    [SerializeField] private Button button;
+    [SerializeField] private bool disableUnityButtonOnClick = true;
+
+    [Header("Text Button States")]
+    public bool isHovering;
+    public bool isClicking;
 
     private Vector3 originalScale;
     private Vector3 targetScale;
 
-    private Color targetBackgroundColour;
+    private Quaternion originalRotation;
+    private Quaternion targetRotation;
+
     private Color targetTextColour;
 
-    private Button button;
-    private bool IsInteractable => button == null || button.interactable; //get the button interactable by default if it exists, else just like idk
+    private bool manualInteractable = true;
+    private bool hasClickedThisFrame;
+
+    private bool IsInteractable => manualInteractable && (button == null || button.interactable);
 
     private void Start()
     {
-        button = GetComponent<Button>();
+        if (button == null)
+            button = GetComponent<Button>();
 
-        if (buttonImage == null)
-            buttonImage = GetComponent<Image>();
+        if (buttonText == null)
+            buttonText = GetComponent<TextMeshProUGUI>();
 
         if (buttonText == null)
             buttonText = GetComponentInChildren<TextMeshProUGUI>();
+
+        if (screenFade == null)
+            screenFade = FindFirstObjectByType<ScreenFade>();
+
+        if (button != null)
+        {
+            button.transition = Selectable.Transition.None;
+
+            if (disableUnityButtonOnClick)
+                button.onClick.RemoveAllListeners();
+        }
 
         originalScale = transform.localScale;
         targetScale = originalScale;
@@ -77,10 +86,14 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         originalRotation = transform.localRotation;
         targetRotation = originalRotation;
 
-        targetBackgroundColour = normalBackgroundColour;
         targetTextColour = normalTextColour;
 
-        ApplyButtonColoursInstant();
+        ApplyTextColourInstant();
+    }
+
+    private void LateUpdate()
+    {
+        hasClickedThisFrame = false;
     }
 
     private void Update()
@@ -92,8 +105,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
             targetScale = originalScale;
             targetRotation = originalRotation;
-
-            targetBackgroundColour = disabledBackgroundColour;
             targetTextColour = disabledTextColour;
         }
 
@@ -104,7 +115,7 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, rotationInterpSpeed * Time.unscaledDeltaTime);
 
         if (useColourEffects)
-            UpdateButtonColours();
+            UpdateTextColour();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -116,7 +127,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if (!isClicking)
         {
             targetScale = originalScale * hoverScale;
-            targetBackgroundColour = hoverBackgroundColour;
             targetTextColour = hoverTextColour;
         }
 
@@ -136,13 +146,42 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         isClicking = true;
 
         targetScale = originalScale * clickScale;
-        targetBackgroundColour = clickedBackgroundColour;
         targetTextColour = clickedTextColour;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (!IsInteractable) return;
+
+        isClicking = false;
+
+        if (isHovering)
+        {
+            targetScale = originalScale * hoverScale;
+            targetTextColour = hoverTextColour;
+        }
+        else
+        {
+            targetScale = originalScale;
+            targetTextColour = normalTextColour;
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (!IsInteractable) return;
+
+        RunClickEvent();
+    }
+
+    public void RunClickEvent()
+    {
+        if (!IsInteractable) return;
+
+        if (hasClickedThisFrame)
+            return;
+
+        hasClickedThisFrame = true;
 
         SoundManager.PlaySound(SoundType.UI_BUTTON_PRESSED, 1f);
 
@@ -154,25 +193,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         buttonEvent?.Invoke();
     }
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if (!IsInteractable) return;
-
-        isClicking = false;
-
-        if (isHovering)
-        {
-            targetScale = originalScale * hoverScale;
-            targetBackgroundColour = hoverBackgroundColour;
-            targetTextColour = hoverTextColour;
-        }
-        else
-        {
-            targetScale = originalScale;
-            targetBackgroundColour = normalBackgroundColour;
-            targetTextColour = normalTextColour;
-        }
-    }
 
     public void OnPointerExit(PointerEventData eventData)
     {
@@ -183,42 +203,27 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         targetScale = originalScale;
         targetRotation = originalRotation;
-
-        targetBackgroundColour = normalBackgroundColour;
         targetTextColour = normalTextColour;
     }
 
     public void SetInteractable(bool value)
     {
+        manualInteractable = value;
+
         if (button != null)
             button.interactable = value;
 
-        if (value)
-        {
-            targetBackgroundColour = normalBackgroundColour;
-            targetTextColour = normalTextColour;
-        }
-        else
-        {
-            targetBackgroundColour = disabledBackgroundColour;
-            targetTextColour = disabledTextColour;
-        }
+        targetTextColour = value ? normalTextColour : disabledTextColour;
     }
 
-    private void UpdateButtonColours()
+    private void UpdateTextColour()
     {
-        if (buttonImage != null)
-            buttonImage.color = Color.Lerp(buttonImage.color, targetBackgroundColour, colourInterpSpeed * Time.unscaledDeltaTime);
-
         if (buttonText != null)
             buttonText.color = Color.Lerp(buttonText.color, targetTextColour, colourInterpSpeed * Time.unscaledDeltaTime);
     }
 
-    private void ApplyButtonColoursInstant()
+    private void ApplyTextColourInstant()
     {
-        if (buttonImage != null)
-            buttonImage.color = targetBackgroundColour;
-
         if (buttonText != null)
             buttonText.color = targetTextColour;
     }

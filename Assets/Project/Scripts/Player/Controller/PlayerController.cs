@@ -137,27 +137,7 @@ public class PlayerController : NetworkBehaviour
         if (_spawnedRoleObj != null)
             return;
 
-        if (rolePrefObj == null)
-        {
-            Debug.LogWarning($"No role prefab has been assigned on {name}.");
-            return;
-        }
-
-        if (rolePrefObj.GetComponent<NetworkIdentity>() == null)
-        {
-            Debug.LogWarning($"Role prefab on {name} needs a NetworkIdentity before it can be spawned.");
-            return;
-        }
-
-        if (connectionToClient == null)
-        {
-            Debug.LogWarning($"Could not spawn role prefab for {name} because connectionToClient is missing.");
-            return;
-        }
-
-        _spawnedRoleObj = Instantiate(rolePrefObj, transform);
-        _spawnedRoleObj.transform.localPosition = Vector3.zero;
-        _spawnedRoleObj.transform.localRotation = Quaternion.identity;
+        _spawnedRoleObj = Instantiate(rolePrefObj, transform.position, transform.rotation);
 
         NetworkServer.Spawn(_spawnedRoleObj, connectionToClient);
     }
