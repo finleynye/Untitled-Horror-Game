@@ -22,16 +22,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
 
-    [Header("Roles")] 
-    [SerializeField] private GameObject survivorRole;
-    [SerializeField] private GameObject killerRole;
-    [SerializeField] private Renderer characterRenderer;
-    [SerializeField] private Material role1Material;
-    [SerializeField] private Material role2Material;
-    [SerializeField] private Material role3Material;
-    [SerializeField] private Material role4Material;
-    [SerializeField] private Material killerMaterial;
-    [SerializeField] private Material unassignedMaterial;
+    [SerializeField] private GameObject[] roles;
 
     private static bool InLobby => SceneManager.GetActiveScene().name == "Lobby";
     public event System.Action<string> OnNameChanged;
@@ -63,8 +54,7 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartClient()
     {
         Manager.Players.Add(this);
-
-        ApplyRoleMaterial(role);
+        
         ApplyRoleObject(role);
 
         if (!InLobby) return;
@@ -121,8 +111,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (isServer)
             role = newRole;
-
-        ApplyRoleMaterial(newRole);
+        
         ApplyRoleObject(newRole);
 
         if (isClient && InLobby)
@@ -131,51 +120,12 @@ public class PlayerController : NetworkBehaviour
 
     private void ApplyRoleObject(PlayerRole newRole)
     {
-        var isKiller = newRole == PlayerRole.Killer;
-        var isSurvivor = newRole != PlayerRole.Killer && newRole != PlayerRole.Unassigned;
-        
-        killerRole.SetActive(isKiller);
-        survivorRole.SetActive(isSurvivor);
-    }
-    
-    //when go into game scene
-    private void ApplyRoleMaterial(PlayerRole newRole)
-    {
-        if (characterRenderer == null)
-            return;
-
-        Material materialToUse = unassignedMaterial;
-
-        switch (newRole)
+        var targetRoleIndex = (int)newRole;
+        for (var i = 0; i < roles.Length; i++)
         {
-            case PlayerRole.Role1:
-                materialToUse = role1Material;
-                break;
-
-            case PlayerRole.Role2:
-                materialToUse = role2Material;
-                break;
-
-            case PlayerRole.Role3:
-                materialToUse = role3Material;
-                break;
-
-            case PlayerRole.Role4:
-                materialToUse = role4Material;
-                break;
-
-            case PlayerRole.Killer:
-                materialToUse = killerMaterial;
-                break;
-
-            case PlayerRole.Unassigned:
-            default:
-                materialToUse = unassignedMaterial;
-                break;
+            if(roles[i] != null)
+                roles[i].SetActive(i == targetRoleIndex);
         }
-
-        if (materialToUse != null)
-            characterRenderer.sharedMaterial = materialToUse;
     }
 
     public void CanStartGame(string sceneName)
