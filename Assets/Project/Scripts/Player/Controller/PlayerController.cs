@@ -21,12 +21,11 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
-    
-    [SerializeField] private GameObject rolePrefObj;
 
-    [Header("Role Visuals")]
+    [Header("Roles")] 
+    [SerializeField] private GameObject survivorRole;
+    [SerializeField] private GameObject killerRole;
     [SerializeField] private Renderer characterRenderer;
-
     [SerializeField] private Material role1Material;
     [SerializeField] private Material role2Material;
     [SerializeField] private Material role3Material;
@@ -66,6 +65,7 @@ public class PlayerController : NetworkBehaviour
         Manager.Players.Add(this);
 
         ApplyRoleMaterial(role);
+        ApplyRoleObject(role);
 
         if (!InLobby) return;
         LobbyController.Instance.UpdateLobbyName();
@@ -123,16 +123,19 @@ public class PlayerController : NetworkBehaviour
             role = newRole;
 
         ApplyRoleMaterial(newRole);
+        ApplyRoleObject(newRole);
 
         if (isClient && InLobby)
             LobbyController.Instance.UpdateUserList();
     }
 
-    public void AttachRolePref()
+    private void ApplyRoleObject(PlayerRole newRole)
     {
-        var roleObj = Instantiate(rolePrefObj, transform);
-        roleObj.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        NetworkServer.Spawn(roleObj, connectionToClient);
+        var isKiller = newRole == PlayerRole.Killer;
+        var isSurvivor = newRole != PlayerRole.Killer && newRole != PlayerRole.Unassigned;
+        
+        killerRole.SetActive(isKiller);
+        survivorRole.SetActive(isSurvivor);
     }
     
     //when go into game scene

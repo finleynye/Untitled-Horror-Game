@@ -3,7 +3,6 @@ using Mirror;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : NetworkBehaviour
 {
     private const float Gravity = -18f;
@@ -54,7 +53,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Awake()
     {
-        _controller = GetComponent<CharacterController>();
+        _controller = GetComponentInParent<CharacterController>();
 
         //disable player camera/view objects while in lobby
         //do not disable the actual character mesh
@@ -315,14 +314,15 @@ public class PlayerMovement : NetworkBehaviour
             _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
         }
     }
-    //player will spawn into the hub with an offset, so that all players dont spawn inside each other, causing them to glitch around.
+    
     public void ClientSetHubPosition()
     {
-        LocalPlayerSpawner.SpawnAtScenePoint(transform, _controller, name);
+        LocalPlayerSpawner.SpawnAtScenePoint(transform.root, _controller, name);
         //LoadingScreen.Instance?.Hide();
     }
     public override void OnStopLocalPlayer()
         => SceneManager.sceneLoaded -= OnSceneLoaded;
+    
     public override void OnStopClient()
     {
         if (!isOwned) return;

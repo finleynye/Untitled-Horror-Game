@@ -54,7 +54,7 @@ public class UHG_NetworkManager : NetworkManager
         var localPlayer = NetworkClient.localPlayer;
         if (localPlayer == null) return;
 
-        var movement = localPlayer.GetComponentInChildren<PlayerMovement>();
+        var movement = localPlayer.GetComponentInChildren<PlayerMovement>(); //gets first active
         movement?.ClientSetHubPosition();
 
         //happens after the scene has been changed, tells the server the client is ready to spawn objects here
