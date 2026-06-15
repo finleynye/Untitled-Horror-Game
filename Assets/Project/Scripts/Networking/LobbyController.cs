@@ -4,7 +4,6 @@ using System.Linq;
 using Mirror;
 using Steamworks;
 using TMPro;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -60,7 +59,7 @@ public class LobbyController : MonoBehaviour
         localPlayerController = controller;
         localPlayerObj = controller.gameObject;
 
-        bool isHost = controller.playerID == 1;
+        bool isHost = IsLocalHost();
 
         if (randomiseRolesBtn != null)
             randomiseRolesBtn.gameObject.SetActive(isHost);
@@ -85,7 +84,7 @@ public class LobbyController : MonoBehaviour
         if (localPlayerController == null)
             return;
 
-        if (localPlayerController.playerID != 1)
+        if (!IsLocalHost())
             return;
 
         RoleManager.Instance?.TryAssignRoles();
@@ -96,7 +95,7 @@ public class LobbyController : MonoBehaviour
         if (randomiseRolesBtn == null)
             return;
 
-        bool isHost = localPlayerController != null && localPlayerController.playerID == 1;
+        bool isHost = IsLocalHost();
 
         randomiseRolesBtn.gameObject.SetActive(isHost);
         randomiseRolesBtn.interactable = isHost && !locked;
@@ -253,7 +252,7 @@ public class LobbyController : MonoBehaviour
             return;
         }
 
-        bool isHost = localPlayerController.playerID == 1;
+        bool isHost = IsLocalHost();
         bool everyoneReady = AllPlayersReady();
         bool everyoneHasRoles = AllPlayersHaveRoles();
 
@@ -264,8 +263,6 @@ public class LobbyController : MonoBehaviour
 
         if (startUITextButton != null)
             startUITextButton.SetTextVisualState(canStart);
-
-        Debug.Log($"Start Button Check | Host: {isHost}, Ready: {everyoneReady}, Roles: {everyoneHasRoles}, CanStart: {canStart}");
     }
 
     private bool AllPlayersReady()
@@ -291,6 +288,9 @@ public class LobbyController : MonoBehaviour
         if (localPlayerController == null)
             return;
 
+        if (!IsLocalHost())
+            return;
+
         if (!AllPlayersReady())
         {
             ShowStartWarning("All players must be ready.");
@@ -312,6 +312,13 @@ public class LobbyController : MonoBehaviour
         if (startWarningText == null)
             return;
 
+        if (!IsLocalHost())
+        {
+            startWarningText.text = "";
+            startWarningText.gameObject.SetActive(false);
+            return;
+        }
+
         if (!AllPlayersReady())
         {
             startWarningText.gameObject.SetActive(true);
@@ -328,6 +335,11 @@ public class LobbyController : MonoBehaviour
 
         startWarningText.text = "";
         startWarningText.gameObject.SetActive(false);
+    }
+
+    private bool IsLocalHost()
+    {
+        return localPlayerController != null && localPlayerController.isOwned && NetworkServer.active;
     }
 
     private void ShowStartWarning(string message)

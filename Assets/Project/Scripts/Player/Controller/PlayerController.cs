@@ -40,6 +40,25 @@ public class PlayerController : NetworkBehaviour
  
     private void Start()
         => DontDestroyOnLoad(gameObject);
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        //roles get picked in lobby so redo the cameras when game scene loads
+        ApplyRoleObject(role);
+
+        if (isClient && InLobby)
+            LobbyController.Instance?.UpdateUserList();
+    }
     
     public override void OnStartAuthority()
     {
@@ -79,7 +98,13 @@ public class PlayerController : NetworkBehaviour
     
     [Command] 
     private void CmdCanStartGame(string sceneName) 
-        => Manager.StartGame(sceneName);
+    {
+        //only host player should be able to tell server to swap scene
+        if (playerID != 1)
+            return;
+
+        Manager.StartGame(sceneName);
+    }
     
     public void ChangeReady()
     {
@@ -138,6 +163,14 @@ public class PlayerController : NetworkBehaviour
     }
     private void SetRoleEnabled(GameObject roleObject, bool isEnabled)
     {
+        FlashLightController[] flashlights = roleObject.GetComponentsInChildren<FlashLightController>(true);
+
+        foreach (FlashLightController flashlight in flashlights)
+        {
+            if (flashlight != null)
+                flashlight.ApplyRoleSelection(isEnabled);
+        }
+
         //disable scripts on non selected roles not disable the role root object itself
         Behaviour[] behaviours = roleObject.GetComponentsInChildren<Behaviour>(true);
 
@@ -150,7 +183,29 @@ public class PlayerController : NetworkBehaviour
             if (behaviour == this)
                 continue;
 
+            if (behaviour is Camera || behaviour is AudioListener || behaviour is Light)
+                continue;
+
             behaviour.enabled = isEnabled;
+        }
+
+        //only your picked role gets its camera/listener, other players cameras stay off
+        bool localSelectedRole = isEnabled && isOwned && !InLobby;
+
+        Camera[] cameras = roleObject.GetComponentsInChildren<Camera>(true);
+
+        foreach (Camera camera in cameras)
+        {
+            if (camera != null)
+                camera.enabled = localSelectedRole;
+        }
+
+        AudioListener[] audioListeners = roleObject.GetComponentsInChildren<AudioListener>(true);
+
+        foreach (AudioListener audioListener in audioListeners)
+        {
+            if (audioListener != null)
+                audioListener.enabled = localSelectedRole;
         }
 
         //disable renderers on non selected roles
@@ -162,6 +217,18 @@ public class PlayerController : NetworkBehaviour
                 continue;
 
             renderer.enabled = isEnabled;
+        }
+
+        if (isEnabled)
+        {
+            LocalPlayerMeshVisibility[] meshVisibilityControllers = roleObject.GetComponentsInChildren<LocalPlayerMeshVisibility>(true);
+
+            foreach (LocalPlayerMeshVisibility meshVisibility in meshVisibilityControllers)
+            {
+                if (meshVisibility != null)
+                    //role code turns renderers on so hide local mesh again after
+                    meshVisibility.RefreshVisibility();
+            }
         }
 
         //disable colliders
