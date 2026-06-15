@@ -2377,6 +2377,7 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 726722526600160879}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
+  playerMovement: {fileID: 0}
 --- !u!114 &5488202543628746205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2392,7 +2393,8 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  playerMeshRenderers: []
+  playerMeshRenderers:
+  - {fileID: 1208398061393384114}
   hideForLocalPlayer: 1
 --- !u!1 &7457179786833709450
 GameObject:
@@ -2569,7 +2571,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 756398652058555906, guid: 6a16006d35f126443931f8d868f6dabf, type: 3}
+  - {fileID: -612048322412550731, guid: b7bf962962d3bd041b7dab36c3b80274, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

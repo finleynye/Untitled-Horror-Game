@@ -1571,10 +1571,12 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  isHovering: 0
-  isClicking: 0
   fadeBeforeClickEvent: 0
   screenFade: {fileID: 0}
+  button: {fileID: 0}
+  disableUnityButtonOnClick: 1
+  isHovering: 0
+  isClicking: 0
 --- !u!114 &119978879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12294,10 +12296,12 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  isHovering: 0
-  isClicking: 0
   fadeBeforeClickEvent: 0
   screenFade: {fileID: 0}
+  button: {fileID: 0}
+  disableUnityButtonOnClick: 1
+  isHovering: 0
+  isClicking: 0
 --- !u!1 &1168903988
 GameObject:
   m_ObjectHideFlags: 0
@@ -19270,10 +19274,12 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  isHovering: 0
-  isClicking: 0
   fadeBeforeClickEvent: 1
   screenFade: {fileID: 373816508}
+  button: {fileID: 0}
+  disableUnityButtonOnClick: 1
+  isHovering: 0
+  isClicking: 0
 --- !u!1001 &1796756733
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21765,10 +21771,12 @@ MonoBehaviour:
   useRotationEffects: 1
   randomRotationAmount: 3
   rotationInterpSpeed: 12
-  isHovering: 0
-  isClicking: 0
   fadeBeforeClickEvent: 1
   screenFade: {fileID: 373816508}
+  button: {fileID: 0}
+  disableUnityButtonOnClick: 1
+  isHovering: 0
+  isClicking: 0
 --- !u!1 &2002454482
 GameObject:
   m_ObjectHideFlags: 0

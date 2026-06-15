@@ -16366,18 +16366,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fcfa6cc10f848c487bf617a2d936ba8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyController
-  rolePrefab: {fileID: 5043833115013541883, guid: f5d225e0b86afa94486e18d544cd0be4, type: 3}
   lobbyName: {fileID: 1494885926}
+  lobbyID: 0
   userViewContent: {fileID: 1069898185}
   userInfoPref: {fileID: 1371183179377846985, guid: 447b1810533b3664f8fdc5a516568a3f, type: 3}
-  localPlayerObj: {fileID: 0}
-  lobbyID: 0
   userInfoCreated: 0
+  localPlayerObj: {fileID: 0}
   localPlayerController: {fileID: 0}
   startGameBtn: {fileID: 1646983670}
   randomiseRolesBtn: {fileID: 1237496543}
   refreshCount: {fileID: 73059681}
   podiumDisplay: {fileID: 1074600156}
+  startWarningText: {fileID: 503084452}
+  warningDisplayTime: 1.25
+  startUITextButton: {fileID: 1646983669}
 --- !u!4 &1562210971
 Transform:
   m_ObjectHideFlags: 0

@@ -120,14 +120,72 @@ public class PlayerController : NetworkBehaviour
 
     private void ApplyRoleObject(PlayerRole newRole)
     {
-        var targetRoleIndex = (int)newRole;
-        for (var i = 0; i < roles.Length; i++)
+        int targetRoleIndex = (int)newRole;
+
+        for (int i = 0; i < roles.Length; i++)
         {
-            if(roles[i] != null)
-                roles[i].SetActive(i == targetRoleIndex);
+            if (roles[i] == null)
+                continue;
+
+            bool isSelectedRole = i == targetRoleIndex;
+
+            //this keeps the role root active so mirror can still find player root NetworkIdentity
+            if (!roles[i].activeSelf)
+                roles[i].SetActive(true);
+
+            SetRoleEnabled(roles[i], isSelectedRole);
         }
     }
+    private void SetRoleEnabled(GameObject roleObject, bool isEnabled)
+    {
+        //disable scripts on non selected roles not disable the role root object itself
+        Behaviour[] behaviours = roleObject.GetComponentsInChildren<Behaviour>(true);
 
+        foreach (Behaviour behaviour in behaviours)
+        {
+            if (behaviour == null)
+                continue;
+
+            //do not disable this PlayerController if it ever gets included by mistake
+            if (behaviour == this)
+                continue;
+
+            behaviour.enabled = isEnabled;
+        }
+
+        //disable renderers on non selected roles
+        Renderer[] renderers = roleObject.GetComponentsInChildren<Renderer>(true);
+
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null)
+                continue;
+
+            renderer.enabled = isEnabled;
+        }
+
+        //disable colliders
+        Collider[] colliders = roleObject.GetComponentsInChildren<Collider>(true);
+
+        foreach (Collider collider in colliders)
+        {
+            if (collider == null)
+                continue;
+
+            collider.enabled = isEnabled;
+        }
+
+        //disable audio sources
+        AudioSource[] audioSources = roleObject.GetComponentsInChildren<AudioSource>(true);
+
+        foreach (AudioSource audioSource in audioSources)
+        {
+            if (audioSource == null)
+                continue;
+
+            audioSource.enabled = isEnabled;
+        }
+    }
     public void CanStartGame(string sceneName)
     {
         if (isOwned)

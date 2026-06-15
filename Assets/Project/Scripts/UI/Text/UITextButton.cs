@@ -227,4 +227,15 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (buttonText != null)
             buttonText.color = targetTextColour;
     }
+    public void SetTextVisualState(bool value)
+    {
+        isHovering = false;
+        isClicking = false;
+
+        targetScale = originalScale;
+        targetRotation = originalRotation;
+        targetTextColour = value ? normalTextColour : disabledTextColour;
+
+        ApplyTextColourInstant();
+    }
 }
