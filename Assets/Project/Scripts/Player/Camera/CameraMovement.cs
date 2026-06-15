@@ -75,7 +75,7 @@ public class CameraMovement : NetworkBehaviour
             playerStamina = GetComponent<PlayerStamina>();
 
         if (playerBody == null)
-            playerBody = transform;
+            playerBody = transform.root;
 
         if (camHolder == null)
         {

@@ -9,8 +9,6 @@ public class UHG_NetworkManager : NetworkManager
 {
     [SerializeField] private PlayerController playerObj;
     [SerializeField] private string gameplaySceneName = "GrayBoxScene";
-    private const string PlayerSpawnPointTag = "PlayerSpawnPoint";
-    private const float SpawnPointVerticalOffset = 0.25f;
     public List<PlayerController> Players { get; } = new();
 
     public override void Awake()
@@ -23,7 +21,7 @@ public class UHG_NetworkManager : NetworkManager
     {
         //i think it uses "LoadSceneAsync" so it starts loading the scene in background, meaning players will actively see scenes load and unload
         //so we can do some shit like adding a loading screen for transitions
-
+        
         base.OnClientChangeScene(newSceneName, sceneOperation, customHandling);
     }
 
@@ -37,9 +35,6 @@ public class UHG_NetworkManager : NetworkManager
             steamPlayer.steamID =
                 (ulong)SteamMatchmaking.GetLobbyMemberByIndex((CSteamID)SteamLobby.Instance.lobbyID, Players.Count);
 
-            if (!Players.Contains(steamPlayer))
-                Players.Add(steamPlayer);
-
             NetworkServer.AddPlayerForConnection(conn, steamPlayer.gameObject);
         }
     }
@@ -50,53 +45,19 @@ public class UHG_NetworkManager : NetworkManager
         ServerChangeScene(nextScene);
     }
 
-    public override void OnServerSceneChanged(string sceneName)
-    {
-        base.OnServerSceneChanged(sceneName);
-
-        if (sceneName != gameplaySceneName)
-            return;
-
-        foreach (var player in Players)
-        {
-            if (player == null)
-            {
-                continue;
-            }
-
-            if (TryGetSpawnPosition(out Vector3 spawnPosition))
-                player.transform.position = spawnPosition;
-
-            player.ServerAttachRolePref();
-        }
-    }
-
     public override void OnClientSceneChanged()
     {
         base.OnClientSceneChanged();
 
         if (SceneManager.GetActiveScene().name != gameplaySceneName) return;
+        
+        var localPlayer = NetworkClient.localPlayer;
+        if (localPlayer == null) return;
 
-        if (NetworkClient.localPlayer == null)
-        {
-            Debug.LogWarning("No local player yet after scene change");
-            return;
-        }
-    }
+        var movement = localPlayer.GetComponentInChildren<PlayerMovement>(); //gets first active
+        movement?.ClientSetHubPosition();
 
-    private bool TryGetSpawnPosition(out Vector3 spawnPosition)
-    {
-        spawnPosition = Vector3.zero;
-
-        GameObject[] spawnPoints;
-        spawnPoints = GameObject.FindGameObjectsWithTag(PlayerSpawnPointTag);
-
-        if (spawnPoints.Length == 0)
-            return false;
-
-        GameObject selectedSpawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        spawnPosition = selectedSpawnPoint.transform.position + Vector3.up * SpawnPointVerticalOffset;
-        return true;
+        //happens after the scene has been changed, tells the server the client is ready to spawn objects here
     }
 
     private int GetNextPlayerID()
@@ -113,14 +74,7 @@ public class UHG_NetworkManager : NetworkManager
         //tells the server someone left, so can be used to clean up a player list or remove objects specific to said player
         //PartyPlaygrounds uses it to announce to everyone that the player left through a message announcement
         //probably gonna wanna save any data in this one, just to keep it clean
-
-        if (conn.identity != null)
-        {
-            var player = conn.identity.GetComponent<PlayerController>();
-            if (player != null)
-                Players.Remove(player);
-        }
-
+        
         base.OnServerDisconnect(conn);
     }
 
@@ -135,7 +89,7 @@ public class UHG_NetworkManager : NetworkManager
     {
         if (singleton == this)
             singleton = null;
-
+ 
         base.OnDestroy();
     }
 }
