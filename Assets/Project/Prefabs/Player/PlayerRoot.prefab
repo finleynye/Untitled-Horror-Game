@@ -499,8 +499,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PSXStyleShader.PSXDownscaleDitherEffect
   _shader: {fileID: 4800000, guid: eb732616613fa2d4ab375752805c9e6c, type: 3}
   _targetResolution: {x: 320, y: 240}
-  _colorBits: 5
-  _ditherStrength: 0.8
+  _colorBits: 1
+  _ditherStrength: 1
 --- !u!1 &386917020262485072
 GameObject:
   m_ObjectHideFlags: 0
@@ -1908,9 +1908,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSway
   rotationSmooth: 6
-  rotationMultiplier: 2.3
+  rotationMultiplier: 1.2
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.2
   camMove: {fileID: 1286014109121050320}
 --- !u!82 &4375653180388185849
 AudioSource:
@@ -2135,8 +2135,8 @@ MonoBehaviour:
   audioListener: {fileID: 0}
   mouseSensitivity: 0.1
   unlockCursor: 1
-  defaultFOV: 70
-  sprintFOV: 90
+  defaultFOV: 60
+  sprintFOV: 75
   fovSpeed: 10
   standingCameraY: 0.8
   crouchingCameraY: 0.25
@@ -3596,9 +3596,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSway
   rotationSmooth: 6
-  rotationMultiplier: 2.3
+  rotationMultiplier: 1.2
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.2
   camMove: {fileID: 2346158392739202656}
 --- !u!82 &1003912141454042697
 AudioSource:
@@ -4738,9 +4738,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSway
   rotationSmooth: 6
-  rotationMultiplier: 2.3
+  rotationMultiplier: 1.2
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.2
   camMove: {fileID: 3002025436685893774}
 --- !u!82 &344789649745371303
 AudioSource:
@@ -5559,8 +5559,8 @@ MonoBehaviour:
   audioListener: {fileID: 0}
   mouseSensitivity: 0.1
   unlockCursor: 1
-  defaultFOV: 70
-  sprintFOV: 90
+  defaultFOV: 60
+  sprintFOV: 75
   fovSpeed: 10
   standingCameraY: 0.8
   crouchingCameraY: 0.25
@@ -8416,9 +8416,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSway
   rotationSmooth: 6
-  rotationMultiplier: 2.3
+  rotationMultiplier: 1.2
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.2
   camMove: {fileID: 6047513736786197658}
 --- !u!82 &9118861074882092211
 AudioSource:
@@ -8697,8 +8697,8 @@ MonoBehaviour:
   audioListener: {fileID: 0}
   mouseSensitivity: 0.1
   unlockCursor: 1
-  defaultFOV: 70
-  sprintFOV: 90
+  defaultFOV: 60
+  sprintFOV: 75
   fovSpeed: 10
   standingCameraY: 0.8
   crouchingCameraY: 0.25
@@ -10444,8 +10444,8 @@ MonoBehaviour:
   audioListener: {fileID: 0}
   mouseSensitivity: 0.1
   unlockCursor: 1
-  defaultFOV: 70
-  sprintFOV: 90
+  defaultFOV: 60
+  sprintFOV: 75
   fovSpeed: 10
   standingCameraY: 0.8
   crouchingCameraY: 0.25
@@ -11541,8 +11541,8 @@ MonoBehaviour:
   audioListener: {fileID: 0}
   mouseSensitivity: 0.1
   unlockCursor: 1
-  defaultFOV: 70
-  sprintFOV: 90
+  defaultFOV: 80
+  sprintFOV: 100
   fovSpeed: 10
   standingCameraY: 0.8
   crouchingCameraY: 0.25
@@ -12195,9 +12195,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSway
   rotationSmooth: 6
-  rotationMultiplier: 2.3
+  rotationMultiplier: 1.2
   positionSmooth: 12
-  positionMultiplier: 1.2
+  positionMultiplier: 0.2
   camMove: {fileID: 7994148249095324015}
 --- !u!82 &4868757458815230278
 AudioSource:

@@ -1574,7 +1574,6 @@ MonoBehaviour:
   fadeBeforeClickEvent: 0
   screenFade: {fileID: 0}
   button: {fileID: 0}
-  disableUnityButtonOnClick: 1
   isHovering: 0
   isClicking: 0
 --- !u!114 &119978879
@@ -12299,7 +12298,6 @@ MonoBehaviour:
   fadeBeforeClickEvent: 0
   screenFade: {fileID: 0}
   button: {fileID: 0}
-  disableUnityButtonOnClick: 1
   isHovering: 0
   isClicking: 0
 --- !u!1 &1168903988
@@ -19277,7 +19275,6 @@ MonoBehaviour:
   fadeBeforeClickEvent: 1
   screenFade: {fileID: 373816508}
   button: {fileID: 0}
-  disableUnityButtonOnClick: 1
   isHovering: 0
   isClicking: 0
 --- !u!1001 &1796756733
@@ -21774,7 +21771,6 @@ MonoBehaviour:
   fadeBeforeClickEvent: 1
   screenFade: {fileID: 373816508}
   button: {fileID: 0}
-  disableUnityButtonOnClick: 1
   isHovering: 0
   isClicking: 0
 --- !u!1 &2002454482
@@ -23514,11 +23510,6 @@ SceneRoots:
   - {fileID: 1802912785}
   - {fileID: 910895306}
   - {fileID: 1168903990}
-  - {fileID: 155078477}
-  - {fileID: 627503569}
-  - {fileID: 1276421471}
-  - {fileID: 14239791}
-  - {fileID: 764354060}
   - {fileID: 373816507}
   - {fileID: 1534317335}
   - {fileID: 1924337459}
@@ -23527,3 +23518,8 @@ SceneRoots:
   - {fileID: 22744593}
   - {fileID: 1227486740}
   - {fileID: 340359913}
+  - {fileID: 155078477}
+  - {fileID: 627503569}
+  - {fileID: 1276421471}
+  - {fileID: 14239791}
+  - {fileID: 764354060}
