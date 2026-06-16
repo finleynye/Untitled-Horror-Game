@@ -149,7 +149,6 @@ namespace Mirror
         // hook guard prevents that.
         ulong syncVarHookGuard;
 
-        //SHUT UP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         protected virtual void OnValidate()
         {
             // Skip if Editor is in Play mode
@@ -163,20 +162,20 @@ namespace Mirror
 
             // GetComponentInParent(includeInactive) is needed because Prefabs are not
             // considered active, so this check requires to scan inactive.
-/*#if UNITY_2021_3_OR_NEWER // 2021 has GetComponentInParent(bool includeInactive = false)
+#if UNITY_2021_3_OR_NEWER // 2021 has GetComponentInParent(bool includeInactive = false)
             if (GetComponent<NetworkIdentity>() == null &&
                 GetComponentInParent<NetworkIdentity>(true) == null)
             {
                 Debug.LogError($"{GetType()} on {name} requires a NetworkIdentity. Please add a NetworkIdentity component to {name} or its parents.", this);
             }
-#if UNITY_2020_3_OR_NEWER // 2020 only has GetComponentsInParent(bool includeInactive = false), we can use this too
+#elif UNITY_2020_3_OR_NEWER // 2020 only has GetComponentsInParent(bool includeInactive = false), we can use this too
             NetworkIdentity[] parentsIds = GetComponentsInParent<NetworkIdentity>(true);
             int parentIdsCount = parentsIds != null ? parentsIds.Length : 0;
             if (GetComponent<NetworkIdentity>() == null && parentIdsCount == 0)
             {
                 Debug.LogError($"{GetType()} on {name} requires a NetworkIdentity. Please add a NetworkIdentity component to {name} or its parents.", this);
             }
-#endif*/
+#endif
         }
 
         // USED BY WEAVER to set syncvars in host mode without deadlocking
