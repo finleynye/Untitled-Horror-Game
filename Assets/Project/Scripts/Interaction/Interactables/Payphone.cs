@@ -25,6 +25,14 @@ public class Payphone : NetworkBehaviour
     [SerializeField] private string pickUpPhonePrompt = "Pick Up Phone";
     [SerializeField] private string finishedPrompt = "The line is dead";
 
+    [Header("Phone Animation")]
+    [SerializeField] private Animator phoneAnimator;
+    [SerializeField] private string ringingBoolName = "IsRinging";
+
+    [Header("Ring Animation Timing")]
+    [SerializeField] private float ringQuietTime = 1.2f;
+    [SerializeField] private float ringShakeTime = 2.5f;
+
     [Header("Audio")]
     [SerializeField] private AudioSource phoneAudioSource;
     [SerializeField] private AudioClip insertMoneySound;
@@ -53,6 +61,9 @@ public class Payphone : NetworkBehaviour
         if (phoneModel == null)
             phoneModel = transform;
 
+        if (phoneAnimator == null)
+            phoneAnimator = GetComponent<Animator>();
+
     }
 
     private void Start()
@@ -61,8 +72,24 @@ public class Payphone : NetworkBehaviour
     }
     public void InteractWithPhone()
     {
-        if (!isServer) return;
+        if (isServer)
+        {
+            ServerInteractWithPhone();
+            return;
+        }
 
+        CmdInteractWithPhone();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdInteractWithPhone()
+    {
+        ServerInteractWithPhone();
+    }
+
+    [Server]
+    private void ServerInteractWithPhone()
+    {
         if (currentState == PayphoneState.NeedsQuarter)
         {
             InsertQuarter();
@@ -200,7 +227,8 @@ public class Payphone : NetworkBehaviour
 
     private IEnumerator RingPhoneRoutine()
     {
-        if (phoneAudioSource == null) yield break;
+        if (phoneAudioSource == null)
+            yield break;
 
         if (ringStartSound != null)
         {
@@ -215,8 +243,23 @@ public class Payphone : NetworkBehaviour
             phoneAudioSource.volume = audioVolume;
             phoneAudioSource.Play();
         }
-    }
 
+        while (true)
+        {
+            SetPhoneRingingAnimation(false);
+            yield return new WaitForSeconds(ringQuietTime);
+
+            SetPhoneRingingAnimation(true);
+            yield return new WaitForSeconds(ringShakeTime);
+        }
+    }
+    private void SetPhoneRingingAnimation(bool isRinging)
+    {
+        if (phoneAnimator == null)
+            return;
+
+        phoneAnimator.SetBool(ringingBoolName, isRinging);
+    }
     private void StopRinging()
     {
         if (ringRoutine != null)
@@ -224,6 +267,8 @@ public class Payphone : NetworkBehaviour
             StopCoroutine(ringRoutine);
             ringRoutine = null;
         }
+
+        SetPhoneRingingAnimation(false);
 
         if (phoneAudioSource != null)
         {

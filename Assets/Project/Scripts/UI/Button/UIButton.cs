@@ -45,6 +45,10 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private float randomRotationAmount = 3f; //small random tilt amount
     [SerializeField] private float rotationInterpSpeed = 12f; //how quickly the button rotates
 
+    [Header("Fade Settings")]
+    [SerializeField] private bool fadeBeforeClickEvent = false;
+    [SerializeField] private ScreenFade screenFade;
+
     private Quaternion originalRotation;
     private Quaternion targetRotation;
 
@@ -136,6 +140,20 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         targetTextColour = clickedTextColour;
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!IsInteractable) return;
+
+        SoundManager.PlaySound(SoundType.UI_BUTTON_PRESSED, 1f);
+
+        if (fadeBeforeClickEvent && screenFade != null)
+        {
+            screenFade.FadeOutThenRun(buttonEvent);
+            return;
+        }
+
+        buttonEvent?.Invoke();
+    }
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!IsInteractable) return;
@@ -154,15 +172,6 @@ public class UIButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             targetBackgroundColour = normalBackgroundColour;
             targetTextColour = normalTextColour;
         }
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (!IsInteractable) return;
-
-        SoundManager.PlaySound(SoundType.UI_BUTTON_PRESSED, 1f);
-
-        buttonEvent?.Invoke();
     }
 
     public void OnPointerExit(PointerEventData eventData)
