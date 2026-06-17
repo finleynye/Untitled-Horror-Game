@@ -104,6 +104,42 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "KillerPlaceTree",
+                    "type": "Button",
+                    "id": "4ab0ee53-8acb-450a-87b0-35c81f1a7bcc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "KillerCancelTree",
+                    "type": "Button",
+                    "id": "9c0dd98d-1208-41d7-acfe-3c88cd5de6bf",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "KillerNightVision",
+                    "type": "Button",
+                    "id": "0f1bef30-a570-4fa5-b1c6-d25ceb65f4cd",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "KillerExitDisguise",
+                    "type": "Button",
+                    "id": "dfa660ed-140c-4420-945a-b9fd8db147e1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -269,6 +305,50 @@
                     "processors": "",
                     "groups": "",
                     "action": "Emote",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ad927d19-03c5-4392-b755-a9caf0d54e0c",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KillerPlaceTree",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "23552ff1-20d0-4ac7-8427-3e230fcf6be1",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KillerCancelTree",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c33c2d59-9b67-43eb-9962-ede17d96fd50",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KillerNightVision",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a52ba78e-8069-4e41-ae36-1f4b04a6200e",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KillerExitDisguise",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

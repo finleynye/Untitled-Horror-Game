@@ -190,6 +190,42 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""KillerPlaceTree"",
+                    ""type"": ""Button"",
+                    ""id"": ""4ab0ee53-8acb-450a-87b0-35c81f1a7bcc"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""KillerCancelTree"",
+                    ""type"": ""Button"",
+                    ""id"": ""9c0dd98d-1208-41d7-acfe-3c88cd5de6bf"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""KillerNightVision"",
+                    ""type"": ""Button"",
+                    ""id"": ""0f1bef30-a570-4fa5-b1c6-d25ceb65f4cd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""KillerExitDisguise"",
+                    ""type"": ""Button"",
+                    ""id"": ""dfa660ed-140c-4420-945a-b9fd8db147e1"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -357,6 +393,50 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Emote"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ad927d19-03c5-4392-b755-a9caf0d54e0c"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""KillerPlaceTree"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""23552ff1-20d0-4ac7-8427-3e230fcf6be1"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""KillerCancelTree"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c33c2d59-9b67-43eb-9962-ede17d96fd50"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""KillerNightVision"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a52ba78e-8069-4e41-ae36-1f4b04a6200e"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""KillerExitDisguise"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -376,6 +456,10 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Drop = m_Player.FindAction("Drop", throwIfNotFound: true);
         m_Player_Flashlight = m_Player.FindAction("Flashlight", throwIfNotFound: true);
         m_Player_Emote = m_Player.FindAction("Emote", throwIfNotFound: true);
+        m_Player_KillerPlaceTree = m_Player.FindAction("KillerPlaceTree", throwIfNotFound: true);
+        m_Player_KillerCancelTree = m_Player.FindAction("KillerCancelTree", throwIfNotFound: true);
+        m_Player_KillerNightVision = m_Player.FindAction("KillerNightVision", throwIfNotFound: true);
+        m_Player_KillerExitDisguise = m_Player.FindAction("KillerExitDisguise", throwIfNotFound: true);
     }
 
     ~@PlayerInput()
@@ -467,6 +551,10 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Drop;
     private readonly InputAction m_Player_Flashlight;
     private readonly InputAction m_Player_Emote;
+    private readonly InputAction m_Player_KillerPlaceTree;
+    private readonly InputAction m_Player_KillerCancelTree;
+    private readonly InputAction m_Player_KillerNightVision;
+    private readonly InputAction m_Player_KillerExitDisguise;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -522,6 +610,22 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Emote".
         /// </summary>
         public InputAction @Emote => m_Wrapper.m_Player_Emote;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/KillerPlaceTree".
+        /// </summary>
+        public InputAction @KillerPlaceTree => m_Wrapper.m_Player_KillerPlaceTree;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/KillerCancelTree".
+        /// </summary>
+        public InputAction @KillerCancelTree => m_Wrapper.m_Player_KillerCancelTree;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/KillerNightVision".
+        /// </summary>
+        public InputAction @KillerNightVision => m_Wrapper.m_Player_KillerNightVision;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/KillerExitDisguise".
+        /// </summary>
+        public InputAction @KillerExitDisguise => m_Wrapper.m_Player_KillerExitDisguise;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -581,6 +685,18 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Emote.started += instance.OnEmote;
             @Emote.performed += instance.OnEmote;
             @Emote.canceled += instance.OnEmote;
+            @KillerPlaceTree.started += instance.OnKillerPlaceTree;
+            @KillerPlaceTree.performed += instance.OnKillerPlaceTree;
+            @KillerPlaceTree.canceled += instance.OnKillerPlaceTree;
+            @KillerCancelTree.started += instance.OnKillerCancelTree;
+            @KillerCancelTree.performed += instance.OnKillerCancelTree;
+            @KillerCancelTree.canceled += instance.OnKillerCancelTree;
+            @KillerNightVision.started += instance.OnKillerNightVision;
+            @KillerNightVision.performed += instance.OnKillerNightVision;
+            @KillerNightVision.canceled += instance.OnKillerNightVision;
+            @KillerExitDisguise.started += instance.OnKillerExitDisguise;
+            @KillerExitDisguise.performed += instance.OnKillerExitDisguise;
+            @KillerExitDisguise.canceled += instance.OnKillerExitDisguise;
         }
 
         /// <summary>
@@ -625,6 +741,18 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Emote.started -= instance.OnEmote;
             @Emote.performed -= instance.OnEmote;
             @Emote.canceled -= instance.OnEmote;
+            @KillerPlaceTree.started -= instance.OnKillerPlaceTree;
+            @KillerPlaceTree.performed -= instance.OnKillerPlaceTree;
+            @KillerPlaceTree.canceled -= instance.OnKillerPlaceTree;
+            @KillerCancelTree.started -= instance.OnKillerCancelTree;
+            @KillerCancelTree.performed -= instance.OnKillerCancelTree;
+            @KillerCancelTree.canceled -= instance.OnKillerCancelTree;
+            @KillerNightVision.started -= instance.OnKillerNightVision;
+            @KillerNightVision.performed -= instance.OnKillerNightVision;
+            @KillerNightVision.canceled -= instance.OnKillerNightVision;
+            @KillerExitDisguise.started -= instance.OnKillerExitDisguise;
+            @KillerExitDisguise.performed -= instance.OnKillerExitDisguise;
+            @KillerExitDisguise.canceled -= instance.OnKillerExitDisguise;
         }
 
         /// <summary>
@@ -742,5 +870,33 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnEmote(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "KillerPlaceTree" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnKillerPlaceTree(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "KillerCancelTree" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnKillerCancelTree(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "KillerNightVision" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnKillerNightVision(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "KillerExitDisguise" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnKillerExitDisguise(InputAction.CallbackContext context);
     }
 }

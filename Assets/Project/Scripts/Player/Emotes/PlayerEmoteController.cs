@@ -20,7 +20,6 @@ public class PlayerEmoteController : NetworkBehaviour
     };
 
     [Header("Cooldown")]
-    [SerializeField] private float emoteCooldown = 3f;
     [SerializeField] private float nextEmoteTime;
 
     [Header("State")]
