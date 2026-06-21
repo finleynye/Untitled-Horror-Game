@@ -39,7 +39,6 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     [Header("Unity Button Support")]
     [SerializeField] private Button button;
-    [SerializeField] private bool disableUnityButtonOnClick = true;
 
     [Header("Text Button States")]
     public bool isHovering;
@@ -55,11 +54,20 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private bool manualInteractable = true;
     private bool hasClickedThisFrame;
+    private bool initialised;
 
     private bool IsInteractable => manualInteractable && (button == null || button.interactable);
 
     private void Start()
     {
+        EnsureInitialised();
+    }
+
+    private void EnsureInitialised()
+    {
+        if (initialised)
+            return;
+
         if (button == null)
             button = GetComponent<Button>();
 
@@ -73,12 +81,7 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             screenFade = FindFirstObjectByType<ScreenFade>();
 
         if (button != null)
-        {
             button.transition = Selectable.Transition.None;
-
-            if (disableUnityButtonOnClick)
-                button.onClick.RemoveAllListeners();
-        }
 
         originalScale = transform.localScale;
         targetScale = originalScale;
@@ -89,6 +92,7 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         targetTextColour = normalTextColour;
 
         ApplyTextColourInstant();
+        initialised = true;
     }
 
     private void LateUpdate()
@@ -208,6 +212,8 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void SetInteractable(bool value)
     {
+        EnsureInitialised();
+
         manualInteractable = value;
 
         if (button != null)
@@ -226,5 +232,18 @@ public class UITextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (buttonText != null)
             buttonText.color = targetTextColour;
+    }
+    public void SetTextVisualState(bool value)
+    {
+        EnsureInitialised();
+
+        isHovering = false;
+        isClicking = false;
+
+        targetScale = originalScale;
+        targetRotation = originalRotation;
+        targetTextColour = value ? normalTextColour : disabledTextColour;
+
+        ApplyTextColourInstant();
     }
 }

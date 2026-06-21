@@ -15,10 +15,7 @@ public class LocalPlayerMeshVisibility : NetworkBehaviour
     {
         base.OnStartAuthority();
 
-        if (!isOwned)
-            return;
-
-        ApplyDefaultVisibility();
+        RefreshVisibility();
     }
 
     public override void OnStopAuthority()
@@ -34,14 +31,18 @@ public class LocalPlayerMeshVisibility : NetworkBehaviour
 
         isForcedVisible = visible;
 
+        RefreshVisibility();
+    }
+
+    public void RefreshVisibility()
+    {
+        if (!isOwned) return;
+
+        //emotes need body visible but normal first person hides it
         if (isForcedVisible)
-        {
             SetMeshVisible(true);
-        }
         else
-        {
             ApplyDefaultVisibility();
-        }
     }
 
     private void ApplyDefaultVisibility()

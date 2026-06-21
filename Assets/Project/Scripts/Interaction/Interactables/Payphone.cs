@@ -5,8 +5,6 @@ using UnityEngine;
 public enum PayphoneState
 {
     NeedsQuarter,
-    Ringing,
-    PickedUp,
     Finished
 }
 
@@ -22,24 +20,21 @@ public class Payphone : NetworkBehaviour
 
     [Header("Prompt Text")]
     [SerializeField] private string insertQuarterPrompt = "Insert Quarter";
-    [SerializeField] private string pickUpPhonePrompt = "Pick Up Phone";
+    [SerializeField] private string waitingPrompt = "...";
     [SerializeField] private string finishedPrompt = "The line is dead";
+
+    [Header("Dead Line Timing")]
+    [SerializeField] private float deadLineDelay = 1.2f;
 
     [Header("Phone Animation")]
     [SerializeField] private Animator phoneAnimator;
-    [SerializeField] private string ringingBoolName = "IsRinging";
-
-    [Header("Ring Animation Timing")]
-    [SerializeField] private float ringQuietTime = 1.2f;
-    [SerializeField] private float ringShakeTime = 2.5f;
+    [SerializeField] private string deadTriggerName = "GoDead";
+    [SerializeField] private string idleTriggerName = "GoIdle";
 
     [Header("Audio")]
     [SerializeField] private AudioSource phoneAudioSource;
     [SerializeField] private AudioClip insertMoneySound;
-    [SerializeField] private AudioClip ringStartSound;
-    [SerializeField] private AudioClip ringLoopSound;
-    [SerializeField] private AudioClip treeStalkerVoiceLine;
-    [SerializeField] private AudioClip putDownPhoneSound;
+    [SerializeField] private AudioClip lineDeadSound;
     [SerializeField] private AudioClip scarySting;
     [SerializeField] private float audioVolume = 1f;
 
@@ -48,7 +43,7 @@ public class Payphone : NetworkBehaviour
     [SerializeField] private string completionLocationText = "The Line Goes Dead";
     [SerializeField] private string completionObjectiveText = "The phone is useless. Explore the camp.";
 
-    private Coroutine ringRoutine;
+    private bool isProcessingPhone;
 
     private void Awake()
     {
@@ -63,13 +58,13 @@ public class Payphone : NetworkBehaviour
 
         if (phoneAnimator == null)
             phoneAnimator = GetComponent<Animator>();
-
     }
 
     private void Start()
     {
         UpdatePrompt();
     }
+
     public void InteractWithPhone()
     {
         if (isServer)
@@ -90,52 +85,30 @@ public class Payphone : NetworkBehaviour
     [Server]
     private void ServerInteractWithPhone()
     {
-        if (currentState == PayphoneState.NeedsQuarter)
-        {
-            InsertQuarter();
+        if (currentState != PayphoneState.NeedsQuarter)
             return;
-        }
 
-        if (currentState == PayphoneState.Ringing)
-        {
-            PickUpPhone();
+        if (isProcessingPhone)
             return;
-        }
+
+        StartCoroutine(InsertQuarterThenKillLine());
     }
 
     [Server]
-    private void InsertQuarter()
+    private IEnumerator InsertQuarterThenKillLine()
     {
-        currentState = PayphoneState.Ringing;
+        isProcessingPhone = true;
 
         RpcPlayInsertQuarterFeedback();
-        RpcStartRinging();
-    }
+        RpcSetWaitingPrompt();
 
-    [Server]
-    private void PickUpPhone()
-    {
-        currentState = PayphoneState.PickedUp;
-
-        RpcPickUpPhoneFeedback();
-
-        //after the voiceline finishes, mark the phone as finished
-        float finishDelay = treeStalkerVoiceLine != null ? treeStalkerVoiceLine.length : 1f;
-        StartCoroutine(FinishPhoneAfterDelay(finishDelay));
-    }
-
-    [Server]
-    private IEnumerator FinishPhoneAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(deadLineDelay);
 
         currentState = PayphoneState.Finished;
 
-        RpcPlayPutDownPhoneSound();
+        RpcPayphoneGoesDead();
 
-        yield return new WaitForSeconds(putDownPhoneSound != null ? putDownPhoneSound.length : 0.2f);
-
-        RpcShowCompletionPopup();
+        isProcessingPhone = false;
     }
 
     private void OnPhoneStateChanged(PayphoneState oldState, PayphoneState newState)
@@ -145,26 +118,13 @@ public class Payphone : NetworkBehaviour
 
     private void UpdatePrompt()
     {
-        if (phoneInteractable == null) return;
+        if (phoneInteractable == null)
+            return;
 
         if (currentState == PayphoneState.NeedsQuarter)
         {
             phoneInteractable.interactionPrompt = insertQuarterPrompt;
             phoneInteractable.isInteractable = true;
-            return;
-        }
-
-        if (currentState == PayphoneState.Ringing)
-        {
-            phoneInteractable.interactionPrompt = pickUpPhonePrompt;
-            phoneInteractable.isInteractable = true;
-            return;
-        }
-
-        if (currentState == PayphoneState.PickedUp)
-        {
-            phoneInteractable.interactionPrompt = "...";
-            phoneInteractable.isInteractable = false;
             return;
         }
 
@@ -183,98 +143,59 @@ public class Payphone : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcStartRinging()
+    private void RpcSetWaitingPrompt()
     {
-        StopRinging();
-
-        ringRoutine = StartCoroutine(RingPhoneRoutine());
-    }
-
-    [ClientRpc]
-    private void RpcPickUpPhoneFeedback()
-    {
-        StopRinging();
-
-        if (phoneAudioSource != null && treeStalkerVoiceLine != null)
-        {
-            phoneAudioSource.loop = false;
-            phoneAudioSource.clip = null;
-            phoneAudioSource.PlayOneShot(treeStalkerVoiceLine, audioVolume);
-        }
-    }
-
-    [ClientRpc]
-    private void RpcPlayPutDownPhoneSound()
-    {
-        if (phoneAudioSource == null) return;
-        if (putDownPhoneSound == null) return;
-
-        phoneAudioSource.PlayOneShot(putDownPhoneSound, audioVolume);
-    }
-
-    [ClientRpc]
-    private void RpcShowCompletionPopup()
-    {
-        if (!showCompletionPopup) return;
-
-        if (LocalPopupUI.Instance != null)
-        {
-            LocalPopupUI.Instance.ShowPopup(completionLocationText, completionObjectiveText);
-            phoneAudioSource.PlayOneShot(scarySting, audioVolume);  
-            return;
-        }
-    }
-
-    private IEnumerator RingPhoneRoutine()
-    {
-        if (phoneAudioSource == null)
-            yield break;
-
-        if (ringStartSound != null)
-        {
-            phoneAudioSource.PlayOneShot(ringStartSound, audioVolume);
-            yield return new WaitForSeconds(ringStartSound.length);
-        }
-
-        if (ringLoopSound != null)
-        {
-            phoneAudioSource.clip = ringLoopSound;
-            phoneAudioSource.loop = true;
-            phoneAudioSource.volume = audioVolume;
-            phoneAudioSource.Play();
-        }
-
-        while (true)
-        {
-            SetPhoneRingingAnimation(false);
-            yield return new WaitForSeconds(ringQuietTime);
-
-            SetPhoneRingingAnimation(true);
-            yield return new WaitForSeconds(ringShakeTime);
-        }
-    }
-    private void SetPhoneRingingAnimation(bool isRinging)
-    {
-        if (phoneAnimator == null)
+        if (phoneInteractable == null)
             return;
 
-        phoneAnimator.SetBool(ringingBoolName, isRinging);
+        phoneInteractable.interactionPrompt = waitingPrompt;
+        phoneInteractable.isInteractable = false;
     }
-    private void StopRinging()
+
+    [ClientRpc]
+    private void RpcPayphoneGoesDead()
     {
-        if (ringRoutine != null)
-        {
-            StopCoroutine(ringRoutine);
-            ringRoutine = null;
-        }
+        PlayDeadFeedback();
+        ShowDeadPopup();
+    }
 
-        SetPhoneRingingAnimation(false);
-
+    private void PlayDeadFeedback()
+    {
         if (phoneAudioSource != null)
         {
             phoneAudioSource.loop = false;
             phoneAudioSource.Stop();
             phoneAudioSource.clip = null;
+
+            if (lineDeadSound != null)
+                phoneAudioSource.PlayOneShot(lineDeadSound, audioVolume);
         }
+
+        if (phoneAnimator != null && !string.IsNullOrEmpty(deadTriggerName))
+            phoneAnimator.SetTrigger(deadTriggerName);
+
+        StartCoroutine(ReturnToIdleAfterLineSound());
+    }
+    private IEnumerator ReturnToIdleAfterLineSound()
+    {
+        if (lineDeadSound != null)
+            yield return new WaitForSeconds(lineDeadSound.length);
+        else
+            yield return new WaitForSeconds(1f);
+
+        if (phoneAnimator != null && !string.IsNullOrEmpty(idleTriggerName))
+            phoneAnimator.SetTrigger(idleTriggerName);
+    }
+
+    private void ShowDeadPopup()
+    {
+        if (!showCompletionPopup)
+            return;
+
+        if (LocalPopupUI.Instance != null)
+            LocalPopupUI.Instance.ShowPopup(completionLocationText, completionObjectiveText);
+
+        if (phoneAudioSource != null && scarySting != null)
+            phoneAudioSource.PlayOneShot(scarySting, audioVolume);
     }
 }

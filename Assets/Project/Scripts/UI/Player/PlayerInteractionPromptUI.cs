@@ -19,6 +19,10 @@ public class PlayerInteractionPromptUI : MonoBehaviour
 
     private void Update()
     {
+
+        if (playerInteraction != null && (!playerInteraction.isActiveAndEnabled || !playerInteraction.isOwned))
+            playerInteraction = null;
+
         if (playerInteraction == null)
             FindLocalPlayerInteraction();
         
@@ -31,7 +35,7 @@ public class PlayerInteractionPromptUI : MonoBehaviour
 
         foreach (PlayerInteraction interaction in interactions)
         {
-            if (interaction.isOwned)
+            if (interaction != null && interaction.isActiveAndEnabled && interaction.isOwned)
             {
                 playerInteraction = interaction;
                 return;
@@ -82,4 +86,5 @@ public class PlayerInteractionPromptUI : MonoBehaviour
         if (promptText != null)
             promptText.text = "";
     }
+
 }

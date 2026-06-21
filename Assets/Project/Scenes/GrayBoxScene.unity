@@ -2769,9 +2769,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStaminaUI
   playerStamina: {fileID: 0}
-  wheelRed: {fileID: 1063809881}
-  wheelGreen: {fileID: 1415680349}
+  wheelBackground: {fileID: 1063809881}
+  wheelFill: {fileID: 1415680349}
   showStaminaText: 0
+  normalColour: {r: 0.49019608, g: 0.8117647, b: 0.627451, a: 1}
+  lowColour: {r: 0.8392157, g: 0.72156864, b: 0.3529412, a: 1}
+  criticalColour: {r: 0.76862746, g: 0.35686275, b: 0.35686275, a: 1}
+  lowStaminaPoint: 0.5
+  criticalStaminaPoint: 0.2
+  colourLerpSpeed: 8
+  canvas: {fileID: 0}
+  canvasDistanceFromCamera: 0.2
 --- !u!114 &166707377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16150,15 +16158,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1019654328}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5467868, y: -0.00000011354734, z: 0.837272, w: -0.000000037058726}
-  m_LocalPosition: {x: 0.00405, y: -0.01191, z: -0.00338}
+  m_LocalRotation: {x: 0.50370395, y: -0.00000011527764, z: 0.86387634, w: -0.000000031263582}
+  m_LocalPosition: {x: 0.00437, y: -0.01191, z: -0.00328}
   m_LocalScale: {x: 0.0001658934, y: 0.00015163585, z: 0.00023046906}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 101155041}
   - {fileID: 682317315}
   m_Father: {fileID: 1262644585}
-  m_LocalEulerAnglesHint: {x: -180, y: 246.294, z: 0}
+  m_LocalEulerAnglesHint: {x: -180, y: 240.491, z: 0}
 --- !u!1 &1020154792
 GameObject:
   m_ObjectHideFlags: 0
@@ -16397,7 +16405,7 @@ GameObject:
   - component: {fileID: 1063809882}
   - component: {fileID: 1063809881}
   m_Layer: 5
-  m_Name: Red
+  m_Name: BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16435,7 +16443,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5471698, g: 0.059362773, b: 0.059362773, a: 1}
+  m_Color: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -19747,7 +19755,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1290443379}
-  - component: {fileID: 1290443378}
   m_Layer: 0
   m_Name: === OBJECTIVE MANAGER ===
   m_TagString: Untagged
@@ -19755,32 +19762,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1290443378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290443377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c248d32f166b2f40a2305f10730036e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ObjectiveManager
-  objectives:
-  - objectiveID: Find A Payphone
-    locationText: Near Crashed Car
-    objectiveText: Find A Payphone
-    showPopupOnStart: 0
-    isCompleted: 0
-  - objectiveID: Lights On
-    locationText: Main Camp
-    objectiveText: Turn On the Generator
-    showPopupOnStart: 0
-    isCompleted: 0
-  currentLocationText: {fileID: 1304854777}
-  currentObjectiveText: {fileID: 173753728}
-  currentObjectiveIndex: 0
 --- !u!4 &1290443379
 Transform:
   m_ObjectHideFlags: 0
@@ -26693,7 +26674,7 @@ GameObject:
   - component: {fileID: 1415680350}
   - component: {fileID: 1415680349}
   m_Layer: 5
-  m_Name: Green
+  m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30929,15 +30910,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835568340}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5467868, y: -0.00000011354734, z: 0.837272, w: -0.000000037058726}
-  m_LocalPosition: {x: 0.00163, y: -0.01191, z: -0.00377}
+  m_LocalRotation: {x: 0.51458275, y: -0.00000011487327, z: 0.8574407, w: -0.000000032718127}
+  m_LocalPosition: {x: 0.00181, y: -0.01191, z: -0.00386}
   m_LocalScale: {x: 0.0001658934, y: 0.00015163585, z: 0.00023046906}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2142266681}
   - {fileID: 1387441491}
   m_Father: {fileID: 1218612369}
-  m_LocalEulerAnglesHint: {x: -180, y: 246.294, z: 0}
+  m_LocalEulerAnglesHint: {x: -180, y: 241.939, z: 0}
 --- !u!1001 &1839834770
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35391,7 +35372,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.53998137, z: -0, w: 0.84167707}
   m_LocalPosition: {x: 17.38736, y: 0.062319756, z: -1.1982727}
-  m_LocalScale: {x: 1.2174981, y: 1.2174981, z: 1.2174981}
+  m_LocalScale: {x: 0.92941034, y: 0.92941034, z: 0.92941034}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 697587487}
@@ -36442,18 +36423,14 @@ MonoBehaviour:
   phoneModel: {fileID: 543450653024167722}
   currentState: 0
   insertQuarterPrompt: Insert Quarter
-  pickUpPhonePrompt: Pick Up Phone
+  waitingPrompt: ...
   finishedPrompt: The line is dead
+  deadLineDelay: 1.2
   phoneAnimator: {fileID: 3469287836807243924}
-  ringingBoolName: IsRinging
-  ringQuietTime: 1.2
-  ringShakeTime: 2.5
+  deadTriggerName: GoDead
   phoneAudioSource: {fileID: 3469287836807243923}
   insertMoneySound: {fileID: 8300000, guid: ad80e1ea81d6a58408ea43bbd961d3b8, type: 3}
-  ringStartSound: {fileID: 8300000, guid: c2b9ad0e88a20474280f51954498cb27, type: 3}
-  ringLoopSound: {fileID: 8300000, guid: c2b9ad0e88a20474280f51954498cb27, type: 3}
-  treeStalkerVoiceLine: {fileID: 8300000, guid: 2b9177815ef6b3f40a61250ce6b9d359, type: 3}
-  putDownPhoneSound: {fileID: 8300000, guid: 34a134eed19f5ca43bce954b1496c582, type: 3}
+  lineDeadSound: {fileID: 8300000, guid: 702e8446af5755e4c8fb60516f913bf7, type: 3}
   scarySting: {fileID: 8300000, guid: db2da2f39dfda5842bf1030f77c9e1cb, type: 3}
   audioVolume: 1
   showCompletionPopup: 1

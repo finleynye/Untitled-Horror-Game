@@ -21,6 +21,7 @@ public class FlashLightController : NetworkBehaviour
     private bool isPaused = false;
 
     private PlayerInput playerInput;
+    private bool isSelectedRole;
 
     private void Awake()
     {
@@ -39,7 +40,7 @@ public class FlashLightController : NetworkBehaviour
         base.OnStartClient();
 
         //make sure the light visually matches the synced bool when this player spawns
-        SetFlashlightState(flashlightActive);
+        ApplyRoleSelection(isSelectedRole);
     }
 
     public override void OnStartAuthority()
@@ -54,13 +55,14 @@ public class FlashLightController : NetworkBehaviour
         //toggle flashlight when the input button is pressed
         playerInput.Player.Flashlight.performed += ToggleFlashlight;
 
-        playerInput.Enable();
+        if (isSelectedRole)
+            playerInput.Enable();
     }
 
     private void ToggleFlashlight(InputAction.CallbackContext context)
     {
 
-        if (!isOwned)
+        if (!isOwned || !isSelectedRole)
             return;
 
         if (playerMovement != null && playerMovement.isPaused)
@@ -87,7 +89,7 @@ public class FlashLightController : NetworkBehaviour
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
     {
-        SetFlashlightState(newValue);
+        SetFlashlightState(isSelectedRole && newValue);
     }
 
     private void SetFlashlightState(bool state)
@@ -101,8 +103,10 @@ public class FlashLightController : NetworkBehaviour
     [ClientRpc(includeOwner = false)]
     private void RpcPlayFlashlightSound(bool newState)
     {
-        SetFlashlightState(newState);
-        PlayFlashlightSound();
+        SetFlashlightState(isSelectedRole && newState);
+
+        if (isSelectedRole)
+            PlayFlashlightSound();
     }
 
     private void PlayFlashlightSound()
@@ -119,9 +123,35 @@ public class FlashLightController : NetworkBehaviour
     {
         isPaused = value;
     }
+
+    public void ApplyRoleSelection(bool selected)
+    {
+        isSelectedRole = selected;
+
+        //old role flashlight needs to shut off when another role is picked
+        if (!isSelectedRole)
+        {
+            SetFlashlightState(false);
+            playerInput?.Disable();
+            return;
+        }
+
+        SetFlashlightState(flashlightActive);
+
+        //only local picked role listens for flashlight input
+        if (isOwned)
+            playerInput?.Enable();
+    }
+
     public override void OnStopAuthority()
     {
         base.OnStopAuthority();
+        playerInput?.Disable();
+    }
+
+    private void OnDisable()
+    {
+        SetFlashlightState(false);
         playerInput?.Disable();
     }
 }
