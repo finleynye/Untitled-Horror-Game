@@ -51,7 +51,7 @@ public class KillerTreePlacementAbility : NetworkBehaviour
         _playerInput = new PlayerInput();
 
         //e
-        _playerInput.Player.Interact.performed += OnInteractPressed;
+        _playerInput.Player.KillerInteract.performed += OnInteractPressed;
 
         //left click
         _playerInput.Player.KillerPlaceTree.performed += OnPlaceTreePressed;

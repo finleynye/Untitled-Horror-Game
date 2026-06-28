@@ -29,6 +29,8 @@ public class RoleManager : MonoBehaviour
         var players = Manager.Players;
         if (players.Count <= 0) return false;
 
+        //if 1 player lock them into being the killer
+        //comment ts out if you wanna play solo as other role *
         if (players.Count == 1)
         {
             players[0].role = PlayerRole.Killer;

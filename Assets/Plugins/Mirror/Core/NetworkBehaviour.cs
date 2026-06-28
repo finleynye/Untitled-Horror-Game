@@ -154,6 +154,9 @@ namespace Mirror
             // Skip if Editor is in Play mode
             if (Application.isPlaying) return;
 
+            //keep this stuff commented because otherwise we get like hella errors about the network identity shit missing on prefabs.
+            /*
+            
             // we now allow child NetworkBehaviours.
             // we can not [RequireComponent(typeof(NetworkIdentity))] anymore.
             // instead, we need to ensure a NetworkIdentity is somewhere in the
@@ -176,6 +179,7 @@ namespace Mirror
                 Debug.LogError($"{GetType()} on {name} requires a NetworkIdentity. Please add a NetworkIdentity component to {name} or its parents.", this);
             }
 #endif
+            */
         }
 
         // USED BY WEAVER to set syncvars in host mode without deadlocking

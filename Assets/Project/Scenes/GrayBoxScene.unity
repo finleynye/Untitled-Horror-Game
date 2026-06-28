@@ -2769,17 +2769,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStaminaUI
   playerStamina: {fileID: 0}
-  wheelBackground: {fileID: 1063809881}
-  wheelFill: {fileID: 1415680349}
+  wheelRed: {fileID: 1063809881}
+  wheelGreen: {fileID: 1415680349}
   showStaminaText: 0
-  normalColour: {r: 0.49019608, g: 0.8117647, b: 0.627451, a: 1}
-  lowColour: {r: 0.8392157, g: 0.72156864, b: 0.3529412, a: 1}
-  criticalColour: {r: 0.76862746, g: 0.35686275, b: 0.35686275, a: 1}
-  lowStaminaPoint: 0.5
-  criticalStaminaPoint: 0.2
-  colourLerpSpeed: 8
-  canvas: {fileID: 0}
-  canvasDistanceFromCamera: 0.2
 --- !u!114 &166707377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30446,7 +30438,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.014625002, y: 0.021000002}
   m_AnchorMax: {x: 0.061000004, y: 0.10644445}
-  m_AnchoredPosition: {x: -23.99997, y: -10.200012}
+  m_AnchoredPosition: {x: -23.999878, y: -10.200012}
   m_SizeDelta: {x: -0.000015258789, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1774504336
