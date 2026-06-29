@@ -20,10 +20,10 @@ public class ProximityChat : NetworkBehaviour
     private AudioSource _audioSrc;
     private bool _isRecording;
 
-    private readonly float SendInterval = 0.025f; //40x per second, gives slightly lower delay
+    private const float SendInterval = 0.025f; //40x per second, gives slightly lower delay
     private float _timer;
 
-    private Queue<float[]> _jitterBuffer = new();
+    private readonly Queue<float[]> _jitterBuffer = new();
 
     private const int JitterPackets = 1; //lower delay
     private const int MaxJitterPackets = 4; //prevents voice delay building up forever
