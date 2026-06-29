@@ -202,7 +202,7 @@ Camera:
   m_GameObject: {fileID: 727557281416462062}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -498,6 +498,10 @@ MonoBehaviour:
   cameraMovement: {fileID: 0}
   targetDistance: 8
   smoothSpeed: 10
+  sendRate: 0.05
+  pitchSendThreshold: 1
+  minPitch: -70
+  maxPitch: 70
 --- !u!1 &941994760305392049
 GameObject:
   m_ObjectHideFlags: 0
@@ -2187,6 +2191,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 8101461394793083320}
   playerInteraction: {fileID: 718232829240746099}
   playerStamina: {fileID: 2358562221709651413}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 7867200732565795801}
   firstPersonView: {fileID: 4744990055897239479}
   walkSpeed: 1.4
@@ -2318,7 +2323,6 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 726722526600160879}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
-  playerMovement: {fileID: 0}
 --- !u!114 &5488202543628746205
 MonoBehaviour:
   m_ObjectHideFlags: 0
