@@ -428,7 +428,15 @@ MonoBehaviour:
   m_RigLayers:
   - m_Rig: {fileID: 1596572376773112648}
     m_Active: 1
-  m_Effectors: []
+  m_Effectors:
+  - m_Transform: {fileID: 8766361743039801449}
+    m_Style:
+      shape: {fileID: 4300000, guid: c6793350c150f456688e39a81f97364a, type: 2}
+      color: {r: 1, g: 0, b: 0, a: 0.5}
+      size: 0.1
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0}
+    m_Visible: 1
 --- !u!114 &8096223730188729022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -498,6 +506,10 @@ MonoBehaviour:
   cameraMovement: {fileID: 0}
   targetDistance: 8
   smoothSpeed: 10
+  sendRate: 0.05
+  pitchSendThreshold: 1
+  minPitch: -70
+  maxPitch: 70
 --- !u!1 &941994760305392049
 GameObject:
   m_ObjectHideFlags: 0
@@ -1649,7 +1661,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8766361743039801449}

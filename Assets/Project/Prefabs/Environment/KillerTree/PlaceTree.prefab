@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 5518076606989360199}
   - component: {fileID: 2384105315289686624}
   - component: {fileID: 8969628743542661011}
+  - component: {fileID: 7151398764729690356}
+  - component: {fileID: 284598839051389272}
   m_Layer: 0
   m_Name: PlaceTree
   m_TagString: Untagged
@@ -109,3 +111,41 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
+--- !u!135 &7151398764729690356
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3573507351927778369}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.09943663
+  m_Center: {x: -0.003929656, y: -0.003939186, z: 0.09250612}
+--- !u!114 &284598839051389272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3573507351927778369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3c718fb35a9ef2429a8c201eaa34f9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacedTreeScareTrigger
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  triggerOnce: 1
+  showDebugLogs: 1
