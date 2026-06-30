@@ -404,7 +404,7 @@ Camera:
   m_GameObject: {fileID: 343939793833998374}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -2198,6 +2198,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 357835697443539812}
   playerInteraction: {fileID: 9038382981711272623}
   playerStamina: {fileID: 6062458922174109449}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 1852260371545180421}
   firstPersonView: {fileID: 3837333840720377195}
   walkSpeed: 1.4
@@ -2329,7 +2330,6 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 9118861074882092211}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
-  playerMovement: {fileID: 0}
 --- !u!114 &4085722254936098561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5379,6 +5379,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 4173349637729515153}
   playerInteraction: {fileID: 4644116829581272922}
   playerStamina: {fileID: 7584009603199347452}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 2641768237501986032}
   firstPersonView: {fileID: 602651143284574366}
   walkSpeed: 1.4
@@ -5510,7 +5511,6 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 4868757458815230278}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
-  playerMovement: {fileID: 0}
 --- !u!114 &409432257067170548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8555,6 +8555,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 5098790684055355694}
   playerInteraction: {fileID: 4565255670314914021}
   playerStamina: {fileID: 1592001525624249667}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 6593637407375524687}
   firstPersonView: {fileID: 8607839568124346145}
   walkSpeed: 1.4
@@ -8686,7 +8687,6 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 4375653180388185849}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
-  playerMovement: {fileID: 0}
 --- !u!114 &8828924480106302795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10302,6 +10302,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 8616906405313098142}
   playerInteraction: {fileID: 1012437438074462293}
   playerStamina: {fileID: 2828262041796472307}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 7698520855098291199}
   firstPersonView: {fileID: 5053845683486003089}
   walkSpeed: 1.4
@@ -10433,7 +10434,6 @@ MonoBehaviour:
   flashlightAudioSource: {fileID: 1003912141454042697}
   flashlightToggleSound: {fileID: 8300000, guid: 80e2ca87523f9564ab433b392ba692c8, type: 3}
   flashlightVolume: 1
-  playerMovement: {fileID: 0}
 --- !u!114 &5463228830576934395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11403,6 +11403,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 9129652013526005616}
   playerInteraction: {fileID: 516377829342979771}
   playerStamina: {fileID: 3343480503266437917}
+  _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 7201483917970240785}
   firstPersonView: {fileID: 5693870740618545535}
   walkSpeed: 1.4
