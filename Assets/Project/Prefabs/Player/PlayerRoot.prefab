@@ -11533,7 +11533,7 @@ MonoBehaviour:
   syncInterval: 0
   playerMeshRenderers:
   - {fileID: 2168537886378726522}
-  hideForLocalPlayer: 0
+  hideForLocalPlayer: 1
 --- !u!114 &435228010233058523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11634,15 +11634,22 @@ MonoBehaviour:
   playerMovement: {fileID: 1541930627593218274}
   characterController: {fileID: 2367775373728187538}
   animator: {fileID: 8085842375742727355}
+  forceLocalMeshVisibleDuringScare: 1
+  localPlayerMeshVisibility: {fileID: 4825366444162808597}
   playerCamera: {fileID: 6624550579119375638}
   cameraHolder: {fileID: 9129652013526005616}
   headTarget: {fileID: 3615064438948042439}
   cameraFollowSpeed: 12
   cameraRotationSpeed: 10
   cameraResetTime: 0.25
+  cameraPositionSmoothTime: 0.08
+  cameraRotationSmoothSpeed: 5
+  followHeadRotationDuringScare: 0
+  scareCameraLocalOffset: {x: 0, y: 0, z: 0}
   fallTriggerName: FallBack
-  totalScareDuration: 4.7
+  totalScareDuration: 3
   useRootMotionForFall: 1
+  moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
   backwardsDistance: 1.2
@@ -11680,10 +11687,7 @@ MonoBehaviour:
   scareVignetteIntensity: 0.55
   scareChromaticAberration: 0.6
   audioSource: {fileID: 4090815557403310409}
-  scareSound: {fileID: 8300000, guid: ad80e1ea81d6a58408ea43bbd961d3b8, type: 3}
-  groundRayStartHeight: 0.75
-  groundRayDistance: 4
-  showDebugLogs: 1
+  scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
   modelRoot: {fileID: 4874008440003381570}
   resetModelRootAfterScare: 1
 --- !u!1 &7643537211951710200

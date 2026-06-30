@@ -6,9 +6,6 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
     [Header("Trigger Settings")]
     [SerializeField] private bool triggerOnce = true;
 
-    [Header("Debug")]
-    [SerializeField] private bool showDebugLogs = true;
-
     [SyncVar] private bool hasTriggered;
 
     private void OnTriggerEnter(Collider other)
@@ -17,7 +14,6 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (triggerOnce && hasTriggered)
            return;
         
-
         PlayerMovement playerMovement = FindPlayerMovementFromHit(other);
 
         if (playerMovement == null)
