@@ -16,12 +16,7 @@ public class FlashLightController : NetworkBehaviour
     [SyncVar(hook = nameof(OnFlashlightStateChanged))]
     private bool flashlightActive = false;
 
-    [Header("Pause Check")]
-    [SerializeField] private PlayerMovement playerMovement;
-    private bool isPaused = false;
-
     private PlayerInput playerInput;
-    private bool isSelectedRole;
 
     private void Awake()
     {
@@ -30,9 +25,7 @@ public class FlashLightController : NetworkBehaviour
 
         if (flashlightAudioSource == null)
             flashlightAudioSource = GetComponentInChildren<AudioSource>(true);
-
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
+        
     }
 
     public override void OnStartClient()
@@ -40,7 +33,7 @@ public class FlashLightController : NetworkBehaviour
         base.OnStartClient();
 
         //make sure the light visually matches the synced bool when this player spawns
-        ApplyRoleSelection(isSelectedRole);
+        SetFlashlightState(flashlightActive);
     }
 
     public override void OnStartAuthority()
@@ -55,41 +48,28 @@ public class FlashLightController : NetworkBehaviour
         //toggle flashlight when the input button is pressed
         playerInput.Player.Flashlight.performed += ToggleFlashlight;
 
-        if (isSelectedRole)
-            playerInput.Enable();
+        playerInput.Enable();
     }
 
     private void ToggleFlashlight(InputAction.CallbackContext context)
     {
-
-        if (!isOwned || !isSelectedRole)
+        if (!isOwned)
             return;
 
-        if (playerMovement != null && playerMovement.isPaused)
-            return;
-
-        if (isPaused)
-            return;
-
-        bool newState = !flashlightActive;
-
-        SetFlashlightState(newState);
-        PlayFlashlightSound();
-
-        CmdSetFlashlight(newState);
+        CmdToggleFlashlight();
     }
 
     [Command]
-    private void CmdSetFlashlight(bool newState)
+    private void CmdToggleFlashlight()
     {
-        flashlightActive = newState;
+        flashlightActive = !flashlightActive;
 
-        RpcPlayFlashlightSound(newState);
+        RpcPlayFlashlightSound();
     }
 
     private void OnFlashlightStateChanged(bool oldValue, bool newValue)
     {
-        SetFlashlightState(isSelectedRole && newValue);
+        SetFlashlightState(newValue);
     }
 
     private void SetFlashlightState(bool state)
@@ -100,13 +80,10 @@ public class FlashLightController : NetworkBehaviour
         flashlight_Light.enabled = state;
     }
 
-    [ClientRpc(includeOwner = false)]
-    private void RpcPlayFlashlightSound(bool newState)
+    [ClientRpc]
+    private void RpcPlayFlashlightSound()
     {
-        SetFlashlightState(isSelectedRole && newState);
-
-        if (isSelectedRole)
-            PlayFlashlightSound();
+        PlayFlashlightSound();
     }
 
     private void PlayFlashlightSound()
@@ -119,39 +96,10 @@ public class FlashLightController : NetworkBehaviour
 
         flashlightAudioSource.PlayOneShot(flashlightToggleSound, flashlightVolume);
     }
-    public void SetPaused(bool value)
-    {
-        isPaused = value;
-    }
-
-    public void ApplyRoleSelection(bool selected)
-    {
-        isSelectedRole = selected;
-
-        //old role flashlight needs to shut off when another role is picked
-        if (!isSelectedRole)
-        {
-            SetFlashlightState(false);
-            playerInput?.Disable();
-            return;
-        }
-
-        SetFlashlightState(flashlightActive);
-
-        //only local picked role listens for flashlight input
-        if (isOwned)
-            playerInput?.Enable();
-    }
 
     public override void OnStopAuthority()
     {
         base.OnStopAuthority();
-        playerInput?.Disable();
-    }
-
-    private void OnDisable()
-    {
-        SetFlashlightState(false);
         playerInput?.Disable();
     }
 }

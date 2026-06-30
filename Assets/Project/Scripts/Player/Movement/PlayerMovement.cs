@@ -13,6 +13,7 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private PlayerStamina playerStamina;
     private CharacterController _controller;
     private PlayerInput _playerInput;
+    [SerializeField] private BearTrap _currentTrap;
 
     [Header("Visuals")]
     [SerializeField] private GameObject characterRenderer; //visible character mesh
@@ -106,6 +107,7 @@ public class PlayerMovement : NetworkBehaviour
             if (isFrozen)
             {
                 _velocity = Vector3.zero;
+                HandleEscape();
                 return;
             }
 
@@ -120,6 +122,14 @@ public class PlayerMovement : NetworkBehaviour
             HandleRemoteAnimation();
         }
     }
+    
+    private void HandleEscape()
+    {
+        if (_currentTrap == null) return;
+        if (_playerInput.Player.Jump.WasPressedThisFrame())
+            _currentTrap.CmdAttemptEscape(netIdentity.connectionToClient);
+    }
+    
     private void HandleMovement()
     {
         _moveInput = isPaused ? Vector2.zero : _playerInput.Player.Move.ReadValue<Vector2>();
@@ -149,6 +159,7 @@ public class PlayerMovement : NetworkBehaviour
         _velocity.y += Gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
     }
+    
     private void HandleStamina()
     {
         if (playerStamina == null)
@@ -165,6 +176,7 @@ public class PlayerMovement : NetworkBehaviour
         if (becameExhausted)
             StopSprint();
     }
+    
     private void HandleInteraction()
     {
         if (playerInteraction == null)
@@ -176,6 +188,7 @@ public class PlayerMovement : NetworkBehaviour
         if (_playerInput.Player.Interact.WasPressedThisFrame())
             playerInteraction.TryInteract();
     }
+    
     private void Jump()
     {
         if (_controller == null) return; //will throw errors without this, but still works regardless???
@@ -190,6 +203,7 @@ public class PlayerMovement : NetworkBehaviour
                 footstepSoundSystem.PlayJumpSound();
         }
     }
+    
     private void TryStartSprint()
     {
         if (playerStamina != null && !playerStamina.CanUseStamina)
@@ -197,10 +211,12 @@ public class PlayerMovement : NetworkBehaviour
 
         CmdSetSprint(true);
     }
+    
     private void StopSprint()
     {
         CmdSetSprint(false);
     }
+    
     private void HandleRemoteAnimation()
     {
         if (animator == null)
@@ -214,6 +230,7 @@ public class PlayerMovement : NetworkBehaviour
         animator.SetBool("IsSprinting", _isSprinting && _networkIsMoving && !_isCrouching);
         animator.SetBool("IsGrounded", _networkIsGrounded);
     }
+    
     private void HandleMovementAnimation()
     {
         if (animator == null)
@@ -320,6 +337,24 @@ public class PlayerMovement : NetworkBehaviour
         LocalPlayerSpawner.SpawnAtScenePoint(transform.root, _controller, name);
         //LoadingScreen.Instance?.Hide();
     }
+    
+    //real trap shit, trap-a-holics, we make it look easy, rock with ya boys, dayum son where'd you find this?
+    [TargetRpc]
+    public void TargetSetTrapped(NetworkConnectionToClient conn, NetworkIdentity trapIdentity)
+    {
+        isFrozen = true;
+        _currentTrap = trapIdentity.GetComponent<BearTrap>();
+        //toggle prompt UI ("press button to break free" or smth idk)
+    }
+    
+    [TargetRpc]
+    public void TargetSetFree(NetworkConnectionToClient conn)
+    {
+        isFrozen = false;
+        _currentTrap = null;
+        //hide prompt and do whatever to let the player get back to normal
+    }
+    
     public override void OnStopLocalPlayer()
         => SceneManager.sceneLoaded -= OnSceneLoaded;
     

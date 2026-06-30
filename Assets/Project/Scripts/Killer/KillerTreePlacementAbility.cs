@@ -48,22 +48,21 @@ public class KillerTreePlacementAbility : NetworkBehaviour
         if (!isOwned)
             return;
 
-        _playerInput = new PlayerInput();
-
-        //e
-        _playerInput.Player.Interact.performed += OnInteractPressed;
-
-        //left click
-        _playerInput.Player.KillerPlaceTree.performed += OnPlaceTreePressed;
-
-        //right click
-        _playerInput.Player.KillerCancelTree.performed += OnCancelTreePressed;
-
-        _playerInput.Enable();
-
         if (playerCamera == null)
             playerCamera = Camera.main;
     }
+
+    private void OnEnable()
+    {
+        if (!isOwned) return;
+        
+        _playerInput = new PlayerInput();
+        _playerInput.Player.KillerInteract.performed += OnInteractPressed;
+        _playerInput.Player.KillerPlaceTree.performed += OnPlaceTreePressed;
+        _playerInput.Player.KillerCancelTree.performed += OnCancelTreePressed;
+        _playerInput.Enable();
+    }
+    
     private void Update()
     {
         if (!isOwned)
@@ -230,16 +229,18 @@ public class KillerTreePlacementAbility : NetworkBehaviour
 
         placedTreeCount++;
     }
-    public override void OnStopAuthority()
+
+    //changed onStopAuth to onDisable so hopefully ts fixes survivors being able to place trees
+    //(did the same with onStartAuth -> onEnable)
+    private void OnDisable()
     {
         if (_playerInput != null)
         {
-            _playerInput.Player.Interact.performed -= OnInteractPressed;
+            _playerInput.Player.KillerInteract.performed -= OnInteractPressed;
             _playerInput.Player.KillerPlaceTree.performed -= OnPlaceTreePressed;
             _playerInput.Player.KillerCancelTree.performed -= OnCancelTreePressed;
 
             _playerInput.Disable();
-            _playerInput = null;
         }
 
         CancelTreePlacement();

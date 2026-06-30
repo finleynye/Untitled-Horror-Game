@@ -30,7 +30,7 @@ public class KillerNightVisionSwitcher : NetworkBehaviour
         //make sure the killer starts in normal vision
         SetNightVision(false);
     }
-    private void OnNightVisionPressed(InputAction.CallbackContext context) =>ToggleNightVision();
+    private void OnNightVisionPressed(InputAction.CallbackContext context) => ToggleNightVision();
     private void ToggleNightVision() => SetNightVision(!nightVisionActive);
     private void SetNightVision(bool value)
     {
@@ -50,6 +50,7 @@ public class KillerNightVisionSwitcher : NetworkBehaviour
         if (normalProfile != null)
             postProcessingVolume.profile = normalProfile;
     }
+    
     public override void OnStopAuthority()
     {
         if (_playerInput != null)

@@ -40,25 +40,6 @@ public class PlayerController : NetworkBehaviour
  
     private void Start()
         => DontDestroyOnLoad(gameObject);
-
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        //roles get picked in lobby so redo the cameras when game scene loads
-        ApplyRoleObject(role);
-
-        if (isClient && InLobby)
-            LobbyController.Instance?.UpdateUserList();
-    }
     
     public override void OnStartAuthority()
     {
@@ -98,13 +79,7 @@ public class PlayerController : NetworkBehaviour
     
     [Command] 
     private void CmdCanStartGame(string sceneName) 
-    {
-        //only host player should be able to tell server to swap scene
-        if (playerID != 1)
-            return;
-
-        Manager.StartGame(sceneName);
-    }
+        => Manager.StartGame(sceneName);
     
     public void ChangeReady()
     {
@@ -145,127 +120,14 @@ public class PlayerController : NetworkBehaviour
 
     private void ApplyRoleObject(PlayerRole newRole)
     {
-        int targetRoleIndex = (int)newRole;
-
-        for (int i = 0; i < roles.Length; i++)
+        var targetRoleIndex = (int)newRole;
+        for (var i = 0; i < roles.Length; i++)
         {
-            if (roles[i] == null)
-                continue;
-
-            bool isSelectedRole = i == targetRoleIndex;
-
-            //this keeps the role root active so mirror can still find player root NetworkIdentity
-            if (!roles[i].activeSelf)
-                roles[i].SetActive(true);
-
-            SetRoleEnabled(roles[i], isSelectedRole);
-        }
-    }
-    private void SetRoleEnabled(GameObject roleObject, bool isEnabled)
-    {
-        FlashLightController[] flashlights = roleObject.GetComponentsInChildren<FlashLightController>(true);
-
-        foreach (FlashLightController flashlight in flashlights)
-        {
-            if (flashlight != null)
-                flashlight.ApplyRoleSelection(isEnabled);
-        }
-
-        //disable scripts on non selected roles not disable the role root object itself
-        Behaviour[] behaviours = roleObject.GetComponentsInChildren<Behaviour>(true);
-
-        foreach (Behaviour behaviour in behaviours)
-        {
-            if (behaviour == null)
-                continue;
-
-            //do not disable this PlayerController if it ever gets included by mistake
-            if (behaviour == this)
-                continue;
-
-            if (behaviour is Camera || behaviour is AudioListener || behaviour is Light)
-                continue;
-
-            behaviour.enabled = isEnabled;
-        }
-
-        //only your picked role gets its camera/listener, other players cameras stay off
-        bool localSelectedRole = isEnabled && isOwned && !InLobby;
-
-        Camera[] cameras = roleObject.GetComponentsInChildren<Camera>(true);
-
-        foreach (Camera camera in cameras)
-        {
-            if (camera != null)
-                camera.enabled = localSelectedRole;
-        }
-
-        AudioListener[] audioListeners = roleObject.GetComponentsInChildren<AudioListener>(true);
-
-        foreach (AudioListener audioListener in audioListeners)
-        {
-            if (audioListener != null)
-                audioListener.enabled = localSelectedRole;
-        }
-
-        //disable renderers on non selected roles
-        Renderer[] renderers = roleObject.GetComponentsInChildren<Renderer>(true);
-
-        foreach (Renderer renderer in renderers)
-        {
-            if (renderer == null)
-                continue;
-
-            renderer.enabled = isEnabled;
-        }
-
-        if (isEnabled)
-        {
-            LocalPlayerMeshVisibility[] meshVisibilityControllers = roleObject.GetComponentsInChildren<LocalPlayerMeshVisibility>(true);
-
-            foreach (LocalPlayerMeshVisibility meshVisibility in meshVisibilityControllers)
-            {
-                if (meshVisibility != null)
-                    //role code turns renderers on so hide local mesh again after
-                    meshVisibility.RefreshVisibility();
-            }
-        }
-
-        //disable colliders
-        Collider[] colliders = roleObject.GetComponentsInChildren<Collider>(true);
-
-        foreach (Collider collider in colliders)
-        {
-            if (collider == null)
-                continue;
-
-            collider.enabled = isEnabled;
-        }
-
-        //disable audio sources
-        AudioSource[] audioSources = roleObject.GetComponentsInChildren<AudioSource>(true);
-
-        foreach (AudioSource audioSource in audioSources)
-        {
-            if (audioSource == null)
-                continue;
-
-            audioSource.enabled = isEnabled;
+            if(roles[i] != null)
+                roles[i].SetActive(i == targetRoleIndex);
         }
     }
 
-    public GameObject GetCurrentRoleObject()
-    {
-        int targetRoleIndex = (int)role;
-
-        if (roles == null)
-            return null;
-
-        if (targetRoleIndex < 0 || targetRoleIndex >= roles.Length)
-            return null;
-
-        return roles[targetRoleIndex];
-    }
     public void CanStartGame(string sceneName)
     {
         if (isOwned)

@@ -70,6 +70,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "KillerInteract",
+                    "type": "Button",
+                    "id": "02c601d7-917d-47f7-95e4-b270f126c4a8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Attack",
                     "type": "Button",
                     "id": "34060b29-994b-4c5e-8011-a3e45316248b",
@@ -261,6 +270,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "28f6dd32-ce42-4051-81de-b3fa4d6744e5",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KillerInteract",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
