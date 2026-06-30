@@ -128,6 +128,19 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    public GameObject GetCurrentRoleObject()
+    {
+        int targetRoleIndex = (int)role;
+
+        if (roles == null)
+            return null;
+
+        if (targetRoleIndex < 0 || targetRoleIndex >= roles.Length)
+            return null;
+
+        return roles[targetRoleIndex];
+    }
+
     public void CanStartGame(string sceneName)
     {
         if (isOwned)
