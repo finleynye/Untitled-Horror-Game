@@ -88,11 +88,9 @@ public class FlashLightController : NetworkBehaviour
 
     private void PlayFlashlightSound()
     {
-        if (flashlightAudioSource == null)
-            return;
-
-        if (flashlightToggleSound == null)
-            return;
+        if (flashlightAudioSource == null) return;
+        if (flashlightToggleSound == null) return;
+        if (!flashlightAudioSource.gameObject.activeInHierarchy) return;
 
         flashlightAudioSource.PlayOneShot(flashlightToggleSound, flashlightVolume);
     }

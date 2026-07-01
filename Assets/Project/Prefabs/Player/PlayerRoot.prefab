@@ -11328,6 +11328,7 @@ GameObject:
   - component: {fileID: 435228010233058523}
   - component: {fileID: 6754349803182597103}
   - component: {fileID: 3244134689816849634}
+  - component: {fileID: 8547550696136405066}
   m_Layer: 0
   m_Name: KillerRole
   m_TagString: Untagged
@@ -11544,12 +11545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14219252c03573843aac49880fc90738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KillerNightVisionSwitcher
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  postProcessingVolume: {fileID: 8814984611003583142}
-  normalProfile: {fileID: 11400000, guid: fa41c6b9295a7334d9423bfc99b3a97b, type: 2}
-  nightVisionProfile: {fileID: 11400000, guid: faee09a5ada76d643bb40974fd5d06a1, type: 2}
+  killerCamera: {fileID: 6624550579119375638}
   nightVisionActive: 0
 --- !u!114 &3244134689816849634
 MonoBehaviour:
@@ -11583,6 +11579,22 @@ MonoBehaviour:
   treeRotationOffset: {x: -90, y: 0, z: 0}
   stillTimer: 0
   isDisguised: 0
+--- !u!114 &8547550696136405066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7612264878378448598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c02788a9d0044e8bb86dee2742e4ac32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  maxHealth: 5
 --- !u!1 &7643537211951710200
 GameObject:
   m_ObjectHideFlags: 0
@@ -13108,6 +13120,7 @@ GameObject:
   - component: {fileID: 8578576239030572101}
   - component: {fileID: 879762886714475304}
   - component: {fileID: 2367775373728187538}
+  - component: {fileID: 8956993315132377600}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -13355,6 +13368,21 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8956993315132377600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671109922971069088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 096f64063b83c0942a9dba98996aa7bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseMenu
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
 --- !u!1 &8758312301728433005
 GameObject:
   m_ObjectHideFlags: 0

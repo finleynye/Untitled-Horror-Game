@@ -193,6 +193,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (_controller == null) return; //will throw errors without this, but still works regardless???
         if (isFrozen) return;
+        if (isPaused) return;
 
         if (_coyoteTimer > 0f && !_isCrouching)
         {
@@ -206,6 +207,7 @@ public class PlayerMovement : NetworkBehaviour
     
     private void TryStartSprint()
     {
+        if (isPaused) return;
         if (playerStamina != null && !playerStamina.CanUseStamina)
             return;
 

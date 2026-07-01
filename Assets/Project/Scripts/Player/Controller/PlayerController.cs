@@ -44,7 +44,6 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartAuthority()
     {
         CmdSetPlayerName(SteamFriends.GetPersonaName());
-        gameObject.name = "LocalPlayer";
  
         if (!InLobby) return;
         LobbyController.Instance.SetLocalPlayer(this);
@@ -93,6 +92,9 @@ public class PlayerController : NetworkBehaviour
             playerName = newName;
         if (isClient)
         {
+            //tired of game objects being called LocalPlayer or PlayerRoot
+            //so moving the name change here and setting it to player's steam name so i can tell whos who
+            gameObject.name = playerName; 
             OnNameChanged?.Invoke(newName);
             if (InLobby)
                 LobbyController.Instance.UpdateUserList();

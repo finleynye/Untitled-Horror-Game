@@ -2149,6 +2149,7 @@ GameObject:
   - component: {fileID: 2358562221709651413}
   - component: {fileID: 5885579876803869090}
   - component: {fileID: 5488202543628746205}
+  - component: {fileID: -5980526153863417989}
   m_Layer: 0
   m_Name: KillerRole
   m_TagString: Untagged
@@ -2341,6 +2342,22 @@ MonoBehaviour:
   playerMeshRenderers:
   - {fileID: 1208398061393384114}
   hideForLocalPlayer: 1
+--- !u!114 &-5980526153863417989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7456013228022624286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c02788a9d0044e8bb86dee2742e4ac32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  maxHealth: 5
 --- !u!1 &7457179786833709450
 GameObject:
   m_ObjectHideFlags: 0
