@@ -47,10 +47,24 @@ public class PlayerMovement : NetworkBehaviour
     [HideInInspector] public Vector2 lastMoveDirection;
     private Vector2 _lookInput;
     private float _coyoteTimer;
+    private bool _isScareAnimationOverrideActive;
 
     public bool isPaused;
     public bool isFrozen;
     public bool IsCrouching => _isCrouching;
+
+    public void SetScareAnimationOverride(bool active)
+    {
+        _isScareAnimationOverrideActive = active;
+
+        if (!active)
+            return;
+
+        ApplyScareAnimationOverride();
+
+        if (isOwned)
+            CmdSetAnimationValues(0f, 0f, _controller != null && _controller.isGrounded, false);
+    }
 
     private void Awake()
     {
@@ -107,6 +121,8 @@ public class PlayerMovement : NetworkBehaviour
             if (isFrozen)
             {
                 _velocity = Vector3.zero;
+                if (_isScareAnimationOverrideActive)
+                    ApplyScareAnimationOverride();
                 HandleEscape();
                 return;
             }
@@ -222,6 +238,12 @@ public class PlayerMovement : NetworkBehaviour
         if (animator == null)
             return;
 
+        if (_isScareAnimationOverrideActive)
+        {
+            ApplyScareAnimationOverride();
+            return;
+        }
+
         float animSmoothTime = _networkIsGrounded ? 0.06f : 0.12f;
 
         animator.SetFloat("MoveX", _networkMoveX, animSmoothTime, Time.deltaTime);
@@ -235,6 +257,13 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (animator == null)
             return;
+
+        if (_isScareAnimationOverrideActive)
+        {
+            ApplyScareAnimationOverride();
+            CmdSetAnimationValues(0f, 0f, _controller != null && _controller.isGrounded, false);
+            return;
+        }
 
         Vector2 currentInput = _moveInput;
 
@@ -273,6 +302,17 @@ public class PlayerMovement : NetworkBehaviour
 
         //send values to server so other clients can see them
         CmdSetAnimationValues(animDirection.x, animDirection.y, _controller.isGrounded, isMoving);
+    }
+
+    private void ApplyScareAnimationOverride()
+    {
+        if (animator == null)
+            return;
+
+        animator.SetFloat("MoveX", 0f);
+        animator.SetFloat("MoveY", 0f);
+        animator.SetBool("IsSprinting", false);
+        animator.SetBool("IsGrounded", _controller == null || _controller.isGrounded);
     }
     private void ApplySceneVisualState()
     {

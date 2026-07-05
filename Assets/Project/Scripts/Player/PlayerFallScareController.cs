@@ -102,6 +102,7 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private Coroutine scareRoutine;
     private Coroutine visualRoutine;
+    private Coroutine remoteScareRoutine;
 
 
     //ts capture transform state for restoration after scare (original and post root motion fuckery)
@@ -258,6 +259,18 @@ public class PlayerFallScareController : NetworkBehaviour
         PlayTreeFallScare(treePosition);
     }
 
+    [ClientRpc(includeOwner = false)]
+    public void RpcPlayTreeFallScareForObservers(Vector3 treePosition)
+    {
+        if (isPlayingScare)
+            return;
+
+        if (remoteScareRoutine != null)
+            StopCoroutine(remoteScareRoutine);
+
+        remoteScareRoutine = StartCoroutine(RemoteTreeFallRoutine(treePosition));
+    }
+
     private IEnumerator TreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -271,6 +284,7 @@ public class PlayerFallScareController : NetworkBehaviour
         DisableCameraMovementForScare();
 
         playerMovement.isFrozen = true;
+        playerMovement.SetScareAnimationOverride(true);
         audioSource.PlayOneShot(scareSound);
 
         //apply the rootmotion and play fall animation
@@ -324,6 +338,7 @@ public class PlayerFallScareController : NetworkBehaviour
         animator.applyRootMotion = originalApplyRootMotion;
 
         ForceRestoreAfterScare();
+        playerMovement.SetScareAnimationOverride(false);
         playerMovement.isFrozen = false;
 
         ApplyFOV(originalFOV);
@@ -334,6 +349,41 @@ public class PlayerFallScareController : NetworkBehaviour
         isPlayingScare = false;
         scareRoutine = null;
         visualRoutine = null;
+    }
+
+    private IEnumerator RemoteTreeFallRoutine(Vector3 treePosition)
+    {
+        isPlayingScare = true;
+
+        CaptureScareSnapshots();
+
+        if (playerMovement != null)
+            playerMovement.SetScareAnimationOverride(true);
+
+        if (animator != null)
+        {
+            originalApplyRootMotion = animator.applyRootMotion;
+            animator.applyRootMotion = false;
+            animator.ResetTrigger(fallTriggerName);
+            animator.SetTrigger(fallTriggerName);
+        }
+
+        yield return new WaitForSeconds(totalScareDuration);
+
+        if (animator != null)
+        {
+            animator.applyRootMotion = originalApplyRootMotion;
+            animator.Rebind();
+            animator.Update(0f);
+        }
+
+        ForceRestoreAfterScare();
+
+        if (playerMovement != null)
+            playerMovement.SetScareAnimationOverride(false);
+
+        isPlayingScare = false;
+        remoteScareRoutine = null;
     }
 
     private void DisableCameraMovementForScare()
@@ -393,7 +443,8 @@ public class PlayerFallScareController : NetworkBehaviour
         bool controllerWasEnabled = characterController != null && characterController.enabled;
 
         //avoid controller fighting transform restore
-        characterController.enabled = false;
+        if (characterController != null)
+            characterController.enabled = false;
 
         //root first children after otherwise shit breaks
         if (playerRootSnapshot.IsValid)

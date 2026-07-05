@@ -37,6 +37,9 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (playerMovement == null)
             return;
 
+        if (IsKiller(playerMovement))
+            return;
+
         PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
 
         if (fallScare == null)
@@ -53,6 +56,7 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (conn == null)
             return;
 
+        fallScare.RpcPlayTreeFallScareForObservers(transform.position);
         fallScare.TargetPlayTreeFallScare(conn, transform.position);
 
         if (triggerOnce)
@@ -71,6 +75,13 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
             playerMovement = playerIdentity.GetComponentInParent<PlayerMovement>();
 
         ServerPlayFallScare(playerMovement);
+    }
+
+
+    private bool IsKiller(PlayerMovement playerMovement)
+    {
+        PlayerController playerController = playerMovement.GetComponentInParent<PlayerController>();
+        return playerController != null && playerController.role == PlayerRole.Killer;
     }
 
     private PlayerMovement FindPlayerMovementFromHit(Collider other)
