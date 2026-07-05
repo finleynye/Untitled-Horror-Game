@@ -32,21 +32,14 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
         PlayerController playerController = FindPlayerController(playerMovement);
 
-        if (playerController == null || playerController.role == PlayerRole.Killer)
+        if (playerController == null)
             return;
 
-<<<<<<< HEAD
         playerMovement = GetCurrentRoleMovement(playerController) ?? playerMovement;
 
-        PlayerFallScareController fallScare = FindFallScare(playerMovement, playerController);
-=======
-        PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
+        NetworkIdentity playerIdentity = GetPlayerIdentity(playerMovement, playerController);
 
-        if (fallScare == null)
-            fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
-
-        if (fallScare == null)
+        if (playerIdentity == null)
             return;
 
         NetworkConnectionToClient conn = playerController.connectionToClient;
@@ -57,11 +50,26 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (conn == null)
             return;
 
-        fallScare.TargetPlayTreeFallScare(conn, transform.position);
-        fallScare.RpcPlayTreeFallScareForObservers(transform.position);
+        TargetPlayTreeFallScare(conn, playerIdentity.netId, transform.position);
+        RpcPlayTreeFallScareForObservers(playerIdentity.netId, transform.position);
 
         if (triggerOnce)
             hasTriggered = true;
+    }
+
+    [TargetRpc]
+    private void TargetPlayTreeFallScare(NetworkConnectionToClient conn, uint playerNetId, Vector3 treePosition)
+    {
+        PlayTreeFallScareForIdentity(playerNetId, treePosition, false);
+    }
+
+    [ClientRpc]
+    private void RpcPlayTreeFallScareForObservers(uint playerNetId, Vector3 treePosition)
+    {
+        if (NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == playerNetId)
+            return;
+
+        PlayTreeFallScareForIdentity(playerNetId, treePosition, true);
     }
 
     [Command(requiresAuthority = false)]
@@ -85,11 +93,55 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
         ServerPlayFallScare(playerMovement);
     }
+
+    private void PlayTreeFallScareForIdentity(uint playerNetId, Vector3 treePosition, bool remoteView)
+    {
+        if (!NetworkClient.active)
+            return;
+
+        if (!NetworkClient.spawned.TryGetValue(playerNetId, out NetworkIdentity playerIdentity))
+            return;
+
+        PlayerController playerController = playerIdentity.GetComponent<PlayerController>();
+
+        if (playerController == null)
+            playerController = playerIdentity.GetComponentInChildren<PlayerController>(true);
+
+        PlayerMovement playerMovement = GetCurrentRoleMovement(playerController);
+
+        if (playerMovement == null)
+            playerMovement = playerIdentity.GetComponentInChildren<PlayerMovement>(true);
+
+        PlayerFallScareController fallScare = FindOrCreateFallScare(playerMovement, playerController);
+
+        if (fallScare == null)
+            return;
+
+        if (remoteView)
+            fallScare.PlayTreeFallScareForRemote(treePosition);
+        else
+            fallScare.PlayTreeFallScare(treePosition);
+    }
+
+    private PlayerFallScareController FindOrCreateFallScare(PlayerMovement playerMovement, PlayerController playerController)
+    {
+        PlayerFallScareController fallScare = FindFallScare(playerMovement, playerController);
+
+        if (fallScare != null)
+            return fallScare;
+
+        GameObject roleObject = playerController != null ? playerController.GetCurrentRoleObject() : null;
+
+        if (roleObject == null && playerMovement != null)
+            roleObject = playerMovement.gameObject;
+
+        return roleObject != null ? roleObject.AddComponent<PlayerFallScareController>() : null;
+    }
+
     private PlayerFallScareController FindFallScare(PlayerMovement playerMovement, PlayerController playerController)
     {
         PlayerFallScareController fallScare = null;
 
-<<<<<<< HEAD
         if (playerMovement != null)
         {
             fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
@@ -104,16 +156,7 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         return fallScare;
     }
 
-    private bool IsKiller(PlayerMovement playerMovement)
-    {
-        PlayerController playerController = FindPlayerController(playerMovement);
-        return playerController != null && playerController.role == PlayerRole.Killer;
-    }
-
     private PlayerController FindPlayerController(PlayerMovement playerMovement)
-=======
-    private PlayerMovement FindPlayerMovementFromHit(Collider other)
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     {
         if (playerMovement == null)
             return null;
@@ -147,11 +190,9 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         return null;
     }
 
-    private NetworkIdentity GetPlayerIdentity(PlayerMovement playerMovement)
+    private NetworkIdentity GetPlayerIdentity(PlayerMovement playerMovement, PlayerController playerController)
     {
-        PlayerController playerController = FindPlayerController(playerMovement);
-
-        if (playerController != null)
+        if (playerController != null && playerController.netIdentity != null)
             return playerController.netIdentity;
 
         return playerMovement != null ? playerMovement.netIdentity : null;

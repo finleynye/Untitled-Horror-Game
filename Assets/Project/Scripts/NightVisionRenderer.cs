@@ -110,6 +110,7 @@ public class NightVisionRenderer : ScriptableRendererFeature
 
                 builder.UseTexture(source);
                 builder.SetRenderAttachment(destination, 0);
+                builder.AllowPassCulling(false);
 
                 builder.SetRenderFunc((PassData data, RasterGraphContext ctx) =>
                 {

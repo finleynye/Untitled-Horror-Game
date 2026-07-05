@@ -4,7 +4,7 @@ using Mirror;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class PlayerFallScareController : NetworkBehaviour
+public class PlayerFallScareController : MonoBehaviour
 {
     //this a big GODDAMN SCRIPT. but i cannot do it in any less lines. help me if you can xox
     [Header("References")]
@@ -30,20 +30,23 @@ public class PlayerFallScareController : NetworkBehaviour
     [SerializeField] private float cameraRotationSmoothSpeed = 5f;
     [SerializeField] private bool followHeadRotationDuringScare = false;
     [SerializeField] private Vector3 scareCameraLocalOffset;
+    [SerializeField] private float maxHeadFollowUpOffset = 0.25f;
+    [SerializeField] private float maxHeadFollowDownOffset = 1.25f;
+    [SerializeField] private float maxHeadFollowHorizontalDistance = 0.45f;
 
     [Header("Fall Animation")]
     [SerializeField] private string fallTriggerName = "FallBack";
     [SerializeField] private float totalScareDuration = 2f;
 
     [Header("Root Motion")]
-    [SerializeField] private bool useRootMotionForFall = true;
+    [SerializeField] private bool useRootMotionForFall = false;
     [SerializeField] private bool moveControllerWithRootMotion = false;
     [SerializeField] private bool applyRootYawRotation = false;
     [SerializeField] private float scareGravity = -18f;
     private Transform playerRoot;
 
     [Header("Fallback Movement")]
-    [SerializeField] private float backwardsDistance = 1.2f;
+    [SerializeField] private float backwardsDistance = 0f;
     [SerializeField] private AnimationCurve backwardsCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("FOV Effect")]
@@ -86,6 +89,10 @@ public class PlayerFallScareController : NetworkBehaviour
     private float originalFOV;
     private Vector3 cameraFollowVelocity;
     private Quaternion scareStartCameraWorldRotation;
+    private Vector3 scareStartCameraWorldPosition;
+    private Vector3 scarePinnedRootPosition;
+    private Quaternion scarePinnedRootRotation;
+    private bool hasScarePinnedRoot;
     private bool originalCameraMovementEnabled;
     private bool hasCameraMovementSnapshot;
 
@@ -102,12 +109,9 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private Coroutine scareRoutine;
     private Coroutine visualRoutine;
-<<<<<<< HEAD
     private Coroutine remoteScareRoutine;
     private MonoBehaviour scareCoroutineRunner;
     private MonoBehaviour remoteScareCoroutineRunner;
-=======
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
 
     //ts capture transform state for restoration after scare (original and post root motion fuckery)
@@ -199,39 +203,31 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private void LateUpdate()
     {
+        PinPlayerRootDuringScare();
         UpdateScareCameraFollow();
+    }
+
+    private bool IsOwnedPlayer()
+    {
+        return playerMovement != null && playerMovement.isOwned;
+    }
+
+    private NetworkIdentity GetNetworkIdentity()
+    {
+        if (playerMovement != null && playerMovement.netIdentity != null)
+            return playerMovement.netIdentity;
+
+        return GetComponentInParent<NetworkIdentity>();
     }
 
     private void OnAnimatorMove()
     {
-        if (!isOwned) return;
-        if (!scareRootMotionActive) return;
-        if (animator == null) return;
-        if (characterController == null) return;
+        if (!scareRootMotionActive || animator == null)
+            return;
 
-        Vector3 movement = Vector3.zero;
-
-        //visual root motion
-        if (moveControllerWithRootMotion)
-        {
-            Vector3 rootDelta = animator.deltaPosition;
-            movement += new Vector3(rootDelta.x, 0f, rootDelta.z);
-        }
-
-        if (characterController.isGrounded && scareVerticalVelocity < 0f)
-            scareVerticalVelocity = -2f;
-
-        scareVerticalVelocity += scareGravity * Time.deltaTime;
-        movement += Vector3.up * (scareVerticalVelocity * Time.deltaTime);
-
-        characterController.Move(movement); //actually move the character controller now yipee
-        Physics.SyncTransforms();
-
-        if (applyRootYawRotation && moveControllerWithRootMotion)
-        {
-            Vector3 rootEuler = animator.deltaRotation.eulerAngles;
-            playerRoot.Rotate(0f, rootEuler.y, 0f);
-        }
+        // Consume root motion so the fall clip cannot move the player controller.
+        _ = animator.deltaPosition;
+        _ = animator.deltaRotation;
     }
 
     public void PlayTreeFallScare(Vector3 treePosition)
@@ -242,17 +238,9 @@ public class PlayerFallScareController : NetworkBehaviour
         scareRoutine = StartScareCoroutine(TreeFallRoutine(treePosition), out scareCoroutineRunner);
     }
 
-    [TargetRpc]
-    public void TargetPlayTreeFallScare(NetworkConnectionToClient conn, Vector3 treePosition)
+    public void PlayTreeFallScareForRemote(Vector3 treePosition)
     {
-        PlayTreeFallScare(treePosition);
-    }
-
-<<<<<<< HEAD
-    [ClientRpc]
-    public void RpcPlayTreeFallScareForObservers(Vector3 treePosition)
-    {
-        if (isOwned || isPlayingScare)
+        if (isPlayingScare)
             return;
 
         if (!ResolveCurrentRoleReferences())
@@ -260,9 +248,6 @@ public class PlayerFallScareController : NetworkBehaviour
 
         remoteScareRoutine = StartScareCoroutine(RemoteTreeFallRoutine(treePosition), out remoteScareCoroutineRunner);
     }
-
-=======
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     private IEnumerator TreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -275,7 +260,6 @@ public class PlayerFallScareController : NetworkBehaviour
         ForceLocalMeshVisibleForScare();
         DisableCameraMovementForScare();
 
-<<<<<<< HEAD
         if (playerMovement != null)
         {
             playerMovement.isFrozen = true;
@@ -284,27 +268,22 @@ public class PlayerFallScareController : NetworkBehaviour
 
         if (audioSource != null && scareSound != null)
             audioSource.PlayOneShot(scareSound);
-=======
-        playerMovement.isFrozen = true;
-        audioSource.PlayOneShot(scareSound);
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
-        //apply the rootmotion and play fall animation
-        originalApplyRootMotion = animator.applyRootMotion;
-        animator.ResetTrigger(fallTriggerName);
-        animator.SetTrigger(fallTriggerName);
+        //play fall animation without letting root motion move the controller
+        originalApplyRootMotion = animator != null && animator.applyRootMotion;
+        if (animator != null)
+        {
+            animator.applyRootMotion = false;
+            animator.ResetTrigger(fallTriggerName);
+            animator.SetTrigger(fallTriggerName);
+        }
 
         visualRoutine = StartCoroutine(ScareVisualRoutine());
         shouldFollowHead = true;
 
-        if (useRootMotionForFall)
-        {
-            BeginRootMotionScare();
-            yield return ScareTimerRoutine(totalScareDuration);
-            EndRootMotionScare();
-        }
-        else
-            yield return MoveCollisionBackwardsRoutine(totalScareDuration);
+        BeginRootMotionScare();
+        yield return ScareTimerRoutine(totalScareDuration);
+        EndRootMotionScare();
 
         //reset the origin because FUCKING ROOT ANIMATION MESSES WITH TRANSFORMS AND I HATE IT BECAUSE I HAVE HAD TO DO SO MUCH MORE WORK BECAUSE OF IT
         ForceRestoreAfterScare();
@@ -318,7 +297,7 @@ public class PlayerFallScareController : NetworkBehaviour
             return;
 
         scareVerticalVelocity = -2f;
-        animator.applyRootMotion = true;
+        animator.applyRootMotion = false;
         scareRootMotionActive = true;
     }
 
@@ -334,6 +313,7 @@ public class PlayerFallScareController : NetworkBehaviour
     private void StopFallScare()
     {
         scareRootMotionActive = false;
+        hasScarePinnedRoot = false;
 
         shouldFollowHead = false;
         cameraFollowVelocity = Vector3.zero;
@@ -341,15 +321,11 @@ public class PlayerFallScareController : NetworkBehaviour
             animator.applyRootMotion = originalApplyRootMotion;
 
         ForceRestoreAfterScare();
-<<<<<<< HEAD
         if (playerMovement != null)
         {
             playerMovement.SetScareAnimationOverride(false);
             playerMovement.isFrozen = false;
         }
-=======
-        playerMovement.isFrozen = false;
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
         ApplyFOV(originalFOV);
         ApplyPostProcessing(0f);
@@ -362,7 +338,6 @@ public class PlayerFallScareController : NetworkBehaviour
         scareCoroutineRunner = null;
     }
 
-<<<<<<< HEAD
     private IEnumerator RemoteTreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -420,8 +395,10 @@ public class PlayerFallScareController : NetworkBehaviour
     {
         PlayerController playerController = GetComponentInParent<PlayerController>();
 
-        if (playerController == null && netIdentity != null)
-            playerController = netIdentity.GetComponentInParent<PlayerController>();
+        NetworkIdentity identity = GetNetworkIdentity();
+
+        if (playerController == null && identity != null)
+            playerController = identity.GetComponentInParent<PlayerController>();
 
         if (playerController == null)
             playerController = GetComponentInChildren<PlayerController>(true);
@@ -495,9 +472,19 @@ public class PlayerFallScareController : NetworkBehaviour
         return playerMovement != null && playerMovement.gameObject.activeInHierarchy;
     }
 
+    private void PinPlayerRootDuringScare()
+    {
+        if (!isPlayingScare || !hasScarePinnedRoot || playerRoot == null)
+            return;
+
+        playerRoot.position = scarePinnedRootPosition;
+        playerRoot.rotation = scarePinnedRootRotation;
+        Physics.SyncTransforms();
+    }
+
     private void UpdateScareCameraFollow()
     {
-        if (!isOwned)
+        if (!IsOwnedPlayer())
             return;
 
         if (!shouldFollowHead)
@@ -507,6 +494,11 @@ public class PlayerFallScareController : NetworkBehaviour
             return;
 
         Vector3 targetPosition = headTarget.position + headTarget.TransformDirection(scareCameraLocalOffset);
+        Vector3 horizontalOffset = targetPosition - scareStartCameraWorldPosition;
+        horizontalOffset.y = 0f;
+        horizontalOffset = Vector3.ClampMagnitude(horizontalOffset, maxHeadFollowHorizontalDistance);
+        targetPosition = scareStartCameraWorldPosition + horizontalOffset;
+        targetPosition.y = Mathf.Clamp(headTarget.position.y + headTarget.TransformDirection(scareCameraLocalOffset).y, scareStartCameraWorldPosition.y - maxHeadFollowDownOffset, scareStartCameraWorldPosition.y + maxHeadFollowUpOffset);
         float positionSmoothTime = cameraPositionSmoothTime > 0f ? cameraPositionSmoothTime : 1f / Mathf.Max(cameraFollowSpeed, 0.01f);
 
         //smooth noisy jittery head bone motion
@@ -525,13 +517,12 @@ public class PlayerFallScareController : NetworkBehaviour
         while (timer < duration)
         {
             timer += Time.deltaTime;
+            PinPlayerRootDuringScare();
             UpdateScareCameraFollow();
             yield return null;
         }
     }
 
-=======
->>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     private void DisableCameraMovementForScare()
     {
         hasCameraMovementSnapshot = false;
@@ -557,6 +548,12 @@ public class PlayerFallScareController : NetworkBehaviour
     {
         //before root motion fucks with the transform hierarchy we capture EXACLTY WHERE THE MF is
         playerRootSnapshot = new TransformSnapshot(playerRoot);
+        if (playerRoot != null)
+        {
+            scarePinnedRootPosition = playerRoot.position;
+            scarePinnedRootRotation = playerRoot.rotation;
+            hasScarePinnedRoot = true;
+        }
         scriptTransformSnapshot = new TransformSnapshot(transform);
         animatorSnapshot = new TransformSnapshot(animator != null ? animator.transform : null);
         modelRootSnapshot = new TransformSnapshot(modelRoot);
@@ -566,7 +563,8 @@ public class PlayerFallScareController : NetworkBehaviour
     private void CaptureScareCameraStart()
     {
         cameraFollowVelocity = Vector3.zero;
-        scareStartCameraWorldRotation = cameraHolder.rotation;
+        scareStartCameraWorldPosition = cameraHolder != null ? cameraHolder.position : Vector3.zero;
+        scareStartCameraWorldRotation = cameraHolder != null ? cameraHolder.rotation : Quaternion.identity;
     }
     private void ForceLocalMeshVisibleForScare()
     {
@@ -589,7 +587,8 @@ public class PlayerFallScareController : NetworkBehaviour
         bool controllerWasEnabled = characterController != null && characterController.enabled;
 
         //avoid controller fighting transform restore
-        characterController.enabled = false;
+        if (characterController != null)
+            characterController.enabled = false;
 
         //root first children after otherwise shit breaks
         if (playerRootSnapshot.IsValid)
@@ -629,40 +628,7 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private IEnumerator MoveCollisionBackwardsRoutine(float duration)
     {
-        if (characterController == null)
-        {
-            yield return new WaitForSeconds(duration);
-            yield break;
-        }
-
-        scareVerticalVelocity = -2f;
-        float timer = 0f;
-        float previousCurveValue = 0f;
-        Vector3 backwardsDirection = -playerRoot.forward;
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-
-            float normalisedTime = Mathf.Clamp01(timer / duration);
-            float curveValue = backwardsCurve.Evaluate(normalisedTime);
-            float curveDelta = curveValue - previousCurveValue;
-            previousCurveValue = curveValue;
-
-            Vector3 horizontalMovement = backwardsDirection * (backwardsDistance * curveDelta);
-
-            if (characterController.isGrounded && scareVerticalVelocity < 0f)
-                scareVerticalVelocity = -2f;
-
-            scareVerticalVelocity += scareGravity * Time.deltaTime;
-            Vector3 verticalMovement = Vector3.up * (scareVerticalVelocity * Time.deltaTime);
-
-            characterController.Move(horizontalMovement + verticalMovement);
-            Physics.SyncTransforms();
-            UpdateScareCameraFollow();
-
-            yield return null;
-        }
+        yield return ScareTimerRoutine(duration);
     }
 
     private IEnumerator ScareVisualRoutine()
