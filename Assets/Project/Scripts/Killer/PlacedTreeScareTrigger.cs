@@ -55,9 +55,8 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
         if (conn == null)
             return;
-
-        fallScare.RpcPlayTreeFallScareForObservers(transform.position);
         fallScare.TargetPlayTreeFallScare(conn, transform.position);
+        fallScare.RpcPlayTreeFallScareForObservers(transform.position);
 
         if (triggerOnce)
             hasTriggered = true;
@@ -80,8 +79,42 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
     private bool IsKiller(PlayerMovement playerMovement)
     {
-        PlayerController playerController = playerMovement.GetComponentInParent<PlayerController>();
+        PlayerController playerController = FindPlayerController(playerMovement);
         return playerController != null && playerController.role == PlayerRole.Killer;
+    }
+
+    private PlayerController FindPlayerController(PlayerMovement playerMovement)
+    {
+        if (playerMovement == null)
+            return null;
+
+        PlayerController playerController = playerMovement.GetComponentInParent<PlayerController>();
+
+        if (playerController != null)
+            return playerController;
+
+        if (playerMovement.netIdentity != null)
+        {
+            playerController = playerMovement.netIdentity.GetComponentInParent<PlayerController>();
+
+            if (playerController != null)
+                return playerController;
+
+            playerController = playerMovement.netIdentity.GetComponentInChildren<PlayerController>(true);
+
+            if (playerController != null)
+                return playerController;
+        }
+
+        NetworkConnectionToClient conn = playerMovement.connectionToClient;
+
+        if (conn == null && playerMovement.netIdentity != null)
+            conn = playerMovement.netIdentity.connectionToClient;
+
+        if (conn != null && conn.identity != null)
+            return conn.identity.GetComponent<PlayerController>();
+
+        return null;
     }
 
     private PlayerMovement FindPlayerMovementFromHit(Collider other)

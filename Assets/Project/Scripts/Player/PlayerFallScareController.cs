@@ -158,6 +158,8 @@ public class PlayerFallScareController : NetworkBehaviour
     private void Awake()
     {
         if (playerMovement == null) playerMovement = GetComponent<PlayerMovement>();
+        if (playerMovement == null) playerMovement = GetComponentInParent<PlayerMovement>();
+        if (playerMovement == null) playerMovement = GetComponentInChildren<PlayerMovement>(true);
         if (characterController == null) characterController = GetComponentInParent<CharacterController>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>();
@@ -259,10 +261,10 @@ public class PlayerFallScareController : NetworkBehaviour
         PlayTreeFallScare(treePosition);
     }
 
-    [ClientRpc(includeOwner = false)]
+    [ClientRpc]
     public void RpcPlayTreeFallScareForObservers(Vector3 treePosition)
     {
-        if (isPlayingScare)
+        if (isOwned || isPlayingScare)
             return;
 
         if (remoteScareRoutine != null)
@@ -283,9 +285,14 @@ public class PlayerFallScareController : NetworkBehaviour
         ForceLocalMeshVisibleForScare();
         DisableCameraMovementForScare();
 
-        playerMovement.isFrozen = true;
-        playerMovement.SetScareAnimationOverride(true);
-        audioSource.PlayOneShot(scareSound);
+        if (playerMovement != null)
+        {
+            playerMovement.isFrozen = true;
+            playerMovement.SetScareAnimationOverride(true);
+        }
+
+        if (audioSource != null && scareSound != null)
+            audioSource.PlayOneShot(scareSound);
 
         //apply the rootmotion and play fall animation
         originalApplyRootMotion = animator.applyRootMotion;
@@ -335,11 +342,15 @@ public class PlayerFallScareController : NetworkBehaviour
 
         shouldFollowHead = false;
         cameraFollowVelocity = Vector3.zero;
-        animator.applyRootMotion = originalApplyRootMotion;
+        if (animator != null)
+            animator.applyRootMotion = originalApplyRootMotion;
 
         ForceRestoreAfterScare();
-        playerMovement.SetScareAnimationOverride(false);
-        playerMovement.isFrozen = false;
+        if (playerMovement != null)
+        {
+            playerMovement.SetScareAnimationOverride(false);
+            playerMovement.isFrozen = false;
+        }
 
         ApplyFOV(originalFOV);
         ApplyPostProcessing(0f);
