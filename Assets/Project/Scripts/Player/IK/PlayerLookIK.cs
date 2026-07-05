@@ -32,7 +32,11 @@ public class PlayerLookIK : NetworkBehaviour
             cameraMovement = GetComponentInParent<CameraMovement>();
 
         if (lookTarget != null)
+        {
+            lookTarget.SetParent(rootTransform, true);
+            lookTarget.gameObject.SetActive(true);
             currentLookPosition = lookTarget.position;
+        }
     }
 
     private void LateUpdate()
