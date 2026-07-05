@@ -252,6 +252,12 @@ public class PlayerFallScareController : NetworkBehaviour
         scareRoutine = StartCoroutine(TreeFallRoutine(treePosition));
     }
 
+    [TargetRpc]
+    public void TargetPlayTreeFallScare(NetworkConnectionToClient conn, Vector3 treePosition)
+    {
+        PlayTreeFallScare(treePosition);
+    }
+
     private IEnumerator TreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -568,9 +574,3 @@ public class PlayerFallScareController : NetworkBehaviour
         cameraHolder.localRotation = originalCameraLocalRotation;
     }
 }
-
-
-
-
-
-

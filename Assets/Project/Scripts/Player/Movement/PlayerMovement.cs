@@ -291,9 +291,12 @@ public class PlayerMovement : NetworkBehaviour
 
         if (isOwned)
         {
-            Cursor.lockState = inLobby ? CursorLockMode.None : CursorLockMode.Locked;
-            /*DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");*/
-            Cursor.visible = inLobby;
+            if (!isPaused)
+            {
+                Cursor.lockState = inLobby ? CursorLockMode.None : CursorLockMode.Locked;
+                // DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");/
+                Cursor.visible = inLobby;
+            }
         }
     }
 

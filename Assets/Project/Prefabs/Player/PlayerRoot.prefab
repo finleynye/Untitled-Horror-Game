@@ -373,7 +373,7 @@ GameObject:
   - component: {fileID: 7301931422245906563}
   - component: {fileID: 5010205850156444701}
   m_Layer: 0
-  m_Name: PixelCam
+  m_Name: PixelCam (THIS THE GOOD CAMERA)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5733,7 +5733,7 @@ GameObject:
   - component: {fileID: 2039420851906441105}
   - component: {fileID: 8382597185992344495}
   m_Layer: 0
-  m_Name: RenderCam
+  m_Name: RenderCam (JUST FOR SHIGGLES)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11358,9 +11358,9 @@ GameObject:
   - component: {fileID: 3343480503266437917}
   - component: {fileID: 4825366444162808597}
   - component: {fileID: 435228010233058523}
-  - component: {fileID: 6754349803182597103}
   - component: {fileID: 3244134689816849634}
   - component: {fileID: 913769105011562945}
+  - component: {fileID: 1106443504938410141}
   m_Layer: 0
   m_Name: KillerRole
   m_TagString: Untagged
@@ -11565,25 +11565,6 @@ MonoBehaviour:
   canPlaceTree: 0
   maxPlacedTrees: 5
   placedTreeCount: 0
---- !u!114 &6754349803182597103
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7612264878378448598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14219252c03573843aac49880fc90738, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KillerNightVisionSwitcher
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  postProcessingVolume: {fileID: 8814984611003583142}
-  normalProfile: {fileID: 11400000, guid: fa41c6b9295a7334d9423bfc99b3a97b, type: 2}
-  nightVisionProfile: {fileID: 11400000, guid: faee09a5ada76d643bb40974fd5d06a1, type: 2}
-  nightVisionActive: 0
 --- !u!114 &3244134689816849634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11639,6 +11620,7 @@ MonoBehaviour:
   playerCamera: {fileID: 6624550579119375638}
   cameraHolder: {fileID: 9129652013526005616}
   headTarget: {fileID: 3615064438948042439}
+  cameraMovement: {fileID: 0}
   cameraFollowSpeed: 12
   cameraRotationSpeed: 10
   cameraResetTime: 0.25
@@ -11666,8 +11648,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1
-      value: 1
+      time: 0.4916687
+      value: 0.9976196
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -11690,6 +11672,20 @@ MonoBehaviour:
   scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
   modelRoot: {fileID: 4874008440003381570}
   resetModelRootAfterScare: 1
+--- !u!114 &1106443504938410141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7612264878378448598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14219252c03573843aac49880fc90738, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KillerNightVision
+  killerCamera: {fileID: 6624550579119375638}
+  nightVisionActive: 0
 --- !u!1 &7643537211951710200
 GameObject:
   m_ObjectHideFlags: 0
@@ -13215,6 +13211,8 @@ GameObject:
   - component: {fileID: 8578576239030572101}
   - component: {fileID: 879762886714475304}
   - component: {fileID: 2367775373728187538}
+  - component: {fileID: 5737046920342880906}
+  - component: {fileID: 827606258430257959}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -13462,6 +13460,37 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5737046920342880906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671109922971069088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925f5a2701de6bd4c98e7bbaf738262e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseMenu
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+--- !u!114 &827606258430257959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671109922971069088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a14cd6d294b7b6d44b5eccf821962e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  maxHealth: 5
 --- !u!1 &8758312301728433005
 GameObject:
   m_ObjectHideFlags: 0

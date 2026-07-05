@@ -10,7 +10,6 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-
         if (triggerOnce && hasTriggered)
            return;
         
@@ -19,7 +18,23 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (playerMovement == null)
             return;
 
-        if (!playerMovement.isOwned)
+        if (NetworkServer.active)
+        {
+            ServerPlayFallScare(playerMovement);
+            return;
+        }
+
+        if (playerMovement.isOwned)
+            CmdRequestFallScare(playerMovement.netIdentity);
+    }
+
+    [Server]
+    private void ServerPlayFallScare(PlayerMovement playerMovement)
+    {
+        if (triggerOnce && hasTriggered)
+            return;
+
+        if (playerMovement == null)
             return;
 
         PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
@@ -30,10 +45,32 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (fallScare == null)
             return;
 
-        fallScare.PlayTreeFallScare(transform.position);
+        NetworkConnectionToClient conn = playerMovement.connectionToClient;
+
+        if (conn == null && playerMovement.netIdentity != null)
+            conn = playerMovement.netIdentity.connectionToClient;
+
+        if (conn == null)
+            return;
+
+        fallScare.TargetPlayTreeFallScare(conn, transform.position);
 
         if (triggerOnce)
-            CmdSetTriggered();
+            hasTriggered = true;
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdRequestFallScare(NetworkIdentity playerIdentity)
+    {
+        if (playerIdentity == null)
+            return;
+
+        PlayerMovement playerMovement = playerIdentity.GetComponentInChildren<PlayerMovement>(true);
+
+        if (playerMovement == null)
+            playerMovement = playerIdentity.GetComponentInParent<PlayerMovement>();
+
+        ServerPlayFallScare(playerMovement);
     }
 
     private PlayerMovement FindPlayerMovementFromHit(Collider other)
@@ -56,9 +93,4 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         return currentRoleObject.GetComponentInChildren<PlayerMovement>(true);
     }
 
-    [Command(requiresAuthority = false)]
-    private void CmdSetTriggered()
-    {
-        hasTriggered = true;
-    }
 }
