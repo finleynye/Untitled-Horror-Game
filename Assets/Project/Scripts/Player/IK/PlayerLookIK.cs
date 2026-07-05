@@ -35,7 +35,11 @@ public class PlayerLookIK : NetworkBehaviour
         rootTransform = transform.root;
 
         if (lookTarget != null)
+        {
+            lookTarget.SetParent(rootTransform, true);
+            lookTarget.gameObject.SetActive(true);
             currentLookPosition = lookTarget.position;
+        }
     }
 
     private void LateUpdate()

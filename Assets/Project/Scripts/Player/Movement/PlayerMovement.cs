@@ -327,7 +327,7 @@ public class PlayerMovement : NetworkBehaviour
             firstPersonView.SetActive(isOwned && !inLobby);*/
 
         if (cameraHolder != null)
-            cameraHolder.gameObject.SetActive(!inLobby);
+            cameraHolder.gameObject.SetActive(isOwned && !inLobby);
 
         if (isOwned)
         {
