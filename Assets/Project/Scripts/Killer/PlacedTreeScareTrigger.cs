@@ -35,9 +35,16 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (playerController == null || playerController.role == PlayerRole.Killer)
             return;
 
+<<<<<<< HEAD
         playerMovement = GetCurrentRoleMovement(playerController) ?? playerMovement;
 
         PlayerFallScareController fallScare = FindFallScare(playerMovement, playerController);
+=======
+        PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
+
+        if (fallScare == null)
+            fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
         if (fallScare == null)
             return;
@@ -82,6 +89,7 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
     {
         PlayerFallScareController fallScare = null;
 
+<<<<<<< HEAD
         if (playerMovement != null)
         {
             fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
@@ -103,6 +111,9 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
     }
 
     private PlayerController FindPlayerController(PlayerMovement playerMovement)
+=======
+    private PlayerMovement FindPlayerMovementFromHit(Collider other)
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     {
         if (playerMovement == null)
             return null;

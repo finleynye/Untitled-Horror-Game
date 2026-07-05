@@ -102,9 +102,12 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private Coroutine scareRoutine;
     private Coroutine visualRoutine;
+<<<<<<< HEAD
     private Coroutine remoteScareRoutine;
     private MonoBehaviour scareCoroutineRunner;
     private MonoBehaviour remoteScareCoroutineRunner;
+=======
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
 
     //ts capture transform state for restoration after scare (original and post root motion fuckery)
@@ -245,6 +248,7 @@ public class PlayerFallScareController : NetworkBehaviour
         PlayTreeFallScare(treePosition);
     }
 
+<<<<<<< HEAD
     [ClientRpc]
     public void RpcPlayTreeFallScareForObservers(Vector3 treePosition)
     {
@@ -257,6 +261,8 @@ public class PlayerFallScareController : NetworkBehaviour
         remoteScareRoutine = StartScareCoroutine(RemoteTreeFallRoutine(treePosition), out remoteScareCoroutineRunner);
     }
 
+=======
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     private IEnumerator TreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -269,6 +275,7 @@ public class PlayerFallScareController : NetworkBehaviour
         ForceLocalMeshVisibleForScare();
         DisableCameraMovementForScare();
 
+<<<<<<< HEAD
         if (playerMovement != null)
         {
             playerMovement.isFrozen = true;
@@ -277,6 +284,10 @@ public class PlayerFallScareController : NetworkBehaviour
 
         if (audioSource != null && scareSound != null)
             audioSource.PlayOneShot(scareSound);
+=======
+        playerMovement.isFrozen = true;
+        audioSource.PlayOneShot(scareSound);
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
         //apply the rootmotion and play fall animation
         originalApplyRootMotion = animator.applyRootMotion;
@@ -330,11 +341,15 @@ public class PlayerFallScareController : NetworkBehaviour
             animator.applyRootMotion = originalApplyRootMotion;
 
         ForceRestoreAfterScare();
+<<<<<<< HEAD
         if (playerMovement != null)
         {
             playerMovement.SetScareAnimationOverride(false);
             playerMovement.isFrozen = false;
         }
+=======
+        playerMovement.isFrozen = false;
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
 
         ApplyFOV(originalFOV);
         ApplyPostProcessing(0f);
@@ -347,6 +362,7 @@ public class PlayerFallScareController : NetworkBehaviour
         scareCoroutineRunner = null;
     }
 
+<<<<<<< HEAD
     private IEnumerator RemoteTreeFallRoutine(Vector3 treePosition)
     {
         isPlayingScare = true;
@@ -514,6 +530,8 @@ public class PlayerFallScareController : NetworkBehaviour
         }
     }
 
+=======
+>>>>>>> parent of 4897da4 (Jump Scare Client Side Fix)
     private void DisableCameraMovementForScare()
     {
         hasCameraMovementSnapshot = false;
@@ -571,8 +589,7 @@ public class PlayerFallScareController : NetworkBehaviour
         bool controllerWasEnabled = characterController != null && characterController.enabled;
 
         //avoid controller fighting transform restore
-        if (characterController != null)
-            characterController.enabled = false;
+        characterController.enabled = false;
 
         //root first children after otherwise shit breaks
         if (playerRootSnapshot.IsValid)
