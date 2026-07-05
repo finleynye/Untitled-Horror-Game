@@ -322,12 +322,12 @@ public class PlayerMovement : NetworkBehaviour
         if (characterRenderer != null)
             characterRenderer.SetActive(!inLobby);
 
-        //only the owning player should ever have the first-person camera active
+        //only the owning player should ever have the first person camera active
         /*if (firstPersonView != null)
             firstPersonView.SetActive(isOwned && !inLobby);*/
 
         if (cameraHolder != null)
-            cameraHolder.gameObject.SetActive(!inLobby);
+            cameraHolder.gameObject.SetActive(isOwned && !inLobby);
 
         if (isOwned)
         {
