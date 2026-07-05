@@ -27,6 +27,8 @@ public class BearTrap : NetworkBehaviour
         _trappedConn = player.connectionToClient;
         _trappedPlayerNetID = player.netId;
         _escapePresses = 0;
+        _isOccupied = true;
+        InvokeRepeating(nameof(TickDamage), 2, 1);
         
         triggerZone.enabled = false;
         _trappedPlayer?.TargetSetTrapped(_trappedConn, netIdentity);
@@ -54,6 +56,13 @@ public class BearTrap : NetworkBehaviour
             ServerRelease();
     }
     
+    [Server]
+    private void TickDamage()
+    {
+        var health = _trappedPlayer.GetComponent<PlayerHealth>();
+        health?.ApplyDamage(1);
+    }
+    
     [TargetRpc]
     private void TargetEscapeProgress(NetworkConnectionToClient conn, int current, int required)
     {
@@ -64,7 +73,9 @@ public class BearTrap : NetworkBehaviour
     [Server]
     private void ServerRelease()
     {
+        CancelInvoke(nameof(TickDamage));
         _trappedPlayer.TargetSetFree(_trappedConn);
+        //play sfx here
         NetworkServer.Destroy(gameObject);
     }
 }

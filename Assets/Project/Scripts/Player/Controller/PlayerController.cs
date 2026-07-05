@@ -44,7 +44,6 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartAuthority()
     {
         CmdSetPlayerName(SteamFriends.GetPersonaName());
-
  
         if (!InLobby) return;
         LobbyController.Instance.SetLocalPlayer(this);
@@ -86,7 +85,7 @@ public class PlayerController : NetworkBehaviour
         if (isOwned)
             CmdSetPlayerReady();
     }
-
+    
     private void PlayerNameUpdate(string oldName, string newName)
     {
         if (isServer)
@@ -95,13 +94,13 @@ public class PlayerController : NetworkBehaviour
         {
             //tired of game objects being called LocalPlayer or PlayerRoot
             //so moving the name change here and setting it to player's steam name so i can tell whos who
-            gameObject.name = playerName;
+            gameObject.name = playerName; 
             OnNameChanged?.Invoke(newName);
             if (InLobby)
                 LobbyController.Instance.UpdateUserList();
         }
     }
-
+    
     private void PlayerReady(bool oldReady, bool newReady)
     {
         if (isServer)
@@ -131,24 +130,9 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public GameObject GetCurrentRoleObject()
-    {
-        int targetRoleIndex = (int)role;
-
-        if (roles == null)
-            return null;
-
-        if (targetRoleIndex < 0 || targetRoleIndex >= roles.Length)
-            return null;
-
-        return roles[targetRoleIndex];
-    }
-
     public void CanStartGame(string sceneName)
     {
         if (isOwned)
             CmdCanStartGame(sceneName);
     }
-
-
 }

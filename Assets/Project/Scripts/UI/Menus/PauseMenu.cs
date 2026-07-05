@@ -1,5 +1,4 @@
 using Mirror;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,7 +17,6 @@ public class PauseMenu : NetworkBehaviour
         _playerInput = new PlayerInput();
         _playerInput.Player.Pause.performed += _ => TogglePause();
         _playerInput.Enable();
-        
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -45,14 +43,10 @@ public class PauseMenu : NetworkBehaviour
 
     private void TogglePause()
     {
-        if (!isOwned) return;
         _isPaused = !_isPaused;
 
         _pauseMenuPanel.SetActive(_isPaused);
         Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-
-        Debug.Log(_isPaused);
-        Debug.Log(Cursor.lockState.ToString());
         Cursor.visible = _isPaused;
         _playerMovement.isPaused = _isPaused;
     }
