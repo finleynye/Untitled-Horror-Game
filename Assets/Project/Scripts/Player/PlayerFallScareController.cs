@@ -103,8 +103,6 @@ public class PlayerFallScareController : NetworkBehaviour
     private Coroutine scareRoutine;
     private Coroutine visualRoutine;
     private Coroutine remoteScareRoutine;
-    private MonoBehaviour scareCoroutineRunner;
-    private MonoBehaviour remoteScareCoroutineRunner;
 
 
     //ts capture transform state for restoration after scare (original and post root motion fuckery)
@@ -196,7 +194,25 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        UpdateScareCameraFollow();
+        if (!isOwned)
+            return;
+
+        if (!shouldFollowHead)
+            return;
+
+        if (cameraHolder == null || headTarget == null)
+            return;
+
+        Vector3 targetPosition = headTarget.position + headTarget.TransformDirection(scareCameraLocalOffset);
+        float positionSmoothTime = cameraPositionSmoothTime > 0f ? cameraPositionSmoothTime : 1f / Mathf.Max(cameraFollowSpeed, 0.01f);
+
+        //smooth noisy jittery head bone motion
+        cameraHolder.position = Vector3.SmoothDamp(cameraHolder.position, targetPosition, ref cameraFollowVelocity, positionSmoothTime);
+
+        Quaternion targetRotation = followHeadRotationDuringScare ? headTarget.rotation : scareStartCameraWorldRotation;
+        float rotationSpeed = cameraRotationSmoothSpeed > 0f ? cameraRotationSmoothSpeed : cameraRotationSpeed;
+        float rotationT = 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime);
+        cameraHolder.rotation = Quaternion.Slerp(cameraHolder.rotation, targetRotation, rotationT);
     }
 
     private void OnAnimatorMove()
@@ -235,8 +251,7 @@ public class PlayerFallScareController : NetworkBehaviour
     {
         if (isPlayingScare) return;
 
-        ResolveCurrentRoleReferences();
-        scareRoutine = StartScareCoroutine(TreeFallRoutine(treePosition), out scareCoroutineRunner);
+        scareRoutine = StartCoroutine(TreeFallRoutine(treePosition));
     }
 
     [TargetRpc]
@@ -251,10 +266,10 @@ public class PlayerFallScareController : NetworkBehaviour
         if (isOwned || isPlayingScare)
             return;
 
-        if (!ResolveCurrentRoleReferences())
-            return;
+        if (remoteScareRoutine != null)
+            StopCoroutine(remoteScareRoutine);
 
-        remoteScareRoutine = StartScareCoroutine(RemoteTreeFallRoutine(treePosition), out remoteScareCoroutineRunner);
+        remoteScareRoutine = StartCoroutine(RemoteTreeFallRoutine(treePosition));
     }
 
     private IEnumerator TreeFallRoutine(Vector3 treePosition)
@@ -289,7 +304,7 @@ public class PlayerFallScareController : NetworkBehaviour
         if (useRootMotionForFall)
         {
             BeginRootMotionScare();
-            yield return ScareTimerRoutine(totalScareDuration);
+            yield return new WaitForSeconds(totalScareDuration);
             EndRootMotionScare();
         }
         else
@@ -344,7 +359,6 @@ public class PlayerFallScareController : NetworkBehaviour
         isPlayingScare = false;
         scareRoutine = null;
         visualRoutine = null;
-        scareCoroutineRunner = null;
     }
 
     private IEnumerator RemoteTreeFallRoutine(Vector3 treePosition)
@@ -380,138 +394,6 @@ public class PlayerFallScareController : NetworkBehaviour
 
         isPlayingScare = false;
         remoteScareRoutine = null;
-        remoteScareCoroutineRunner = null;
-    }
-
-    private Coroutine StartScareCoroutine(IEnumerator routine, out MonoBehaviour runner)
-    {
-        runner = GetActiveCoroutineRunner();
-        return runner != null ? runner.StartCoroutine(routine) : null;
-    }
-
-    private MonoBehaviour GetActiveCoroutineRunner()
-    {
-        if (isActiveAndEnabled && gameObject.activeInHierarchy)
-            return this;
-
-        if (playerMovement != null && playerMovement.isActiveAndEnabled && playerMovement.gameObject.activeInHierarchy)
-            return playerMovement;
-
-        return null;
-    }
-
-    private bool ResolveCurrentRoleReferences()
-    {
-        PlayerController playerController = GetComponentInParent<PlayerController>();
-
-        if (playerController == null && netIdentity != null)
-            playerController = netIdentity.GetComponentInParent<PlayerController>();
-
-        if (playerController == null)
-            playerController = GetComponentInChildren<PlayerController>(true);
-
-        GameObject currentRoleObject = playerController != null ? playerController.GetCurrentRoleObject() : null;
-
-        if (currentRoleObject == null)
-            return playerMovement != null && playerMovement.gameObject.activeInHierarchy;
-
-        PlayerMovement currentMovement = currentRoleObject.GetComponentInChildren<PlayerMovement>(true);
-
-        if (currentMovement != null)
-            playerMovement = currentMovement;
-
-        CharacterController currentController = currentRoleObject.GetComponentInParent<CharacterController>();
-
-        if (currentController != null)
-        {
-            characterController = currentController;
-            playerRoot = characterController.transform;
-        }
-
-        Animator currentAnimator = currentRoleObject.GetComponentInChildren<Animator>(true);
-
-        if (currentAnimator != null)
-        {
-            animator = currentAnimator;
-            modelRoot = animator.transform;
-            originalApplyRootMotion = animator.applyRootMotion;
-        }
-
-        LocalPlayerMeshVisibility currentMeshVisibility = currentRoleObject.GetComponentInChildren<LocalPlayerMeshVisibility>(true);
-
-        if (currentMeshVisibility != null)
-            localPlayerMeshVisibility = currentMeshVisibility;
-
-        Camera currentCamera = currentRoleObject.GetComponentInChildren<Camera>(true);
-
-        if (currentCamera != null)
-        {
-            playerCamera = currentCamera;
-            originalFOV = playerCamera.fieldOfView;
-        }
-
-        CameraMovement currentCameraMovement = currentRoleObject.GetComponentInChildren<CameraMovement>(true);
-
-        if (currentCameraMovement != null)
-            cameraMovement = currentCameraMovement;
-
-        Transform currentCameraHolder = currentCameraMovement != null ? currentCameraMovement.transform : null;
-
-        if (currentCameraHolder == null && playerCamera != null)
-            currentCameraHolder = playerCamera.transform.parent;
-
-        if (currentCameraHolder != null)
-        {
-            cameraHolder = currentCameraHolder;
-            originalCameraLocalPosition = cameraHolder.localPosition;
-            originalCameraLocalRotation = cameraHolder.localRotation;
-        }
-
-        if (animator != null && animator.isHuman)
-            headTarget = animator.GetBoneTransform(HumanBodyBones.Head);
-
-        AudioSource currentAudioSource = currentRoleObject.GetComponentInChildren<AudioSource>(true);
-
-        if (currentAudioSource != null)
-            audioSource = currentAudioSource;
-
-        CachePostProcessingValues();
-        return playerMovement != null && playerMovement.gameObject.activeInHierarchy;
-    }
-
-    private void UpdateScareCameraFollow()
-    {
-        if (!isOwned)
-            return;
-
-        if (!shouldFollowHead)
-            return;
-
-        if (cameraHolder == null || headTarget == null)
-            return;
-
-        Vector3 targetPosition = headTarget.position + headTarget.TransformDirection(scareCameraLocalOffset);
-        float positionSmoothTime = cameraPositionSmoothTime > 0f ? cameraPositionSmoothTime : 1f / Mathf.Max(cameraFollowSpeed, 0.01f);
-
-        //smooth noisy jittery head bone motion
-        cameraHolder.position = Vector3.SmoothDamp(cameraHolder.position, targetPosition, ref cameraFollowVelocity, positionSmoothTime);
-
-        Quaternion targetRotation = followHeadRotationDuringScare ? headTarget.rotation : scareStartCameraWorldRotation;
-        float rotationSpeed = cameraRotationSmoothSpeed > 0f ? cameraRotationSmoothSpeed : cameraRotationSpeed;
-        float rotationT = 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime);
-        cameraHolder.rotation = Quaternion.Slerp(cameraHolder.rotation, targetRotation, rotationT);
-    }
-
-    private IEnumerator ScareTimerRoutine(float duration)
-    {
-        float timer = 0f;
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            UpdateScareCameraFollow();
-            yield return null;
-        }
     }
 
     private void DisableCameraMovementForScare()
@@ -642,7 +524,6 @@ public class PlayerFallScareController : NetworkBehaviour
 
             characterController.Move(horizontalMovement + verticalMovement);
             Physics.SyncTransforms();
-            UpdateScareCameraFollow();
 
             yield return null;
         }
