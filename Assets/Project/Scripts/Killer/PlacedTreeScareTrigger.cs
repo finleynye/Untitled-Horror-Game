@@ -10,22 +10,18 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!NetworkServer.active)
+            return;
+
         if (triggerOnce && hasTriggered)
-           return;
-        
+            return;
+
         PlayerMovement playerMovement = FindPlayerMovementFromHit(other);
 
         if (playerMovement == null)
             return;
 
-        if (NetworkServer.active)
-        {
-            ServerPlayFallScare(playerMovement);
-            return;
-        }
-
-        if (playerMovement.isOwned)
-            CmdRequestFallScare(playerMovement.netIdentity);
+        ServerPlayFallScare(playerMovement);
     }
 
     [Server]
@@ -34,27 +30,26 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (triggerOnce && hasTriggered)
             return;
 
-        if (playerMovement == null)
+        PlayerController playerController = FindPlayerController(playerMovement);
+
+        if (playerController == null || playerController.role == PlayerRole.Killer)
             return;
 
-        if (IsKiller(playerMovement))
-            return;
+        playerMovement = GetCurrentRoleMovement(playerController) ?? playerMovement;
 
-        PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
-
-        if (fallScare == null)
-            fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
+        PlayerFallScareController fallScare = FindFallScare(playerMovement, playerController);
 
         if (fallScare == null)
             return;
 
-        NetworkConnectionToClient conn = playerMovement.connectionToClient;
+        NetworkConnectionToClient conn = playerController.connectionToClient;
 
-        if (conn == null && playerMovement.netIdentity != null)
-            conn = playerMovement.netIdentity.connectionToClient;
+        if (conn == null && playerController.netIdentity != null)
+            conn = playerController.netIdentity.connectionToClient;
 
         if (conn == null)
             return;
+
         fallScare.TargetPlayTreeFallScare(conn, transform.position);
         fallScare.RpcPlayTreeFallScareForObservers(transform.position);
 
@@ -68,14 +63,38 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (playerIdentity == null)
             return;
 
-        PlayerMovement playerMovement = playerIdentity.GetComponentInChildren<PlayerMovement>(true);
+        PlayerController playerController = playerIdentity.GetComponent<PlayerController>();
+
+        if (playerController == null)
+            playerController = playerIdentity.GetComponentInChildren<PlayerController>(true);
+
+        PlayerMovement playerMovement = GetCurrentRoleMovement(playerController);
 
         if (playerMovement == null)
-            playerMovement = playerIdentity.GetComponentInParent<PlayerMovement>();
+            playerMovement = playerIdentity.GetComponentInChildren<PlayerMovement>();
+
+        if (playerMovement == null)
+            playerMovement = playerIdentity.GetComponentInChildren<PlayerMovement>(true);
 
         ServerPlayFallScare(playerMovement);
     }
+    private PlayerFallScareController FindFallScare(PlayerMovement playerMovement, PlayerController playerController)
+    {
+        PlayerFallScareController fallScare = null;
 
+        if (playerMovement != null)
+        {
+            fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
+
+            if (fallScare == null)
+                fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
+        }
+
+        if (fallScare == null && playerController != null)
+            fallScare = playerController.GetComponentInChildren<PlayerFallScareController>(true);
+
+        return fallScare;
+    }
 
     private bool IsKiller(PlayerMovement playerMovement)
     {
@@ -117,15 +136,18 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         return null;
     }
 
-    private PlayerMovement FindPlayerMovementFromHit(Collider other)
+    private NetworkIdentity GetPlayerIdentity(PlayerMovement playerMovement)
     {
-        PlayerMovement playerMovement = other.GetComponentInParent<PlayerMovement>();
+        PlayerController playerController = FindPlayerController(playerMovement);
 
-        if (playerMovement != null)
-            return playerMovement;
+        if (playerController != null)
+            return playerController.netIdentity;
 
-        PlayerController playerController = other.GetComponentInParent<PlayerController>();
+        return playerMovement != null ? playerMovement.netIdentity : null;
+    }
 
+    private PlayerMovement GetCurrentRoleMovement(PlayerController playerController)
+    {
         if (playerController == null)
             return null;
 
@@ -137,4 +159,15 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         return currentRoleObject.GetComponentInChildren<PlayerMovement>(true);
     }
 
+    private PlayerMovement FindPlayerMovementFromHit(Collider other)
+    {
+        PlayerMovement playerMovement = other.GetComponentInParent<PlayerMovement>();
+
+        if (playerMovement != null)
+            return playerMovement;
+
+        PlayerController playerController = other.GetComponentInParent<PlayerController>();
+
+        return GetCurrentRoleMovement(playerController);
+    }
 }

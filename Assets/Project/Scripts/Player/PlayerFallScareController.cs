@@ -249,7 +249,6 @@ public class PlayerFallScareController : NetworkBehaviour
 
     public void PlayTreeFallScare(Vector3 treePosition)
     {
-        if (!isOwned) return;
         if (isPlayingScare) return;
 
         scareRoutine = StartCoroutine(TreeFallRoutine(treePosition));
