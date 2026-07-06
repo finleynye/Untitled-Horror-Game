@@ -7,7 +7,7 @@ public class PauseMenu : NetworkBehaviour
 {
     private PlayerMovement _playerMovement;
     private PlayerInput _playerInput;
-    private GameObject _pauseMenuPanel;
+    public GameObject _pauseMenuPanel;
     private bool _isPaused;
 
     private static readonly string[] ExcludedScenes = { "MainMenu", "Lobby" };
@@ -37,8 +37,8 @@ public class PauseMenu : NetworkBehaviour
         }
 
         _pauseMenuPanel.SetActive(false);
-        _pauseMenuPanel.transform.Find("ResumeBtn")?.GetComponent<Button>()?.onClick.AddListener(TogglePause);
-        _pauseMenuPanel.transform.Find("LeaveBtn")?.GetComponent<Button>()?.onClick.AddListener(LeaveGame);
+        _pauseMenuPanel.transform.Find("ResumeBtn").GetComponent<Button>()?.onClick.AddListener(TogglePause);
+        _pauseMenuPanel.transform.Find("LeaveBtn").GetComponent<Button>()?.onClick.AddListener(LeaveGame);
     }
 
     private void TogglePause()

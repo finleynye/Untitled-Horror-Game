@@ -2183,6 +2183,7 @@ MonoBehaviour:
   - {fileID: 8671109922971069088, guid: 43f90c3f34a79974b8fd3dd5d8c0fd95, type: 3}
   - {fileID: 3573507351927778369, guid: 8c5524801a59b3d43824378c9682a395, type: 3}
   - {fileID: 6756642752509896685, guid: a7fa56cd421056a4e8c9e705641571e1, type: 3}
+  - {fileID: 6756642752509896685, guid: 4492058b7a88f994a8b64594915ab91e, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -22655,7 +22656,7 @@ GameObject:
   - component: {fileID: 2061964052}
   - component: {fileID: 2061964055}
   - component: {fileID: 2061964054}
-  - component: {fileID: 2061964053}
+  - component: {fileID: 2061964056}
   m_Layer: 8
   m_Name: === TERRAIN ===
   m_TagString: Untagged
@@ -22678,38 +22679,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 340359913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2061964053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2061964051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
-  m_SerializedVersion: 0
-  m_AgentTypeID: 0
-  m_CollectObjects: 2
-  m_Size: {x: 10, y: 10, z: 10}
-  m_Center: {x: 0, y: 2, z: 0}
-  m_LayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_UseGeometry: 0
-  m_DefaultArea: 0
-  m_GenerateLinks: 0
-  m_IgnoreNavMeshAgent: 1
-  m_IgnoreNavMeshObstacle: 1
-  m_OverrideTileSize: 0
-  m_TileSize: 256
-  m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
-  m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: b885714a8838882458a3143ac45a637a, type: 2}
-  m_BuildHeightMesh: 0
 --- !u!154 &2061964054
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -22770,6 +22739,38 @@ Terrain:
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
   m_TreeMotionVectorModeOverride: 3
+--- !u!114 &2061964056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061964051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 1
+  m_Size: {x: 148.2204, y: 49.55148, z: 143.5073}
+  m_Center: {x: 239.95967, y: 56.975746, z: 231.94974}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: 705e1eb9a23f0e14292d8f63eda1346b, type: 2}
+  m_BuildHeightMesh: 0
 --- !u!1 &2075713628
 GameObject:
   m_ObjectHideFlags: 0

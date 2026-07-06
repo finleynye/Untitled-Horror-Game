@@ -22,7 +22,7 @@ public class BearTrap : NetworkBehaviour
     {
         if (_isOccupied) return;
         
-        var player = other.GetComponentInParent<PlayerController>();
+        var player = other.GetComponent<PlayerController>();
         _trappedPlayer = player.GetComponentInChildren<PlayerMovement>();
         _trappedConn = player.connectionToClient;
         _trappedPlayerNetID = player.netId;
@@ -59,7 +59,7 @@ public class BearTrap : NetworkBehaviour
     [Server]
     private void TickDamage()
     {
-        var health = _trappedPlayer.GetComponent<PlayerHealth>();
+        var health = _trappedPlayer.GetComponentInParent<PlayerHealth>();
         health?.ApplyDamage(1);
     }
     
