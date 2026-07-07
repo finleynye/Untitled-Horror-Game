@@ -11758,7 +11758,7 @@ MonoBehaviour:
   syncInterval: 0
   playerMeshRenderers:
   - {fileID: 2168537886378726522}
-  hideForLocalPlayer: 0
+  hideForLocalPlayer: 1
 --- !u!114 &435228010233058523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13445,7 +13445,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 358680049321412771}
@@ -13646,7 +13646,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  hearYourself: 1
+  hearYourself: 0
   volume: 1
   minDistance: 5
   maxDistance: 15
