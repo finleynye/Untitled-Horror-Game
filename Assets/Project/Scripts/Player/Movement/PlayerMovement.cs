@@ -47,6 +47,7 @@ public class PlayerMovement : NetworkBehaviour
     [HideInInspector] public Vector2 lastMoveDirection;
     private Vector2 _lookInput;
     private float _coyoteTimer;
+    private bool _scareAnimationOverride;
 
     public bool isPaused;
     public bool isFrozen;
@@ -100,6 +101,13 @@ public class PlayerMovement : NetworkBehaviour
 
         if (SceneManager.GetActiveScene().name == "Lobby")
             return;
+
+        if (_scareAnimationOverride)
+        {
+            if (isOwned)
+                HandleEscape();
+            return;
+        }
 
         //owner controls movement/input
         if (isOwned)
@@ -219,6 +227,19 @@ public class PlayerMovement : NetworkBehaviour
         CmdSetSprint(false);
     }
     
+
+    public void SetScareAnimationOverride(bool value)
+    {
+        _scareAnimationOverride = value;
+
+        if (!value || animator == null)
+            return;
+
+        animator.SetFloat("MoveX", 0f);
+        animator.SetFloat("MoveY", 0f);
+        animator.SetBool("IsSprinting", false);
+    }
+
     private void HandleRemoteAnimation()
     {
         if (animator == null)
@@ -284,7 +305,7 @@ public class PlayerMovement : NetworkBehaviour
         if (characterRenderer != null)
             characterRenderer.SetActive(!inLobby);
 
-        //only the owning player should ever have the first-person camera active
+        //only the owning player should ever have the first person camera active
         /*if (firstPersonView != null)
             firstPersonView.SetActive(isOwned && !inLobby);*/
 
@@ -296,7 +317,7 @@ public class PlayerMovement : NetworkBehaviour
             if (!isPaused)
             {
                 Cursor.lockState = inLobby ? CursorLockMode.None : CursorLockMode.Locked;
-                /*DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");*/
+                // DiscordManager.Instance?.Presence.SetPresence("Waiting in the hub");/
                 Cursor.visible = inLobby;
             }
         }

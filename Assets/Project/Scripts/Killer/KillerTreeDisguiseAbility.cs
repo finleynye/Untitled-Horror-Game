@@ -39,6 +39,8 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
     public bool IsDisguised => isDisguised;
 
+
+    //AFTER 3 SECONDS THE KILLER MODEL TURNS INTO TREE
     public override void OnStartAuthority()
     {
         if (!isOwned)

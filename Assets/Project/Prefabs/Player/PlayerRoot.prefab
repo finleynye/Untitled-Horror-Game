@@ -174,6 +174,7 @@ GameObject:
   - component: {fileID: 2119771284907684744}
   - component: {fileID: 9117175173457886326}
   - component: {fileID: 2930823484054735394}
+  - component: {fileID: 732426874263382435}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -311,6 +312,18 @@ MonoBehaviour:
   pitchSendThreshold: 1
   minPitch: -70
   maxPitch: 70
+--- !u!114 &732426874263382435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310433353165723126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2093e4930fc5bd4449139b3c8c82115a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
 --- !u!1 &311162870938187218
 GameObject:
   m_ObjectHideFlags: 0
@@ -937,7 +950,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1060001936915042805
 Transform:
   m_ObjectHideFlags: 0
@@ -1194,6 +1207,7 @@ GameObject:
   - component: {fileID: 1462715892229141862}
   - component: {fileID: 8620129491767507608}
   - component: {fileID: 2416758393091427532}
+  - component: {fileID: 9123018992402919763}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -1330,6 +1344,18 @@ MonoBehaviour:
   pitchSendThreshold: 1
   minPitch: -70
   maxPitch: 70
+--- !u!114 &9123018992402919763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966178145222546200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2093e4930fc5bd4449139b3c8c82115a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
 --- !u!1 &970266653844812604
 GameObject:
   m_ObjectHideFlags: 0
@@ -2156,6 +2182,7 @@ GameObject:
   - component: {fileID: 6062458922174109449}
   - component: {fileID: 2680945980171993982}
   - component: {fileID: 4085722254936098561}
+  - component: {fileID: 4496356097138509923}
   m_Layer: 0
   m_Name: Survivor2
   m_TagString: Untagged
@@ -2348,6 +2375,56 @@ MonoBehaviour:
   playerMeshRenderers:
   - {fileID: 7231780715361380462}
   hideForLocalPlayer: 1
+--- !u!114 &4496356097138509923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432269038739507906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e75effb7edb82c4bb5294a4c8c211cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFallScareController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  playerMovement: {fileID: 8008044679361402102}
+  characterController: {fileID: 2367775373728187538}
+  animator: {fileID: 752924971365570735}
+  forceLocalMeshVisibleDuringScare: 1
+  localPlayerMeshVisibility: {fileID: 4085722254936098561}
+  playerCamera: {fileID: 2426140774618036482}
+  cameraHolder: {fileID: 357835697443539812}
+  headTarget: {fileID: 7453642973027392438}
+  cameraMovement: {fileID: 6047513736786197658}
+  cameraFollowSpeed: 12
+  cameraRotationSpeed: 10
+  cameraResetTime: 0.25
+  cameraPositionSmoothTime: 0.08
+  cameraRotationSmoothSpeed: 5
+  followHeadRotationDuringScare: 0
+  scareCameraLocalOffset: {x: 0, y: 0, z: 0}
+  fallTriggerName: FallBack
+  totalScareDuration: 2.7
+  useRootMotionForFall: 1
+  moveControllerWithRootMotion: 0
+  applyRootYawRotation: 0
+  scareGravity: -18
+  scareFOV: 95
+  fovInTime: 0.2
+  fovOutTime: 0.8
+  scareVolume: {fileID: 4888727739528882}
+  scareFilterColor: {r: 1, g: 0.25, b: 0.25, a: 1}
+  scareSaturation: -35
+  scareContrast: 30
+  scareVignetteIntensity: 0.55
+  scareChromaticAberration: 0.6
+  audioSource: {fileID: 4792178111353210205}
+  scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
+  modelRoot: {fileID: 4172505147523364182}
+  resetModelRootAfterScare: 1
 --- !u!1 &1433371862247633750
 GameObject:
   m_ObjectHideFlags: 0
@@ -5337,6 +5414,7 @@ GameObject:
   - component: {fileID: 7584009603199347452}
   - component: {fileID: 1741024863942164107}
   - component: {fileID: 409432257067170548}
+  - component: {fileID: 1839293744362050321}
   m_Layer: 0
   m_Name: Survivor1
   m_TagString: Untagged
@@ -5529,6 +5607,56 @@ MonoBehaviour:
   playerMeshRenderers:
   - {fileID: 6431576735932634523}
   hideForLocalPlayer: 1
+--- !u!114 &1839293744362050321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3386020634316715831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e75effb7edb82c4bb5294a4c8c211cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFallScareController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  playerMovement: {fileID: 5926654631224011011}
+  characterController: {fileID: 2367775373728187538}
+  animator: {fileID: 3994432887297992026}
+  forceLocalMeshVisibleDuringScare: 1
+  localPlayerMeshVisibility: {fileID: 409432257067170548}
+  playerCamera: {fileID: 2069013597937075447}
+  cameraHolder: {fileID: 4173349637729515153}
+  headTarget: {fileID: 6515958808432256579}
+  cameraMovement: {fileID: 7994148249095324015}
+  cameraFollowSpeed: 12
+  cameraRotationSpeed: 10
+  cameraResetTime: 0.25
+  cameraPositionSmoothTime: 0.08
+  cameraRotationSmoothSpeed: 5
+  followHeadRotationDuringScare: 0
+  scareCameraLocalOffset: {x: 0, y: 0, z: 0}
+  fallTriggerName: FallBack
+  totalScareDuration: 2.7
+  useRootMotionForFall: 1
+  moveControllerWithRootMotion: 0
+  applyRootYawRotation: 0
+  scareGravity: -18
+  scareFOV: 95
+  fovInTime: 0.2
+  fovOutTime: 0.8
+  scareVolume: {fileID: 4399067460165012295}
+  scareFilterColor: {r: 1, g: 0.25, b: 0.25, a: 1}
+  scareSaturation: -35
+  scareContrast: 30
+  scareVignetteIntensity: 0.55
+  scareChromaticAberration: 0.6
+  audioSource: {fileID: 9195438203905030312}
+  scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
+  modelRoot: {fileID: 358680049321412771}
+  resetModelRootAfterScare: 1
 --- !u!1 &3412610192940159248
 GameObject:
   m_ObjectHideFlags: 0
@@ -5985,37 +6113,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4876938363990358680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3895232086346563309
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3615064438948042439}
-  m_Layer: 0
-  m_Name: JumpScareTrans
-  m_TagString: Untagged
-  m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3615064438948042439
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3895232086346563309}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2104565601548920738}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3938026267276570359
 GameObject:
   m_ObjectHideFlags: 0
@@ -6367,6 +6464,7 @@ GameObject:
   - component: {fileID: 2673856143266907606}
   - component: {fileID: 5113617189053844008}
   - component: {fileID: 1215375209455025276}
+  - component: {fileID: 4576964200087135790}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -6503,6 +6601,18 @@ MonoBehaviour:
   pitchSendThreshold: 1
   minPitch: -70
   maxPitch: 70
+--- !u!114 &4576964200087135790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4341294407156573096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2093e4930fc5bd4449139b3c8c82115a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
 --- !u!1 &4374238055239634552
 GameObject:
   m_ObjectHideFlags: 0
@@ -7012,6 +7122,7 @@ GameObject:
   - component: {fileID: 6499623900794860137}
   - component: {fileID: 4170064712342273431}
   - component: {fileID: 8067597500481948611}
+  - component: {fileID: 6767976418857398866}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -7148,6 +7259,18 @@ MonoBehaviour:
   pitchSendThreshold: 1
   minPitch: -70
   maxPitch: 70
+--- !u!114 &6767976418857398866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4834434144494326807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2093e4930fc5bd4449139b3c8c82115a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
 --- !u!1 &4871863641451952583
 GameObject:
   m_ObjectHideFlags: 0
@@ -8513,6 +8636,7 @@ GameObject:
   - component: {fileID: 1592001525624249667}
   - component: {fileID: 7422319889299966260}
   - component: {fileID: 8828924480106302795}
+  - component: {fileID: 3155711545329175204}
   m_Layer: 0
   m_Name: Survivor4
   m_TagString: Untagged
@@ -8705,6 +8829,56 @@ MonoBehaviour:
   playerMeshRenderers:
   - {fileID: 2767937551296750116}
   hideForLocalPlayer: 1
+--- !u!114 &3155711545329175204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5896816843761942664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e75effb7edb82c4bb5294a4c8c211cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFallScareController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  playerMovement: {fileID: 3249215748298006204}
+  characterController: {fileID: 2367775373728187538}
+  animator: {fileID: 5208184213289259749}
+  forceLocalMeshVisibleDuringScare: 1
+  localPlayerMeshVisibility: {fileID: 8828924480106302795}
+  playerCamera: {fileID: 7178351435989496648}
+  cameraHolder: {fileID: 5098790684055355694}
+  headTarget: {fileID: 2685669841804792316}
+  cameraMovement: {fileID: 1286014109121050320}
+  cameraFollowSpeed: 12
+  cameraRotationSpeed: 10
+  cameraResetTime: 0.25
+  cameraPositionSmoothTime: 0.08
+  cameraRotationSmoothSpeed: 5
+  followHeadRotationDuringScare: 0
+  scareCameraLocalOffset: {x: 0, y: 0, z: 0}
+  fallTriggerName: FallBack
+  totalScareDuration: 2.7
+  useRootMotionForFall: 1
+  moveControllerWithRootMotion: 0
+  applyRootYawRotation: 0
+  scareGravity: -18
+  scareFOV: 95
+  fovInTime: 0.2
+  fovOutTime: 0.8
+  scareVolume: {fileID: 4766106871837900024}
+  scareFilterColor: {r: 1, g: 0.25, b: 0.25, a: 1}
+  scareSaturation: -35
+  scareContrast: 30
+  scareVignetteIntensity: 0.55
+  scareChromaticAberration: 0.6
+  audioSource: {fileID: 50944966020501271}
+  scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
+  modelRoot: {fileID: 8922323434772184860}
+  resetModelRootAfterScare: 1
 --- !u!1 &5904350509646370833
 GameObject:
   m_ObjectHideFlags: 0
@@ -10260,6 +10434,7 @@ GameObject:
   - component: {fileID: 2828262041796472307}
   - component: {fileID: 6221315212541426052}
   - component: {fileID: 5463228830576934395}
+  - component: {fileID: 2011205302719950886}
   m_Layer: 0
   m_Name: Survivor3
   m_TagString: Untagged
@@ -10452,6 +10627,56 @@ MonoBehaviour:
   playerMeshRenderers:
   - {fileID: 1674878563004224148}
   hideForLocalPlayer: 1
+--- !u!114 &2011205302719950886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6954224168597581880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e75effb7edb82c4bb5294a4c8c211cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFallScareController
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  playerMovement: {fileID: 2035738247595896332}
+  characterController: {fileID: 2367775373728187538}
+  animator: {fileID: 8723686156357476949}
+  forceLocalMeshVisibleDuringScare: 1
+  localPlayerMeshVisibility: {fileID: 5463228830576934395}
+  playerCamera: {fileID: 5965384106947167224}
+  cameraHolder: {fileID: 8616906405313098142}
+  headTarget: {fileID: 1446367799043187020}
+  cameraMovement: {fileID: 2346158392739202656}
+  cameraFollowSpeed: 12
+  cameraRotationSpeed: 10
+  cameraResetTime: 0.25
+  cameraPositionSmoothTime: 0.08
+  cameraRotationSmoothSpeed: 5
+  followHeadRotationDuringScare: 0
+  scareCameraLocalOffset: {x: 0, y: 0, z: 0}
+  fallTriggerName: FallBack
+  totalScareDuration: 2.7
+  useRootMotionForFall: 1
+  moveControllerWithRootMotion: 0
+  applyRootYawRotation: 0
+  scareGravity: -18
+  scareFOV: 95
+  fovInTime: 0.2
+  fovOutTime: 0.8
+  scareVolume: {fileID: 8319117554173561928}
+  scareFilterColor: {r: 1, g: 0.25, b: 0.25, a: 1}
+  scareSaturation: -35
+  scareContrast: 30
+  scareVignetteIntensity: 0.55
+  scareChromaticAberration: 0.6
+  audioSource: {fileID: 3594738408028012455}
+  scareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
+  modelRoot: {fileID: 5369865532444266412}
+  resetModelRootAfterScare: 1
 --- !u!1 &6955373179244464556
 GameObject:
   m_ObjectHideFlags: 0
@@ -10718,7 +10943,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7277877320985123530}
-  - {fileID: 3615064438948042439}
   m_Father: {fileID: 4441973327843131999}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7186375779449646277
@@ -11360,7 +11584,8 @@ GameObject:
   - component: {fileID: 435228010233058523}
   - component: {fileID: 6754349803182597103}
   - component: {fileID: 3244134689816849634}
-  - component: {fileID: 913769105011562945}
+  - component: {fileID: 8547550696136405066}
+  - component: {fileID: 1922608915124648428}
   m_Layer: 0
   m_Name: KillerRole
   m_TagString: Untagged
@@ -11533,7 +11758,7 @@ MonoBehaviour:
   syncInterval: 0
   playerMeshRenderers:
   - {fileID: 2168537886378726522}
-  hideForLocalPlayer: 1
+  hideForLocalPlayer: 0
 --- !u!114 &435228010233058523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11586,7 +11811,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7612264878378448598}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad8978259cbf3194b978e4368f447fd6, type: 3}
   m_Name: 
@@ -11611,7 +11836,23 @@ MonoBehaviour:
   treeRotationOffset: {x: -90, y: 0, z: 0}
   stillTimer: 0
   isDisguised: 0
---- !u!114 &913769105011562945
+--- !u!114 &8547550696136405066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7612264878378448598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c02788a9d0044e8bb86dee2742e4ac32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  maxHealth: 5
+--- !u!114 &1922608915124648428
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11633,8 +11874,8 @@ MonoBehaviour:
   localPlayerMeshVisibility: {fileID: 4825366444162808597}
   playerCamera: {fileID: 6624550579119375638}
   cameraHolder: {fileID: 9129652013526005616}
-  headTarget: {fileID: 3615064438948042439}
-  cameraMovement: {fileID: 0}
+  headTarget: {fileID: 2104565601548920738}
+  cameraMovement: {fileID: 3002025436685893774}
   cameraFollowSpeed: 12
   cameraRotationSpeed: 10
   cameraResetTime: 0.25
@@ -11643,36 +11884,11 @@ MonoBehaviour:
   followHeadRotationDuringScare: 0
   scareCameraLocalOffset: {x: 0, y: 0, z: 0}
   fallTriggerName: FallBack
-  totalScareDuration: 3
+  totalScareDuration: 2.7
   useRootMotionForFall: 1
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -13211,8 +13427,7 @@ GameObject:
   - component: {fileID: 8578576239030572101}
   - component: {fileID: 879762886714475304}
   - component: {fileID: 2367775373728187538}
-  - component: {fileID: 3204680828029090810}
-  - component: {fileID: 9205925205721127705}
+  - component: {fileID: 8956993315132377600}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -13431,7 +13646,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  hearYourself: 0
+  hearYourself: 1
   volume: 1
   minDistance: 5
   maxDistance: 15
@@ -13460,7 +13675,7 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3204680828029090810
+--- !u!114 &8956993315132377600
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13475,22 +13690,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
---- !u!114 &9205925205721127705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8671109922971069088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c02788a9d0044e8bb86dee2742e4ac32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  maxHealth: 5
+  _pauseMenuPanel: {fileID: 0}
 --- !u!1 &8758312301728433005
 GameObject:
   m_ObjectHideFlags: 0
@@ -13697,6 +13897,7 @@ GameObject:
   - component: {fileID: 7435077164418518940}
   - component: {fileID: 343105947478098018}
   - component: {fileID: 5974064382316033590}
+  - component: {fileID: 7663020338631597616}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -13833,6 +14034,18 @@ MonoBehaviour:
   pitchSendThreshold: 1
   minPitch: -70
   maxPitch: 70
+--- !u!114 &7663020338631597616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9082250767583570402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2093e4930fc5bd4449139b3c8c82115a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
 --- !u!1 &9085233187905964486
 GameObject:
   m_ObjectHideFlags: 0

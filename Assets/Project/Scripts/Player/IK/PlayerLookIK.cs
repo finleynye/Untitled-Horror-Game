@@ -23,6 +23,7 @@ public class PlayerLookIK : NetworkBehaviour
     private float syncedLookPitch;
 
     private Vector3 currentLookPosition;
+    private Transform rootTransform;
     private float lastSentPitch;
     private float sendTimer;
 
@@ -31,8 +32,14 @@ public class PlayerLookIK : NetworkBehaviour
         if (cameraMovement == null)
             cameraMovement = GetComponentInParent<CameraMovement>();
 
+        rootTransform = transform.root;
+
         if (lookTarget != null)
+        {
+            lookTarget.SetParent(rootTransform, true);
+            lookTarget.gameObject.SetActive(true);
             currentLookPosition = lookTarget.position;
+        }
     }
 
     private void LateUpdate()
@@ -80,12 +87,7 @@ public class PlayerLookIK : NetworkBehaviour
 
         sendTimer = 0f;
 
-        float pitch = cameraMovement.PlayerCameraTransform.localEulerAngles.x;
-
-        if (pitch > 180f)
-            pitch -= 360f;
-
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        float pitch = Mathf.Clamp(cameraMovement.verticalRotation, minPitch, maxPitch);
 
         if (Mathf.Abs(pitch - lastSentPitch) < pitchSendThreshold)
             return;
@@ -103,9 +105,10 @@ public class PlayerLookIK : NetworkBehaviour
 
     private void UpdateRemoteLookTarget()
     {
-        Vector3 lookDirection = Quaternion.Euler(syncedLookPitch, transform.eulerAngles.y, 0f) * Vector3.forward;
+        Transform yawTransform = rootTransform != null ? rootTransform : transform;
+        Vector3 lookDirection = Quaternion.Euler(syncedLookPitch, yawTransform.eulerAngles.y, 0f) * Vector3.forward;
 
-        Vector3 targetPosition = transform.position + lookDirection * targetDistance;
+        Vector3 targetPosition = yawTransform.position + lookDirection * targetDistance;
 
         currentLookPosition = Vector3.Lerp(currentLookPosition, targetPosition, smoothSpeed * Time.deltaTime);
         lookTarget.position = currentLookPosition;

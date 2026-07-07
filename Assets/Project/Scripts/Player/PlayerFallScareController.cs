@@ -1,12 +1,11 @@
 using System.Collections;
-using UnityEngine;
 using Mirror;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class PlayerFallScareController : NetworkBehaviour
 {
-    //this a big GODDAMN SCRIPT. but i cannot do it in any less lines. help me if you can xox
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private CharacterController characterController;
@@ -33,18 +32,13 @@ public class PlayerFallScareController : NetworkBehaviour
 
     [Header("Fall Animation")]
     [SerializeField] private string fallTriggerName = "FallBack";
-    [SerializeField] private float totalScareDuration = 2f;
+    [SerializeField] private float totalScareDuration = 3f;
 
     [Header("Root Motion")]
     [SerializeField] private bool useRootMotionForFall = true;
     [SerializeField] private bool moveControllerWithRootMotion = false;
     [SerializeField] private bool applyRootYawRotation = false;
     [SerializeField] private float scareGravity = -18f;
-    private Transform playerRoot;
-
-    [Header("Fallback Movement")]
-    [SerializeField] private float backwardsDistance = 1.2f;
-    [SerializeField] private AnimationCurve backwardsCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("FOV Effect")]
     [SerializeField] private float scareFOV = 95f;
@@ -63,23 +57,26 @@ public class PlayerFallScareController : NetworkBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip scareSound;
 
-    private bool isPlayingScare;
-    private bool shouldFollowHead;
-    private bool scareRootMotionActive;
-
-    private bool originalApplyRootMotion;
-    private float scareVerticalVelocity;
-
     [Header("Model Reset")]
     [SerializeField] private Transform modelRoot;
     [SerializeField] private bool resetModelRootAfterScare = true;
 
-    //MOTHERFUCKING SNAPSHOTS
+    private Transform playerRoot;
+
+    private bool isPlayingScare;
+    private bool shouldFollowHead;
+    private bool scareRootMotionActive;
+    private bool originalApplyRootMotion;
+    private float scareVerticalVelocity;
+
     private TransformSnapshot playerRootSnapshot;
-    private TransformSnapshot scriptTransformSnapshot;
     private TransformSnapshot animatorSnapshot;
     private TransformSnapshot modelRootSnapshot;
     private TransformSnapshot cameraHolderSnapshot;
+
+    private bool hasGetUpEventPosition;
+    private Vector3 getUpEventPosition;
+    private Quaternion getUpEventRotation;
 
     private Vector3 originalCameraLocalPosition;
     private Quaternion originalCameraLocalRotation;
@@ -88,8 +85,6 @@ public class PlayerFallScareController : NetworkBehaviour
     private Quaternion scareStartCameraWorldRotation;
     private bool originalCameraMovementEnabled;
     private bool hasCameraMovementSnapshot;
-
-
     private ColorAdjustments colorAdjustments;
     private Vignette vignette;
     private ChromaticAberration chromaticAberration;
@@ -100,11 +95,6 @@ public class PlayerFallScareController : NetworkBehaviour
     private float originalVignetteIntensity;
     private float originalChromaticAberration;
 
-    private Coroutine scareRoutine;
-    private Coroutine visualRoutine;
-
-
-    //ts capture transform state for restoration after scare (original and post root motion fuckery)
     private struct TransformSnapshot
     {
         public Transform target;
@@ -115,7 +105,6 @@ public class PlayerFallScareController : NetworkBehaviour
 
         public bool IsValid => target != null;
 
-        //awesome little hack here, i was using a before/after transform reference before.
         public TransformSnapshot(Transform transform)
         {
             target = transform;
@@ -143,15 +132,6 @@ public class PlayerFallScareController : NetworkBehaviour
             target.localPosition = localPosition;
             target.localRotation = localRotation;
         }
-
-        public void RestoreWorld()
-        {
-            if (target == null)
-                return;
-
-            target.position = worldPosition;
-            target.rotation = worldRotation;
-        }
     }
 
     private void Awake()
@@ -163,10 +143,7 @@ public class PlayerFallScareController : NetworkBehaviour
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
         if (cameraMovement == null) cameraMovement = GetComponent<CameraMovement>();
 
-        if (characterController != null)
-            playerRoot = characterController.transform;
-        else
-            playerRoot = transform;
+        playerRoot = characterController != null ? characterController.transform : transform;
 
         if (modelRoot == null && animator != null)
             modelRoot = animator.transform;
@@ -191,37 +168,172 @@ public class PlayerFallScareController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (!isOwned)
+        if (!isOwned || !shouldFollowHead)
             return;
 
-        if (!shouldFollowHead)
-            return;
-
-        if (cameraHolder == null || headTarget == null)
-            return;
-
-        Vector3 targetPosition = headTarget.position + headTarget.TransformDirection(scareCameraLocalOffset);
-        float positionSmoothTime = cameraPositionSmoothTime > 0f ? cameraPositionSmoothTime : 1f / Mathf.Max(cameraFollowSpeed, 0.01f);
-
-        //smooth noisy jittery head bone motion
-        cameraHolder.position = Vector3.SmoothDamp(cameraHolder.position, targetPosition, ref cameraFollowVelocity, positionSmoothTime);
-
-        Quaternion targetRotation = followHeadRotationDuringScare ? headTarget.rotation : scareStartCameraWorldRotation;
-        float rotationSpeed = cameraRotationSmoothSpeed > 0f ? cameraRotationSmoothSpeed : cameraRotationSpeed;
-        float rotationT = 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime);
-        cameraHolder.rotation = Quaternion.Slerp(cameraHolder.rotation, targetRotation, rotationT);
+        FollowHeadWithCamera();
     }
+
+    //public scare entry
+
+    public void PlayTreeFallScare()
+    {
+        if (!isOwned || isPlayingScare)
+            return;
+
+        CmdPlayTreeFallScareForObservers();
+        StartCoroutine(TreeFallRoutine());
+    }
+
+    public void PlayTreeFallScare(Vector3 _)
+    {
+        PlayTreeFallScare();
+    }
+
+    //networking
+
+    [Command]
+    private void CmdPlayTreeFallScareForObservers()
+    {
+        RpcPlayTreeFallScareForObservers();
+    }
+
+    [ClientRpc(includeOwner = false)]
+    private void RpcPlayTreeFallScareForObservers()
+    {
+        if (isPlayingScare)
+            return;
+
+        StartCoroutine(RemoteVisualFallRoutine());
+    }
+
+    //local scare flow
+
+    private IEnumerator TreeFallRoutine()
+    {
+        if (!CanPlayLocalScare())
+            yield break;
+
+        isPlayingScare = true;
+        hasGetUpEventPosition = false;
+
+        CaptureScareSnapshots();
+        CaptureScareCameraStart();
+
+        ForceLocalMeshVisibleForScare();
+        DisableCameraMovementForScare();
+        SetPlayerFrozen(true);
+        PlayScareSound();
+        PlayFallAnimation();
+
+        StartCoroutine(ScareVisualRoutine());
+        shouldFollowHead = true;
+
+        if (useRootMotionForFall)
+            yield return RunRootMotionScareUntilGetUp();
+        else
+            yield return MoveCollisionBackwardsRoutine(totalScareDuration);
+
+        yield return ResetCameraRoutine();
+        StopFallScare();
+    }
+
+    private bool CanPlayLocalScare()
+    {
+        if (animator == null) return false;
+        if (playerMovement == null) return false;
+        
+        return true;
+    }
+
+    private void StopFallScare()
+    {
+        scareRootMotionActive = false;
+        shouldFollowHead = false;
+        cameraFollowVelocity = Vector3.zero;
+
+        if (animator != null)
+            animator.applyRootMotion = originalApplyRootMotion;
+
+        ForceRestoreAfterScare();
+        SetPlayerFrozen(false);
+
+        ApplyFOV(originalFOV);
+        ApplyPostProcessing(0f);
+        RestoreLocalMeshVisibilityAfterScare();
+        RestoreCameraMovementAfterScare();
+
+        isPlayingScare = false;
+    }
+
+    private void SetPlayerFrozen(bool frozen)
+    {
+        if (playerMovement != null)
+            playerMovement.isFrozen = frozen;
+    }
+
+    private void PlayScareSound()
+    {
+        if (audioSource != null && scareSound != null)
+            audioSource.PlayOneShot(scareSound);
+    }
+
+    private void PlayFallAnimation()
+    {
+        if (animator == null)
+            return;
+
+        animator.ResetTrigger(fallTriggerName);
+        animator.SetTrigger(fallTriggerName);
+    }
+
+    //remote scare visuals
+
+    private IEnumerator RemoteVisualFallRoutine()
+    {
+        isPlayingScare = true;
+
+        CaptureScareSnapshots();
+
+        bool previousApplyRootMotion = animator != null && animator.applyRootMotion;
+
+        if (playerMovement != null)
+            playerMovement.SetScareAnimationOverride(true);
+
+        if (animator != null)
+            animator.applyRootMotion = false;
+
+        PlayFallAnimation();
+
+        yield return new WaitForSeconds(totalScareDuration);
+
+        if (animator != null)
+            animator.applyRootMotion = previousApplyRootMotion;
+
+        if (playerMovement != null)
+            playerMovement.SetScareAnimationOverride(false);
+
+        RestoreRemoteVisualOffsets();
+        isPlayingScare = false;
+    }
+
+    private void RestoreRemoteVisualOffsets()
+    {
+        if (resetModelRootAfterScare)
+            RestoreLocalIfDistinct(modelRootSnapshot, playerRoot, transform);
+
+        RestoreLocalIfDistinct(animatorSnapshot, playerRoot, transform, modelRoot);
+    }
+
+    //root motion
 
     private void OnAnimatorMove()
     {
-        if (!isOwned) return;
-        if (!scareRootMotionActive) return;
-        if (animator == null) return;
-        if (characterController == null) return;
+        if (!isOwned || !scareRootMotionActive || animator == null || characterController == null)
+            return;
 
         Vector3 movement = Vector3.zero;
 
-        //visual root motion
         if (moveControllerWithRootMotion)
         {
             Vector3 rootDelta = animator.deltaPosition;
@@ -234,60 +346,29 @@ public class PlayerFallScareController : NetworkBehaviour
         scareVerticalVelocity += scareGravity * Time.deltaTime;
         movement += Vector3.up * (scareVerticalVelocity * Time.deltaTime);
 
-        characterController.Move(movement); //actually move the character controller now yipee
+        characterController.Move(movement);
         Physics.SyncTransforms();
 
-        if (applyRootYawRotation && moveControllerWithRootMotion)
+        if (applyRootYawRotation && moveControllerWithRootMotion && playerRoot != null)
         {
             Vector3 rootEuler = animator.deltaRotation.eulerAngles;
             playerRoot.Rotate(0f, rootEuler.y, 0f);
         }
     }
 
-    public void PlayTreeFallScare(Vector3 treePosition)
+    private IEnumerator RunRootMotionScareUntilGetUp()
     {
-        if (!isOwned) return;
-        if (isPlayingScare) return;
+        BeginRootMotionScare();
 
-        scareRoutine = StartCoroutine(TreeFallRoutine(treePosition));
-    }
+        float timer = 0f;
 
-    private IEnumerator TreeFallRoutine(Vector3 treePosition)
-    {
-        isPlayingScare = true;
-
-        //pre animation restore anchors
-        CaptureScareSnapshots();
-        CaptureScareCameraStart();
-
-        //local body visible for fall animation
-        ForceLocalMeshVisibleForScare();
-        DisableCameraMovementForScare();
-
-        playerMovement.isFrozen = true;
-        audioSource.PlayOneShot(scareSound);
-
-        //apply the rootmotion and play fall animation
-        originalApplyRootMotion = animator.applyRootMotion;
-        animator.ResetTrigger(fallTriggerName);
-        animator.SetTrigger(fallTriggerName);
-
-        visualRoutine = StartCoroutine(ScareVisualRoutine());
-        shouldFollowHead = true;
-
-        if (useRootMotionForFall)
+        while (!hasGetUpEventPosition && timer < totalScareDuration)
         {
-            BeginRootMotionScare();
-            yield return new WaitForSeconds(totalScareDuration);
-            EndRootMotionScare();
+            timer += Time.deltaTime;
+            yield return null;
         }
-        else
-            yield return MoveCollisionBackwardsRoutine(totalScareDuration);
 
-        //reset the origin because FUCKING ROOT ANIMATION MESSES WITH TRANSFORMS AND I HATE IT BECAUSE I HAVE HAD TO DO SO MUCH MORE WORK BECAUSE OF IT
-        ForceRestoreAfterScare();
-        yield return ResetCameraRoutine();
-        StopFallScare();
+        EndRootMotionScare();
     }
 
     private void BeginRootMotionScare()
@@ -296,6 +377,7 @@ public class PlayerFallScareController : NetworkBehaviour
             return;
 
         scareVerticalVelocity = -2f;
+        originalApplyRootMotion = animator.applyRootMotion;
         animator.applyRootMotion = true;
         scareRootMotionActive = true;
     }
@@ -303,31 +385,60 @@ public class PlayerFallScareController : NetworkBehaviour
     private void EndRootMotionScare()
     {
         scareRootMotionActive = false;
-        animator.applyRootMotion = originalApplyRootMotion;
-        //clear animation applied offsets
-        animator.Rebind();
-        animator.Update(0f);
+
+        if (animator != null)
+            animator.applyRootMotion = originalApplyRootMotion;
     }
 
-    private void StopFallScare()
+    private IEnumerator MoveCollisionBackwardsRoutine(float duration)
     {
-        scareRootMotionActive = false;
+        if (characterController == null)
+        {
+            yield return new WaitForSeconds(duration);
+            yield break;
+        }
 
-        shouldFollowHead = false;
+        scareVerticalVelocity = -2f;
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+
+            if (characterController.isGrounded && scareVerticalVelocity < 0f)
+                scareVerticalVelocity = -2f;
+
+            scareVerticalVelocity += scareGravity * Time.deltaTime;
+            Physics.SyncTransforms();
+
+            yield return null;
+        }
+    }
+
+    //camera
+
+    private void FollowHeadWithCamera()
+    {
+        if (cameraHolder == null || headTarget == null)
+            return;
+
+        Vector3 targetPosition = headTarget.position + headTarget.TransformDirection(scareCameraLocalOffset);
+        float positionSmoothTime = cameraPositionSmoothTime > 0f ? cameraPositionSmoothTime : 1f / Mathf.Max(cameraFollowSpeed, 0.01f);
+
+        cameraHolder.position = Vector3.SmoothDamp(cameraHolder.position, targetPosition, ref cameraFollowVelocity, positionSmoothTime);
+
+        Quaternion targetRotation = followHeadRotationDuringScare ? headTarget.rotation : scareStartCameraWorldRotation;
+        float rotationSpeed = cameraRotationSmoothSpeed > 0f ? cameraRotationSmoothSpeed : cameraRotationSpeed;
+        float rotationT = 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime);
+        cameraHolder.rotation = Quaternion.Slerp(cameraHolder.rotation, targetRotation, rotationT);
+    }
+
+    private void CaptureScareCameraStart()
+    {
         cameraFollowVelocity = Vector3.zero;
-        animator.applyRootMotion = originalApplyRootMotion;
 
-        ForceRestoreAfterScare();
-        playerMovement.isFrozen = false;
-
-        ApplyFOV(originalFOV);
-        ApplyPostProcessing(0f);
-        RestoreLocalMeshVisibilityAfterScare();
-        RestoreCameraMovementAfterScare();
-
-        isPlayingScare = false;
-        scareRoutine = null;
-        visualRoutine = null;
+        if (cameraHolder != null)
+            scareStartCameraWorldRotation = cameraHolder.rotation;
     }
 
     private void DisableCameraMovementForScare()
@@ -337,7 +448,6 @@ public class PlayerFallScareController : NetworkBehaviour
         if (cameraMovement == null)
             return;
 
-        //jumpscare camera owns view
         originalCameraMovementEnabled = cameraMovement.enabled;
         hasCameraMovementSnapshot = true;
         cameraMovement.enabled = false;
@@ -351,21 +461,33 @@ public class PlayerFallScareController : NetworkBehaviour
         cameraMovement.enabled = originalCameraMovementEnabled;
         hasCameraMovementSnapshot = false;
     }
-    private void CaptureScareSnapshots()
+
+    private IEnumerator ResetCameraRoutine()
     {
-        //before root motion fucks with the transform hierarchy we capture EXACLTY WHERE THE MF is
-        playerRootSnapshot = new TransformSnapshot(playerRoot);
-        scriptTransformSnapshot = new TransformSnapshot(transform);
-        animatorSnapshot = new TransformSnapshot(animator != null ? animator.transform : null);
-        modelRootSnapshot = new TransformSnapshot(modelRoot);
-        cameraHolderSnapshot = new TransformSnapshot(cameraHolder);
+        if (cameraHolder == null)
+            yield break;
+
+        float timer = 0f;
+        Vector3 startPosition = cameraHolder.localPosition;
+        Quaternion startRotation = cameraHolder.localRotation;
+
+        while (timer < cameraResetTime)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / cameraResetTime);
+
+            cameraHolder.localPosition = Vector3.Lerp(startPosition, originalCameraLocalPosition, t);
+            cameraHolder.localRotation = Quaternion.Slerp(startRotation, originalCameraLocalRotation, t);
+
+            yield return null;
+        }
+
+        cameraHolder.localPosition = originalCameraLocalPosition;
+        cameraHolder.localRotation = originalCameraLocalRotation;
     }
 
-    private void CaptureScareCameraStart()
-    {
-        cameraFollowVelocity = Vector3.zero;
-        scareStartCameraWorldRotation = cameraHolder.rotation;
-    }
+    //visual/post processing
+
     private void ForceLocalMeshVisibleForScare()
     {
         if (!forceLocalMeshVisibleDuringScare || localPlayerMeshVisibility == null)
@@ -380,86 +502,6 @@ public class PlayerFallScareController : NetworkBehaviour
             return;
 
         localPlayerMeshVisibility.SetForcedLocalVisible(false);
-    }
-
-    private void ForceRestoreAfterScare()
-    {
-        bool controllerWasEnabled = characterController != null && characterController.enabled;
-
-        //avoid controller fighting transform restore
-        characterController.enabled = false;
-
-        //root first children after otherwise shit breaks
-        if (playerRootSnapshot.IsValid)
-            playerRootSnapshot.RestoreWorld();
-
-        RestoreLocalIfDistinct(scriptTransformSnapshot, playerRoot);
-
-        if (resetModelRootAfterScare)
-            RestoreLocalIfDistinct(modelRootSnapshot, playerRoot, transform);
-
-        RestoreLocalIfDistinct(animatorSnapshot, playerRoot, transform, modelRoot);
-
-        if (cameraHolderSnapshot.IsValid)
-            cameraHolderSnapshot.RestoreLocal();
-
-        //sync the transform for local player
-        Physics.SyncTransforms();
-
-        if (characterController != null)
-            characterController.enabled = controllerWasEnabled;
-    }
-
-    private void RestoreLocalIfDistinct(TransformSnapshot snapshot, params Transform[] alreadyRestored)
-    {
-        //same transform may be model and animator
-        if (!snapshot.IsValid)
-            return;
-
-        for (int i = 0; i < alreadyRestored.Length; i++)
-        {
-            if (snapshot.target == alreadyRestored[i])
-                return;
-        }
-
-        snapshot.RestoreLocal();
-    }
-
-    private IEnumerator MoveCollisionBackwardsRoutine(float duration)
-    {
-        if (characterController == null)
-        {
-            yield return new WaitForSeconds(duration);
-            yield break;
-        }
-
-        scareVerticalVelocity = -2f;
-        float timer = 0f;
-        float previousCurveValue = 0f;
-        Vector3 backwardsDirection = -playerRoot.forward;
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-
-            float normalisedTime = Mathf.Clamp01(timer / duration);
-            float curveValue = backwardsCurve.Evaluate(normalisedTime);
-            float curveDelta = curveValue - previousCurveValue;
-            previousCurveValue = curveValue;
-
-            Vector3 horizontalMovement = backwardsDirection * (backwardsDistance * curveDelta);
-
-            if (characterController.isGrounded && scareVerticalVelocity < 0f)
-                scareVerticalVelocity = -2f;
-
-            scareVerticalVelocity += scareGravity * Time.deltaTime;
-            Vector3 verticalMovement = Vector3.up * (scareVerticalVelocity * Time.deltaTime);
-
-            characterController.Move(horizontalMovement + verticalMovement);
-            Physics.SyncTransforms();
-
-            yield return null;
-        }
     }
 
     private IEnumerator ScareVisualRoutine()
@@ -544,33 +586,76 @@ public class PlayerFallScareController : NetworkBehaviour
             chromaticAberration.intensity.value = Mathf.Lerp(originalChromaticAberration, scareChromaticAberration, amount);
     }
 
-    private IEnumerator ResetCameraRoutine()
+    //restore/reset helpers
+
+    private void CaptureScareSnapshots()
     {
-        if (cameraHolder == null)
-            yield break;
+        playerRootSnapshot = new TransformSnapshot(playerRoot);
+        animatorSnapshot = new TransformSnapshot(animator != null ? animator.transform : null);
+        modelRootSnapshot = new TransformSnapshot(modelRoot);
+        cameraHolderSnapshot = new TransformSnapshot(cameraHolder);
+    }
 
-        float timer = 0f;
-        Vector3 startPosition = cameraHolder.localPosition;
-        Quaternion startRotation = cameraHolder.localRotation;
+    private void ForceRestoreAfterScare()
+    {
+        bool controllerWasEnabled = characterController != null && characterController.enabled;
 
-        while (timer < cameraResetTime)
+        if (characterController != null)
+            characterController.enabled = false;
+
+        if (playerRoot != null)
         {
-            timer += Time.deltaTime;
-            float t = Mathf.Clamp01(timer / cameraResetTime);
-
-            cameraHolder.localPosition = Vector3.Lerp(startPosition, originalCameraLocalPosition, t);
-            cameraHolder.localRotation = Quaternion.Slerp(startRotation, originalCameraLocalRotation, t);
-
-            yield return null;
+            if (hasGetUpEventPosition)
+            {
+                playerRoot.position = getUpEventPosition;
+                playerRoot.rotation = getUpEventRotation;
+            }
+            else if (playerRootSnapshot.IsValid)
+            {
+                playerRoot.rotation = playerRootSnapshot.worldRotation;
+            }
         }
 
-        cameraHolder.localPosition = originalCameraLocalPosition;
-        cameraHolder.localRotation = originalCameraLocalRotation;
+        if (resetModelRootAfterScare)
+            RestoreLocalIfDistinct(modelRootSnapshot, playerRoot, transform);
+
+        RestoreLocalIfDistinct(animatorSnapshot, playerRoot, transform, modelRoot);
+
+        if (cameraHolderSnapshot.IsValid)
+            cameraHolderSnapshot.RestoreLocal();
+
+        Physics.SyncTransforms();
+
+        if (characterController != null)
+            characterController.enabled = controllerWasEnabled;
+    }
+
+    private void RestoreLocalIfDistinct(TransformSnapshot snapshot, params Transform[] alreadyRestored)
+    {
+        if (!snapshot.IsValid)
+            return;
+
+        for (int i = 0; i < alreadyRestored.Length; i++)
+        {
+            if (snapshot.target == alreadyRestored[i])
+                return;
+        }
+
+        snapshot.RestoreLocal();
+    }
+
+    //animation events
+
+    public void CaptureGetUpRootMotionPosition()
+    {
+        if (!isOwned || !isPlayingScare || hasGetUpEventPosition || playerRoot == null)
+            return;
+
+        hasGetUpEventPosition = true;
+        getUpEventPosition = playerRoot.position;
+        getUpEventRotation = playerRoot.rotation;
+
+      //  Debug.Log($"Captured get up position: {getUpEventPosition}", this);
     }
 }
-
-
-
-
-
 

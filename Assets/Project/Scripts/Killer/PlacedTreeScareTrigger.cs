@@ -10,17 +10,15 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-
         if (triggerOnce && hasTriggered)
-           return;
-        
+            return;
+
         PlayerMovement playerMovement = FindPlayerMovementFromHit(other);
 
         if (playerMovement == null)
+        {
             return;
-
-        if (!playerMovement.isOwned)
-            return;
+        }
 
         PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
 
@@ -28,11 +26,21 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
             fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
 
         if (fallScare == null)
+        {
             return;
-
-        fallScare.PlayTreeFallScare(transform.position);
+        }
 
         if (triggerOnce)
+            SetTriggered();
+
+        fallScare.PlayTreeFallScare(transform.position);
+    }
+
+    private void SetTriggered()
+    {
+        hasTriggered = true;
+
+        if (NetworkClient.active && !NetworkServer.active)
             CmdSetTriggered();
     }
 
