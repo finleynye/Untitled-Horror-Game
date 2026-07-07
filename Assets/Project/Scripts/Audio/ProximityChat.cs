@@ -25,8 +25,8 @@ public class ProximityChat : NetworkBehaviour
 
     private readonly Queue<float[]> _jitterBuffer = new();
 
-    private const int JitterPackets = 1; //lower delay
-    private const int MaxJitterPackets = 4; //prevents voice delay building up forever
+    private const int JitterPackets = 2; //lower delay
+    private const int MaxJitterPackets = 6; //prevents voice delay building up forever
 
     private float[] _currentPacket;
     private int _currentPacketPos;
@@ -91,7 +91,7 @@ public class ProximityChat : NetworkBehaviour
         
         _timer += Time.deltaTime;
         if (_timer < SendInterval) return;
-        _timer = 0f;
+        _timer -= SendInterval;
 
         var result = SteamUser.GetAvailableVoice(out var bytesAvailable);
         if (result != EVoiceResult.k_EVoiceResultOK || bytesAvailable == 0) return;
@@ -131,18 +131,16 @@ public class ProximityChat : NetworkBehaviour
         
         var sampleCount = (int)(bytesWritten / 2);
         var samples = new float[sampleCount];
-        var peakAmplitude = 0f; //the peak
 
         for (var i = 0; i < sampleCount; i++)
         {
             var raw = (short)(decompressed[i * 2] | (decompressed[i * 2 + 1] << 8));
             var sample = raw / 32768f * volume;
             samples[i] = Mathf.Clamp(sample, -1f, 1f);
-            peakAmplitude = Mathf.Max(peakAmplitude, Mathf.Abs(samples[i]));
         }
-        
-        //drop packets containing silence
-        if (peakAmplitude < SilenceThreshold) return;
+
+        //do not drop quiet packets
+        //dropping quiet speech causes the jitter buffer to empty and creates audio cut outs
 
         //this prevents the old packets building up and causing the delay
         while (_jitterBuffer.Count >= MaxJitterPackets)

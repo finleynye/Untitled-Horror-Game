@@ -2412,31 +2412,6 @@ MonoBehaviour:
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -5669,31 +5644,6 @@ MonoBehaviour:
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -8916,31 +8866,6 @@ MonoBehaviour:
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -10739,31 +10664,6 @@ MonoBehaviour:
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -11989,31 +11889,6 @@ MonoBehaviour:
   moveControllerWithRootMotion: 0
   applyRootYawRotation: 0
   scareGravity: -18
-  backwardsDistance: 1.2
-  backwardsCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   scareFOV: 95
   fovInTime: 0.2
   fovOutTime: 0.8
@@ -13771,7 +13646,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  hearYourself: 0
+  hearYourself: 1
   volume: 1
   minDistance: 5
   maxDistance: 15
@@ -13815,6 +13690,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  _pauseMenuPanel: {fileID: 0}
 --- !u!1 &8758312301728433005
 GameObject:
   m_ObjectHideFlags: 0

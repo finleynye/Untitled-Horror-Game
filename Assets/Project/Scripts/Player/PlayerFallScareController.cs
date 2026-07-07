@@ -655,7 +655,7 @@ public class PlayerFallScareController : NetworkBehaviour
         getUpEventPosition = playerRoot.position;
         getUpEventRotation = playerRoot.rotation;
 
-        Debug.Log($"Captured get up position: {getUpEventPosition}", this);
+      //  Debug.Log($"Captured get up position: {getUpEventPosition}", this);
     }
 }
 
