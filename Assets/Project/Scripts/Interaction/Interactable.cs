@@ -117,6 +117,14 @@ public class Interactable : NetworkBehaviour
         return interactionPrompt;
     }
 
+    public void SetInteractionPrompt(string newPrompt)
+    {
+        interactionPrompt = newPrompt;
+
+        if (textPrompt != null)
+            textPrompt.text = newPrompt;
+    }
+
     public bool CanShowPrompt()
     {
         return isInteractable && (!hasInteracted || isReusable);
