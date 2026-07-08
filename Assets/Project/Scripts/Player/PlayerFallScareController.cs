@@ -303,6 +303,7 @@ public class PlayerFallScareController : NetworkBehaviour
         if (animator != null)
             animator.applyRootMotion = false;
 
+        PlayScareSound();
         PlayFallAnimation();
 
         yield return new WaitForSeconds(totalScareDuration);
