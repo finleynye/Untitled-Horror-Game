@@ -47,24 +47,11 @@ public class PlayerMovement : NetworkBehaviour
     [HideInInspector] public Vector2 lastMoveDirection;
     private Vector2 _lookInput;
     private float _coyoteTimer;
-    private bool _isScareAnimationOverrideActive;
+    private bool _scareAnimationOverride;
 
     public bool isPaused;
     public bool isFrozen;
     public bool IsCrouching => _isCrouching;
-
-    public void SetScareAnimationOverride(bool active)
-    {
-        _isScareAnimationOverrideActive = active;
-
-        if (!active)
-            return;
-
-        ApplyScareAnimationOverride();
-
-        if (isOwned)
-            CmdSetAnimationValues(0f, 0f, _controller != null && _controller.isGrounded, false);
-    }
 
     private void Awake()
     {
@@ -115,14 +102,19 @@ public class PlayerMovement : NetworkBehaviour
         if (SceneManager.GetActiveScene().name == "Lobby")
             return;
 
+        if (_scareAnimationOverride)
+        {
+            if (isOwned)
+                HandleEscape();
+            return;
+        }
+
         //owner controls movement/input
         if (isOwned)
         {
             if (isFrozen)
             {
                 _velocity = Vector3.zero;
-                if (_isScareAnimationOverrideActive)
-                    ApplyScareAnimationOverride();
                 HandleEscape();
                 return;
             }
@@ -209,6 +201,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (_controller == null) return; //will throw errors without this, but still works regardless???
         if (isFrozen) return;
+        if (isPaused) return;
 
         if (_coyoteTimer > 0f && !_isCrouching)
         {
@@ -222,6 +215,7 @@ public class PlayerMovement : NetworkBehaviour
     
     private void TryStartSprint()
     {
+        if (isPaused) return;
         if (playerStamina != null && !playerStamina.CanUseStamina)
             return;
 
@@ -233,16 +227,23 @@ public class PlayerMovement : NetworkBehaviour
         CmdSetSprint(false);
     }
     
+
+    public void SetScareAnimationOverride(bool value)
+    {
+        _scareAnimationOverride = value;
+
+        if (!value || animator == null)
+            return;
+
+        animator.SetFloat("MoveX", 0f);
+        animator.SetFloat("MoveY", 0f);
+        animator.SetBool("IsSprinting", false);
+    }
+
     private void HandleRemoteAnimation()
     {
         if (animator == null)
             return;
-
-        if (_isScareAnimationOverrideActive)
-        {
-            ApplyScareAnimationOverride();
-            return;
-        }
 
         float animSmoothTime = _networkIsGrounded ? 0.06f : 0.12f;
 
@@ -257,13 +258,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (animator == null)
             return;
-
-        if (_isScareAnimationOverrideActive)
-        {
-            ApplyScareAnimationOverride();
-            CmdSetAnimationValues(0f, 0f, _controller != null && _controller.isGrounded, false);
-            return;
-        }
 
         Vector2 currentInput = _moveInput;
 
@@ -302,17 +296,6 @@ public class PlayerMovement : NetworkBehaviour
 
         //send values to server so other clients can see them
         CmdSetAnimationValues(animDirection.x, animDirection.y, _controller.isGrounded, isMoving);
-    }
-
-    private void ApplyScareAnimationOverride()
-    {
-        if (animator == null)
-            return;
-
-        animator.SetFloat("MoveX", 0f);
-        animator.SetFloat("MoveY", 0f);
-        animator.SetBool("IsSprinting", false);
-        animator.SetBool("IsGrounded", _controller == null || _controller.isGrounded);
     }
     private void ApplySceneVisualState()
     {

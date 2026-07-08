@@ -1,6 +1,5 @@
 using UnityEngine;
 using Mirror;
-using UnityEngine.SceneManagement;
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -40,26 +39,20 @@ public class PlayerHealth : NetworkBehaviour
     private void TargetUpdateHealthUI(NetworkConnectionToClient conn, float current, float max)
     {
         //update health UI stuff here please fin x
-        bool inLobby = SceneManager.GetActiveScene().name == "Lobby";
-        if (!inLobby)
-        {
-            OnHealthUpdated?.Invoke(current, max);
-        }
+        OnHealthUpdated?.Invoke(current, max);
         Debug.Log($"health: {current}/{max}");
     }
-
+    
     private void OnHealthChanged(float _, float newHealth)
-    {
-        if (isOwned)
-            OnHealthUpdated?.Invoke(newHealth, maxHealth);
-    }
+        => TargetUpdateHealthUI(connectionToClient, newHealth, maxHealth);
+    
     [Server]
     private void ServerHandleDeath()
     {
-        var movement = GetComponentInChildren<PlayerMovement>();
+        var movement = GetComponent<PlayerMovement>();
         movement.TargetSetFree(connectionToClient);
         
         //TODO: trigger death animation, ragdoll, spectator mode or whatever idrk
-        Debug.LogError($"{GetComponentInChildren<PlayerController>()?.playerName} died.");
+        Debug.LogError($"{GetComponentInParent<PlayerController>()?.playerName} died.");
     }
 }

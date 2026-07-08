@@ -44,7 +44,6 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartAuthority()
     {
         CmdSetPlayerName(SteamFriends.GetPersonaName());
-
  
         if (!InLobby) return;
         LobbyController.Instance.SetLocalPlayer(this);
@@ -86,7 +85,7 @@ public class PlayerController : NetworkBehaviour
         if (isOwned)
             CmdSetPlayerReady();
     }
-
+    
     private void PlayerNameUpdate(string oldName, string newName)
     {
         if (isServer)
@@ -95,13 +94,13 @@ public class PlayerController : NetworkBehaviour
         {
             //tired of game objects being called LocalPlayer or PlayerRoot
             //so moving the name change here and setting it to player's steam name so i can tell whos who
-            gameObject.name = playerName;
+            gameObject.name = playerName; 
             OnNameChanged?.Invoke(newName);
             if (InLobby)
                 LobbyController.Instance.UpdateUserList();
         }
     }
-
+    
     private void PlayerReady(bool oldReady, bool newReady)
     {
         if (isServer)
@@ -131,17 +130,24 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+
     public GameObject GetCurrentRoleObject()
     {
-        int targetRoleIndex = (int)role;
+        var targetRoleIndex = (int)role;
+
+        if (roles != null && targetRoleIndex >= 0 && targetRoleIndex < roles.Length && roles[targetRoleIndex] != null)
+            return roles[targetRoleIndex];
 
         if (roles == null)
             return null;
 
-        if (targetRoleIndex < 0 || targetRoleIndex >= roles.Length)
-            return null;
+        foreach (var roleObject in roles)
+        {
+            if (roleObject != null && roleObject.activeInHierarchy)
+                return roleObject;
+        }
 
-        return roles[targetRoleIndex];
+        return null;
     }
 
     public void CanStartGame(string sceneName)
@@ -149,6 +155,4 @@ public class PlayerController : NetworkBehaviour
         if (isOwned)
             CmdCanStartGame(sceneName);
     }
-
-
 }
