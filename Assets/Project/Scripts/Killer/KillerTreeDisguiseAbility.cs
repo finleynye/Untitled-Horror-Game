@@ -7,6 +7,7 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private Camera playerCamera;
+    [SerializeField] private LocalPlayerMeshVisibility localMeshVisibility;
 
     [Header("Camera Settings")]
     [SerializeField] private float disguisedNearClipPlane = 0.8f;
@@ -15,6 +16,10 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
     [Header("Visuals")]
     [SerializeField] private GameObject killerVisualModel;
     [SerializeField] private GameObject treeDisguiseModel;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource disguiseAudioSource;
+    [SerializeField] private AudioClip rustleSound;
 
     [Header("Disguise Settings")]
     [SerializeField] private float timeNeededToDisguise = 3f;
@@ -39,8 +44,6 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
     public bool IsDisguised => isDisguised;
 
-
-    //AFTER 3 SECONDS THE KILLER MODEL TURNS INTO TREE
     public override void OnStartAuthority()
     {
         if (!isOwned)
@@ -52,16 +55,21 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
         if (playerCamera == null)
             playerCamera = Camera.main;
 
-        _playerInput = new PlayerInput();
+        if (localMeshVisibility == null)
+            localMeshVisibility = GetComponent<LocalPlayerMeshVisibility>();
 
-        _playerInput.Player.KillerExitDisguise.performed += OnExitDisguisePressed;
+        if (disguiseAudioSource == null)
+            disguiseAudioSource = GetComponent<AudioSource>();
+
+        _playerInput = new PlayerInput();
+         
+        _playerInput.Player.KillerExitDisguise.performed += OnToggleDisguisePressed;
 
         _playerInput.Enable();
     }
 
     private void Start()
     {
-        //make sure the tree starts hidden
         ApplyDisguiseVisuals();
     }
 
@@ -81,7 +89,6 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
         if (playerMovement == null)
             return;
 
-        //use the players current move input to check if they are standing still
         bool isMoving = playerMovement._moveInput.magnitude > movementThreshold;
 
         if (isMoving)
@@ -94,25 +101,36 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
         if (stillTimer >= timeNeededToDisguise)
             TryEnterDisguise();
-        
     }
 
     private void TryEnterDisguise()
     {
         CmdSetDisguise(true);
     }
-    private void OnExitDisguisePressed(InputAction.CallbackContext context)
-    {
-        if (!isDisguised)
-            return;
 
-        CmdSetDisguise(false);
+    private void OnToggleDisguisePressed(InputAction.CallbackContext context)
+    {
+        CmdSetDisguise(!isDisguised);
     }
 
     [Command]
     private void CmdSetDisguise(bool value)
     {
+        if (isDisguised == value)
+            return;
+
         isDisguised = value;
+
+        RpcPlayDisguiseSound();
+    }
+
+    [ClientRpc]
+    private void RpcPlayDisguiseSound()
+    {
+        if (disguiseAudioSource == null || rustleSound == null)
+            return;
+
+        disguiseAudioSource.PlayOneShot(rustleSound);
     }
 
     private void OnDisguiseChanged(bool oldValue, bool newValue)
@@ -131,15 +149,11 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
             if (isDisguised)
             {
-                //keep the tree directly on the killer
                 treeDisguiseModel.transform.localPosition = Vector3.zero;
-
-                //apply the tree model rotation offset
                 treeDisguiseModel.transform.localRotation = Quaternion.Euler(treeRotationOffset);
             }
         }
 
-        //only lock movement and change camera clipping for the owning killer
         if (isOwned)
         {
             if (playerMovement != null)
@@ -147,6 +161,14 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
             if (playerCamera != null)
                 playerCamera.nearClipPlane = isDisguised ? disguisedNearClipPlane : normalNearClipPlane;
+
+            if (localMeshVisibility != null)
+            {
+                //disguised = hide local body.
+                //not disguised = return to normal first person visibility
+                localMeshVisibility.SetForcedLocalVisible(false);
+                localMeshVisibility.RefreshVisibility();
+            }
         }
 
         if (!isDisguised)
@@ -157,7 +179,7 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
     {
         if (_playerInput != null)
         {
-            _playerInput.Player.KillerExitDisguise.performed -= OnExitDisguisePressed;
+            _playerInput.Player.KillerExitDisguise.performed -= OnToggleDisguisePressed;
 
             _playerInput.Disable();
             _playerInput = null;
@@ -168,5 +190,11 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
 
         if (playerCamera != null)
             playerCamera.nearClipPlane = normalNearClipPlane;
+
+        if (localMeshVisibility != null)
+        {
+            localMeshVisibility.SetForcedLocalVisible(false);
+            localMeshVisibility.RefreshVisibility();
+        }
     }
 }

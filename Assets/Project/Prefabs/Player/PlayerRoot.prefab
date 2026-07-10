@@ -11631,11 +11631,11 @@ MonoBehaviour:
   _currentTrap: {fileID: 0}
   characterRenderer: {fileID: 7201483917970240785}
   firstPersonView: {fileID: 5693870740618545535}
-  walkSpeed: 1.4
-  sprintSpeed: 5
-  crouchSpeed: 1.2
-  jumpForce: 0.7
-  coyoteTime: 0.12
+  walkSpeed: 1.8
+  sprintSpeed: 5.6
+  crouchSpeed: 1
+  jumpForce: 0.6
+  coyoteTime: 0.08
   footstepSoundSystem: {fileID: 1566953553220590483}
   animator: {fileID: 8085842375742727355}
   _isSprinting: 0
@@ -11728,14 +11728,14 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  maxStamina: 100
-  currentStamina: 100
-  staminaDrainRate: 10
-  staminaRegenRate: 15
-  staminaRegenDelay: 1.5
-  staminaUseRecoveryThreshold: 6
+  maxStamina: 120
+  currentStamina: 120
+  staminaDrainRate: 8
+  staminaRegenRate: 18
+  staminaRegenDelay: 0.9
+  staminaUseRecoveryThreshold: 4
   staminaAudioSource: {fileID: 4090815557403310409}
-  staminaExhaustClip: {fileID: 8300000, guid: 50dcf71f2cddc204d9743c61cc7f5f42, type: 3}
+  staminaExhaustClip: {fileID: 8300000, guid: a17081a67b0c7ab42accfb4379dcc101, type: 3}
   staminaExhaustVolume: 1
   staminaExhaustSoundCooldown: 1.5
   isUsingStamina: 0
@@ -11821,11 +11821,14 @@ MonoBehaviour:
   syncInterval: 0
   playerMovement: {fileID: 1541930627593218274}
   playerCamera: {fileID: 6624550579119375638}
+  localMeshVisibility: {fileID: 0}
   disguisedNearClipPlane: 0.8
   normalNearClipPlane: 0.01
   killerVisualModel: {fileID: 7201483917970240785}
   treeDisguiseModel: {fileID: 835582112691094535}
-  timeNeededToDisguise: 3
+  disguiseAudioSource: {fileID: 4090815557403310409}
+  rustleSound: {fileID: 8300000, guid: b44fd179a57a8fc40b0a1cee6fe71ee0, type: 3}
+  timeNeededToDisguise: 10
   movementThreshold: 0.1
   groundRayHeight: 3
   groundRayDistance: 8
