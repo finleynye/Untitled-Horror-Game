@@ -13646,7 +13646,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  hearYourself: 0
+  hearYourself: 1
   volume: 1
   minDistance: 5
   maxDistance: 15
@@ -13691,6 +13691,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _pauseMenuPanel: {fileID: 0}
+  _settingsMenuPanel: {fileID: 0}
 --- !u!1 &8758312301728433005
 GameObject:
   m_ObjectHideFlags: 0
