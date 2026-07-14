@@ -95,9 +95,17 @@ public class FlashLightController : NetworkBehaviour
         flashlightAudioSource.PlayOneShot(flashlightToggleSound, flashlightVolume);
     }
 
+    private void OnDisable()
+    {
+        playerInput.Player.Flashlight.performed -= ToggleFlashlight;
+        playerInput?.Disable();
+        playerInput = null;
+    }
+
     public override void OnStopAuthority()
     {
         base.OnStopAuthority();
+        playerInput.Player.Flashlight.performed -= ToggleFlashlight;
         playerInput?.Disable();
     }
 }

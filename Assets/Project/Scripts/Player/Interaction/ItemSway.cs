@@ -1,7 +1,4 @@
-using System;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class ItemSway : MonoBehaviour
 {
@@ -15,51 +12,47 @@ public class ItemSway : MonoBehaviour
 
     [SerializeField] CameraMovement camMove;
 
-    private Quaternion startRotation;
-    private Vector3 startPosition;
-
+    private Quaternion _startRotation;
+    private Vector3 _startPosition;
 
     private void Start()
     {
-
+        _startPosition = transform.localPosition;
+        _startRotation = transform.localRotation;
     }
+    
     private void Update()
     {
         if (camMove == null)
             return;
-
-
-        Vector2 _lookInput = camMove._lookInput;
-
-        UpdateRotationSway(_lookInput);
-
-
-
+        
+        var lookInput = camMove._lookInput;
+        UpdateRotationSway(lookInput);
+        UpdatePositionSway(lookInput);
     }
 
     private void UpdateRotationSway(Vector2 lookInput)
     {
-        //get mouse input
+        var mouseX = lookInput.x;
+        var mouseY = lookInput.y;
+        
+        var rotationX = Quaternion.AngleAxis(-mouseY * rotationMultiplier, Vector3.right);
+        var rotationY = Quaternion.AngleAxis(mouseX * rotationMultiplier, Vector3.up);
+        var swayOffset = rotationX * rotationY;
+        
+        var baseRotation = Quaternion.Euler(0f, -90f, 0f); //hardcoded value im so sorry
+        var targetRotation = swayOffset * baseRotation;
+
+        // Rotate smoothly
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, rotationSmooth * Time.deltaTime);
+    }
+    
+    private void UpdatePositionSway(Vector2 lookInput)
+    {
         var mouseX = lookInput.x;
         var mouseY = lookInput.y;
 
-        //calculate target rotation
-        Quaternion rotationX = Quaternion.AngleAxis(-mouseY * rotationMultiplier, Vector3.right);
-        Quaternion rotationY = Quaternion.AngleAxis(mouseX * rotationMultiplier, Vector3.up);
-
-        Quaternion targetRotation = rotationX * rotationY;
-
-        //rotate 
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, rotationSmooth * Time.deltaTime);
-    }
-
-
-    private void UpdatePositionSway(Vector2 lookInput)
-    {
-        float mouseX = lookInput.x;
-        float mouseY = lookInput.y;
-
-        Vector3 targetPosition = startPosition + new Vector3(-mouseX * positionMultiplier, -mouseY * positionMultiplier, 0f);
+        var targetPosition = _startPosition + new Vector3(-mouseX * positionMultiplier, -mouseY * positionMultiplier, 0f);
 
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, positionSmooth * Time.deltaTime);
     }
