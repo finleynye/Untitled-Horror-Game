@@ -33,7 +33,7 @@ public class ItemSway : MonoBehaviour
 
         UpdateRotationSway(_lookInput);
 
-
+        UpdatePositionSway(_lookInput);
 
     }
 
