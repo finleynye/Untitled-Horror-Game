@@ -48,6 +48,7 @@ public class CameraMovement : NetworkBehaviour
     [Header("Post Processing")]
     [SerializeField] private Volume playerVolume;
     private Vignette vignette;
+    private ColorAdjustments _colourAdjustment;
 
     [Header("Render Texture")]
     [SerializeField] private RenderTexture cameraRenderTexture;
@@ -79,7 +80,7 @@ public class CameraMovement : NetworkBehaviour
 
         if (camHolder == null)
         {
-            Transform foundHolder = transform.Find("Player/CameraHolder");
+            var foundHolder = transform.Find("Player/CameraHolder");
 
             if (foundHolder != null)
                 camHolder = foundHolder;
@@ -99,6 +100,7 @@ public class CameraMovement : NetworkBehaviour
             //make a unique copy so this player camera does not edit the shared volume asset
             playerVolume.profile = Instantiate(playerVolume.profile);
             playerVolume.profile.TryGet(out vignette);
+            playerVolume.profile.TryGet(out _colourAdjustment);
 
             if (vignette != null)
             {
@@ -124,6 +126,7 @@ public class CameraMovement : NetworkBehaviour
         _playerInput = new PlayerInput();
         _playerInput.Enable();
     }
+    
     public void SetEmoteCamera(bool value)
     {
         isUsingEmoteCamera = value;
@@ -133,6 +136,7 @@ public class CameraMovement : NetworkBehaviour
             camHolder.localRotation = normalCameraLocalRotation;
         }
     }
+    
     public override void OnStartClient()
     {
         //every player starts with their camera disabled
@@ -142,21 +146,21 @@ public class CameraMovement : NetworkBehaviour
     public override void OnStartAuthority()
     {
         if (!isOwned) return;
-
-        //only this players own camera turns on
+        
         SetCameraState(true);
-
         SetCameraRenderTexture();
 
         SetupInput();
-
         SetCursorState();
     }
-    void Update()
+    
+    private void Update()
     {
         if (!isOwned) return;
 
-        bool isLobby = SceneManager.GetActiveScene().name == "Lobby";
+        ApplyBrightnessSetting();
+        
+        var isLobby = SceneManager.GetActiveScene().name == "Lobby";
 
         if (isLobby)
         {
@@ -166,8 +170,8 @@ public class CameraMovement : NetworkBehaviour
             return;
         }
 
-        if (playerMovement == null) return;
-        if (playerStamina == null) return;
+        if (playerMovement == null || playerStamina == null) 
+            return;
 
         if (playerMovement.isPaused)
         {
@@ -190,8 +194,8 @@ public class CameraMovement : NetworkBehaviour
 
     private void HandleFOV()
     {
-        if (playerCam == null) return;
-        if (playerMovement == null) return;
+        if (playerCam == null || playerMovement == null) 
+            return;
 
         var isMovingForward = playerMovement._moveInput.y > 0.1f;
         var targetFOV = playerMovement._isSprinting && isMovingForward ? sprintFOV : defaultFOV;
@@ -204,17 +208,17 @@ public class CameraMovement : NetworkBehaviour
         if (vignette == null) return;
         if (playerStamina == null) return;
 
-        float targetIntensity = normalVignetteIntensity;
-        float targetSmoothness = normalVignetteSmoothness;
-        Color targetColor = normalVignetteColor;
+        var targetIntensity = normalVignetteIntensity;
+        var targetSmoothness = normalVignetteSmoothness;
+        var targetColor = normalVignetteColor;
 
         if (playerStamina.IsStaminaEmpty)
         {
             //creates a breathing pulse from -1 to 1
-            float pulse = Mathf.Sin(Time.time * exhaustedVignetteSpeed);
+            var pulse = Mathf.Sin(Time.time * exhaustedVignetteSpeed);
 
             //converts the pulse from -1 to 1 into 0 to 1
-            float normalisedPulse = (pulse + 1f) * 0.5f;
+            var normalisedPulse = (pulse + 1f) * 0.5f;
 
             //grow and shrink the vignette darkness
             targetIntensity = Mathf.Lerp(exhaustedVignetteMin, exhaustedVignetteMax, normalisedPulse);
@@ -239,10 +243,16 @@ public class CameraMovement : NetworkBehaviour
         vignette.smoothness.value = Mathf.Clamp01(vignette.smoothness.value);
     }
 
+    private void ApplyBrightnessSetting()
+    {
+        var baseline = SettingsManager.Instance.PlayerSettings.brightness;
+        _colourAdjustment.postExposure.value = baseline - 1f;
+        Debug.Log("b" + baseline);
+    }
+
     private void HandleLook()
     {
-        if (playerMovement == null) return;
-        if (playerStamina == null) return;
+        if (playerMovement == null || playerStamina == null) return;
         if (playerMovement.isPaused) return;
 
         if (_playerInput == null)
@@ -262,8 +272,10 @@ public class CameraMovement : NetworkBehaviour
         //read look input directly from the input actions
         _lookInput = _playerInput.Player.Look.ReadValue<Vector2>();
 
-        float mouseX = _lookInput.x * mouseSensitivity;
-        float mouseY = _lookInput.y * mouseSensitivity;
+        var currentSensitivity = mouseSensitivity * SettingsManager.Instance.PlayerSettings.mouseSensitivity;
+        Debug.Log("cs" + currentSensitivity);
+        var mouseX = _lookInput.x * currentSensitivity;
+        var mouseY = _lookInput.y * currentSensitivity;
 
         verticalRotation -= mouseY;
         verticalRotation = Mathf.Clamp(verticalRotation, -65f, 80f);
@@ -279,17 +291,16 @@ public class CameraMovement : NetworkBehaviour
 
     private void HandleCrouchCamera()
     {
-        if (camHolder == null) return;
-        if (playerMovement == null) return;
+        if (camHolder == null || playerMovement == null) return;
 
-        float targetY = playerMovement.IsCrouching ? crouchingCameraY : standingCameraY;
-
-        Vector3 currentPosition = camHolder.localPosition;
+        var targetY = playerMovement.IsCrouching ? crouchingCameraY : standingCameraY;
+        var currentPosition = camHolder.localPosition;
 
         currentPosition.y = Mathf.Lerp(currentPosition.y, targetY, crouchCameraSpeed * Time.deltaTime);
 
         camHolder.localPosition = currentPosition;
     }
+    
     private void SetCameraState(bool state)
     {
         if (playerCam != null)
@@ -344,11 +355,9 @@ public class CameraMovement : NetworkBehaviour
 
     private void HandleEmoteCamera()
     {
-        if (camHolder == null) return;
-        if (emoteCameraTransform == null) return;
+        if (camHolder == null || emoteCameraTransform == null) return;
 
         camHolder.position = Vector3.Lerp(camHolder.position, emoteCameraTransform.position, emoteCameraMoveSpeed * Time.deltaTime);
-
         camHolder.rotation = Quaternion.Lerp(camHolder.rotation, emoteCameraTransform.rotation, emoteCameraRotateSpeed * Time.deltaTime);
     }
 }
