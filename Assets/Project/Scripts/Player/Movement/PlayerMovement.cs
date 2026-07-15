@@ -12,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private PlayerInteraction playerInteraction;
     [SerializeField] private PlayerStamina playerStamina;
     private CharacterController _controller;
+    private PlayerController _playerController;
     private PlayerInput _playerInput;
     [SerializeField] private BearTrap _currentTrap;
 
@@ -56,6 +57,7 @@ public class PlayerMovement : NetworkBehaviour
     private void Awake()
     {
         _controller = GetComponentInParent<CharacterController>();
+        _playerController = GetComponentInParent<PlayerController>();
 
         //disable player camera/view objects while in lobby
         //do not disable the actual character mesh
@@ -350,10 +352,20 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (isPaused)
             return;
-
-        if (_controller != null)
+        
+        //lazy load controllers
+        _playerController = GetComponentInParent<PlayerController>();
+        _controller = GetComponentInParent<CharacterController>();
+        
+        var isKiller = _playerController.role == PlayerRole.Killer;
+        if (isKiller)
         {
-            _controller.height = newValue ? 1.2f : 2f;
+            _controller.height = newValue ? 1.8f : 3.0f;
+            _controller.center = newValue ? new Vector3(0f, -0.1f, 0f) : new Vector3(0f, 0.5f, 0f);
+        }
+        else
+        {
+            _controller.height = newValue ? 1.2f : 2.0f;
             _controller.center = newValue ? new Vector3(0f, -0.4f, 0f) : Vector3.zero;
         }
     }

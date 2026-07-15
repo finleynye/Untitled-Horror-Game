@@ -131,10 +131,23 @@ public class PlayerController : NetworkBehaviour
                 roles[i].SetActive(i == targetRoleIndex);
         }
 
-        if (role == PlayerRole.Killer)
+        if (characterController != null)
         {
-            characterController.height = 3;
-            characterController.center = new Vector3(0, 0.5f, 0);
+            var wasEnabled = characterController.enabled;
+            characterController.enabled = false;
+
+            if (newRole == PlayerRole.Killer)
+            {
+                characterController.height = 3;
+                characterController.center = new Vector3(0,.5f, 0);
+            }
+            else
+            {
+                characterController.height = 2;
+                characterController.center = new Vector3(0, 0, 0);
+            }
+            
+            characterController.enabled = wasEnabled;
         }
     }
 
