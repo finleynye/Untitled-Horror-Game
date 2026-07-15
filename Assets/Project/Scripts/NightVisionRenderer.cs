@@ -82,6 +82,7 @@ public class NightVisionRenderer : ScriptableRendererFeature
             _settings = settings;
         }
 
+        //im so sorry for this copy paste slop but its how shaders work
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
             var resourceData = frameData.Get<UniversalResourceData>();

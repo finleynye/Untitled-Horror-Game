@@ -21,6 +21,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string playerName;
     [SyncVar(hook = nameof(PlayerReady))] public bool ready;
     [SyncVar(hook = nameof(OnRoleChanged))] public PlayerRole role = PlayerRole.Unassigned;
+    [SerializeField] private CharacterController characterController;
 
     [SerializeField] private GameObject[] roles;
 
@@ -116,6 +117,7 @@ public class PlayerController : NetworkBehaviour
         
         ApplyRoleObject(newRole);
 
+
         if (isClient && InLobby)
             LobbyController.Instance.UpdateUserList();
     }
@@ -127,6 +129,12 @@ public class PlayerController : NetworkBehaviour
         {
             if(roles[i] != null)
                 roles[i].SetActive(i == targetRoleIndex);
+        }
+
+        if (role == PlayerRole.Killer)
+        {
+            characterController.height = 3;
+            characterController.center = new Vector3(0, 0.5f, 0);
         }
     }
 
@@ -146,6 +154,7 @@ public class PlayerController : NetworkBehaviour
             if (roleObject != null && roleObject.activeInHierarchy)
                 return roleObject;
         }
+
 
         return null;
     }

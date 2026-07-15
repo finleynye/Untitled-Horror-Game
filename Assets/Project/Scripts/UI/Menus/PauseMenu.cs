@@ -8,6 +8,7 @@ public class PauseMenu : NetworkBehaviour
     private PlayerMovement _playerMovement;
     private PlayerInput _playerInput;
     public GameObject _pauseMenuPanel;
+    public GameObject _settingsMenuPanel;
     private bool _isPaused;
     private static readonly string[] ExcludedScenes = { "Main Menu", "MainMenu", "Lobby" };
 
@@ -38,7 +39,9 @@ public class PauseMenu : NetworkBehaviour
         _playerMovement = NetworkClient.localPlayer?.GetComponentInChildren<PlayerMovement>();
 
         _pauseMenuPanel = null;
+        _settingsMenuPanel = null;
 
+        // Loop through everything to find both panels independently by their hierarchy names
         foreach (var obj in Resources.FindObjectsOfTypeAll<GameObject>())
         {
             if (obj == null)
@@ -50,19 +53,32 @@ public class PauseMenu : NetworkBehaviour
             if (obj.scene.name != scene.name)
                 continue;
 
-            if (obj.name != "PauseMenu")
-                continue;
+            if (obj.name == "PauseMenu")
+            {
+                _pauseMenuPanel = obj;
+            }
+            else if (obj.name == "SettingsMenu")
+            {
+                _settingsMenuPanel = obj;
+            }
 
-            _pauseMenuPanel = obj;
-            break;
+            // Stop searching once we have found both objects
+            if (_pauseMenuPanel != null && _settingsMenuPanel != null)
+                break;
         }
 
         if (_pauseMenuPanel == null)
             return;
         
+        // Safely turn off both panels on scene load
         _pauseMenuPanel.SetActive(false);
+        
+        if (_settingsMenuPanel != null)
+            _settingsMenuPanel.SetActive(false);
 
+        // Find the buttons inside the PauseMenu hierarchy
         Transform resume = _pauseMenuPanel.transform.Find("Menu Buttons/ResumeBtn");
+        Transform settings = _pauseMenuPanel.transform.Find("Menu Buttons/SettingsBtn");
         Transform leave = _pauseMenuPanel.transform.Find("Menu Buttons/LeaveBtn");
 
         if (resume != null && resume.TryGetComponent(out Button resumeButton))
@@ -70,11 +86,28 @@ public class PauseMenu : NetworkBehaviour
             resumeButton.onClick.RemoveListener(TogglePause);
             resumeButton.onClick.AddListener(TogglePause);
         }
-
+        
+        if (settings != null && settings.TryGetComponent(out Button settingsButton))
+        {
+            settingsButton.onClick.RemoveListener(OpenSettings);
+            settingsButton.onClick.AddListener(OpenSettings);
+        }
+        
         if (leave != null && leave.TryGetComponent(out Button leaveButton))
         {
             leaveButton.onClick.RemoveListener(LeaveGame);
             leaveButton.onClick.AddListener(LeaveGame);
+        }
+        
+        Transform back = _settingsMenuPanel.transform.Find("BackBtn");
+        if (back != null && back.TryGetComponent(out UIButton backButton))
+        {
+            backButton.buttonEvent.RemoveListener(CloseSettings);
+            backButton.buttonEvent.AddListener(CloseSettings);
+        }
+        else
+        {
+            Debug.LogWarning("[PauseMenu] Found SettingsMenu but couldn't find a Button component on a child named 'BackBtn'");
         }
     }
 
@@ -100,9 +133,29 @@ public class PauseMenu : NetworkBehaviour
         _isPaused = !_isPaused;
 
         _pauseMenuPanel.SetActive(_isPaused);
+        
+        if (!_isPaused && _settingsMenuPanel != null)
+            _settingsMenuPanel.SetActive(false);
+        
         Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = _isPaused;
         _playerMovement.isPaused = _isPaused;
+    }
+    
+    private void OpenSettings()
+    {
+        if (netIdentity == null || !isOwned) return;
+
+        if (_pauseMenuPanel != null) _pauseMenuPanel.SetActive(false);
+        if (_settingsMenuPanel != null) _settingsMenuPanel.SetActive(true);
+    }
+    
+    public void CloseSettings()
+    {
+        if (netIdentity == null || !isOwned) return;
+
+        if (_settingsMenuPanel != null) _settingsMenuPanel.SetActive(false);
+        if (_pauseMenuPanel != null) _pauseMenuPanel.SetActive(true);
     }
 
     private void LeaveGame()
@@ -124,7 +177,6 @@ public class PauseMenu : NetworkBehaviour
             return;
         }
 
-        //fallback for when we are in the game scene and LobbyController no longer exists
         if (NetworkServer.active && NetworkClient.isConnected)
             NetworkManager.singleton.StopHost();
         
@@ -133,7 +185,6 @@ public class PauseMenu : NetworkBehaviour
         
         else if (NetworkServer.active)
             NetworkManager.singleton.StopServer();
-        
     }
 
     private void OnDestroy()
