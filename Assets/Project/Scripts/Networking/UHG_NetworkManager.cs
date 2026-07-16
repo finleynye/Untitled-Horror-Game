@@ -8,7 +8,6 @@ using UnityEngine.SceneManagement;
 public class UHG_NetworkManager : NetworkManager
 {
     [SerializeField] private PlayerController playerObj;
-    [SerializeField] private bool harveyScene;
     [SerializeField] private string gameplaySceneName = "GrayBoxScene";
     public List<PlayerController> Players { get; } = new();
 
@@ -16,7 +15,6 @@ public class UHG_NetworkManager : NetworkManager
     {
         base.Awake();
         DontDestroyOnLoad(this);
-
     }
 
     public override void OnClientChangeScene(string newSceneName, SceneOperation sceneOperation, bool customHandling)
@@ -43,10 +41,6 @@ public class UHG_NetworkManager : NetworkManager
 
     public void StartGame(string nextScene)
     {
-        if (harveyScene)
-        {
-            nextScene = "MapTest";
-        }
         SteamLobby.Instance.SetLobbyPrivate();
         ServerChangeScene(nextScene);
     }
