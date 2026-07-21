@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - PlayerSpawnPoint
+  - Killer
+  - Survivor
   layers:
   - Default
   - TransparentFX
@@ -15,7 +17,7 @@ TagManager:
   - NameTag
   - Interactable
   - Ground
-  - 
+  - Eyes
   - 
   - 
   - 

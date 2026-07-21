@@ -233,13 +233,18 @@ public class PlayerMovement : NetworkBehaviour
     public void SetScareAnimationOverride(bool value)
     {
         _scareAnimationOverride = value;
+        _moveInput = Vector2.zero;
+        lastMoveDirection = Vector2.zero;
 
-        if (!value || animator == null)
-            return;
+        if (animator != null)
+        {
+            animator.SetFloat("MoveX", 0f);
+            animator.SetFloat("MoveY", 0f);
+            animator.SetBool("IsSprinting", false);
+        }
 
-        animator.SetFloat("MoveX", 0f);
-        animator.SetFloat("MoveY", 0f);
-        animator.SetBool("IsSprinting", false);
+        if (isOwned)
+            CmdSetAnimationValues(0f, 0f, _controller == null || _controller.isGrounded, false);
     }
 
     private void HandleRemoteAnimation()

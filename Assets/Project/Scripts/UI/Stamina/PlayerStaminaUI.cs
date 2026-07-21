@@ -1,43 +1,96 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using TMPro;
-using Mirror;
 
 public class PlayerStaminaUI : MonoBehaviour
 {
     public PlayerStamina playerStamina;
-    public Image wheelRed, wheelGreen;
+    [FormerlySerializedAs("wheelRed")] public Image sprintBarBackground;
+    [FormerlySerializedAs("wheelGreen")] public Image sprintAmountBar;
     public bool showStaminaText;
 
-    void Start()
-    {
+    [Header("Fade")]
+    [SerializeField] private CanvasGroup localPopUpUI;
+    [SerializeField] private float fadeSpeed = 5f;
+    [SerializeField] private float hideDelay = 1f;
 
-        if(playerStamina == null)
+    private float fullStaminaTimer;
+    private float backgroundStartXScale = 1f;
+    private float amountStartXScale = 1f;
+
+    private void Start()
+    {
+        if (playerStamina == null)
             FindLocalPlayerStamina();
+
+        SetImageToBar(sprintBarBackground);
+        SetImageToBar(sprintAmountBar);
+
+        if (sprintBarBackground != null)
+            backgroundStartXScale = sprintBarBackground.rectTransform.localScale.x;
+
+        if (sprintAmountBar != null)
+            amountStartXScale = sprintAmountBar.rectTransform.localScale.x;
+
+        if (localPopUpUI != null)
+            localPopUpUI.alpha = 0f;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         UpdateStaminaUI();
     }
 
     private void UpdateStaminaUI()
     {
-        if (playerStamina == null)
+        if (playerStamina == null || sprintAmountBar == null)
             return;
 
+        float sprintAmount = Mathf.Clamp01(playerStamina.CurrentStamina / playerStamina.MaxStamina);
 
-        wheelGreen.fillAmount = playerStamina.currentStamina / 100;
-        if(playerStamina.currentStamina > 1 && playerStamina.isUsingStamina)
+        SetXScale(sprintAmountBar.rectTransform, amountStartXScale * sprintAmount);
+
+        if (sprintBarBackground != null)
+            SetXScale(sprintBarBackground.rectTransform, backgroundStartXScale);
+
+        UpdateFade(sprintAmount);
+    }
+
+    private void UpdateFade(float sprintAmount)
+    {
+        if (localPopUpUI == null)
+            return;
+
+        bool shouldShow = playerStamina.isUsingStamina || sprintAmount < 1f;
+
+        if (shouldShow)
         {
-            wheelRed.fillAmount = (playerStamina.currentStamina + 5) / 100;
-        }
-        else
-        {
-            wheelRed.fillAmount--;
+            fullStaminaTimer = 0f;
+            localPopUpUI.alpha = Mathf.MoveTowards(localPopUpUI.alpha, 1f, fadeSpeed * Time.deltaTime);
+            return;
         }
 
+        fullStaminaTimer += Time.deltaTime;
+
+        if (fullStaminaTimer >= hideDelay)
+            localPopUpUI.alpha = Mathf.MoveTowards(localPopUpUI.alpha, 0f, fadeSpeed * Time.deltaTime);
+    }
+
+    private void SetImageToBar(Image image)
+    {
+        if (image == null)
+            return;
+
+        image.type = Image.Type.Simple;
+        image.fillAmount = 1f;
+        image.rectTransform.pivot = new Vector2(0.5f, image.rectTransform.pivot.y);
+    }
+
+    private void SetXScale(RectTransform rectTransform, float xScale)
+    {
+        Vector3 scale = rectTransform.localScale;
+        scale.x = xScale;
+        rectTransform.localScale = scale;
     }
 
     private void FindLocalPlayerStamina()
@@ -49,7 +102,6 @@ public class PlayerStaminaUI : MonoBehaviour
             if (stamina.isOwned)
             {
                 playerStamina = stamina;
-
                 return;
             }
         }

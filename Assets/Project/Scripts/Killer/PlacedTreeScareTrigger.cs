@@ -20,10 +20,10 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
             return;
         }
 
-        PlayerFallScareController fallScare = playerMovement.GetComponentInChildren<PlayerFallScareController>(true);
+        TreeFallScareController fallScare = playerMovement.GetComponentInChildren<TreeFallScareController>(true);
 
         if (fallScare == null)
-            fallScare = playerMovement.GetComponentInParent<PlayerFallScareController>();
+            fallScare = playerMovement.GetComponentInParent<TreeFallScareController>();
 
         if (fallScare == null)
         {
@@ -33,7 +33,7 @@ public class PlacedTreeScareTrigger : NetworkBehaviour
         if (triggerOnce)
             SetTriggered();
 
-        fallScare.PlayTreeFallScare(transform.position);
+        fallScare.PlayTreeFallScare();
     }
 
     private void SetTriggered()
