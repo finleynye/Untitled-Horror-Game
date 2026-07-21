@@ -48431,7 +48431,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7456013228022624286, guid: 029c0d9be6badd2479740ffec1f18364, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7456013228022624286, guid: 029c0d9be6badd2479740ffec1f18364, type: 3}
       propertyPath: m_TagString
@@ -48717,7 +48717,7 @@ MonoBehaviour:
   facingTransform: {fileID: 2095011319}
   playerRoot: {fileID: 2095011319}
   scareController: {fileID: 2095011320}
-  ragdoll: {fileID: 0}
+  ragdoll: {fileID: 626155342}
 --- !u!136 &2095011323
 CapsuleCollider:
   m_ObjectHideFlags: 0

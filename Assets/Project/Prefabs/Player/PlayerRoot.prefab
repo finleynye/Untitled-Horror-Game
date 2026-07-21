@@ -6937,6 +6937,7 @@ GameObject:
   - component: {fileID: 1839293744362050321}
   - component: {fileID: 5734887297134187708}
   - component: {fileID: 7192034876180290043}
+  - component: {fileID: 4016575070583306102}
   m_Layer: 0
   m_Name: Survivor1
   m_TagString: Survivor
@@ -7228,6 +7229,29 @@ MonoBehaviour:
   scareAnimation:
     animator: {fileID: 3994432887297992026}
   forceLocalMeshVisibleDuringScare: 1
+--- !u!136 &4016575070583306102
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3386020634316715831}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.2382057
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.13209832, z: 0}
 --- !u!1 &3387288201910725664
 GameObject:
   m_ObjectHideFlags: 0
@@ -9269,7 +9293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7df9b66ce670f2e4484c815d2f8a6daf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ragdoll
-  capsuleCollider: {fileID: 0}
+  capsuleCollider: {fileID: 4016575070583306102}
 --- !u!1 &4871863641451952583
 GameObject:
   m_ObjectHideFlags: 0

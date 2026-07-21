@@ -58,10 +58,11 @@ public class KillerJumpscareDetector : NetworkBehaviour
 
     private void OnDisable()
     {
-        interactionAction.action.Disable();
         if (interactionAction?.action != null)
+        {
             interactionAction.action.performed -= OnInteractionPerformed;
-
+            interactionAction.action.Disable();
+        }
         if (isServer)
             ServerFinishJumpscare(activateRagdoll: false);
 
@@ -88,7 +89,8 @@ public class KillerJumpscareDetector : NetworkBehaviour
 
         currentTarget = targetFinder?.FindBestTarget(transform);
 
-        JumpscareTarget target = currentTarget.GetComponent<JumpscareTarget>();
+        if (currentTarget == null || !currentTarget.TryGetComponent(out JumpscareTarget target))
+            return;
 
         if (target.NetId == 0)
         {
@@ -121,7 +123,12 @@ public class KillerJumpscareDetector : NetworkBehaviour
     private void CmdTryStartJumpscare(uint victimNetId)
     {
         if (!ServerCanStartJumpscare(victimNetId, out _, out string rejectionReason))
+        {
+            if (!string.IsNullOrEmpty(rejectionReason))
+                Debug.LogWarning($"Rejected jumpscare request: {rejectionReason}", this);
+
             return;
+        }
         
         activeVictimNetId = victimNetId;
         isJumpscaring = true;
@@ -158,10 +165,38 @@ public class KillerJumpscareDetector : NetworkBehaviour
         serverTarget = null;
         rejectionReason = string.Empty;
 
+        if (victimNetId == 0)
+            return Reject("victim has no network id", out rejectionReason);
+
+        if (isJumpscaring)
+            return Reject("killer is already jumpscaring", out rejectionReason);
+
+        if (ActiveParticipants.Contains(netId) || ActiveParticipants.Contains(victimNetId))
+            return Reject("killer or victim is already in a jumpscare", out rejectionReason);
+
+        if (!ResolveServerTarget(victimNetId, out serverTarget))
+            return Reject("victim target could not be resolved on the server", out rejectionReason);
+
         PlayerScareController targetScareController = serverTarget.ScareController;
 
+        if (killerScareController != null && killerScareController.IsScareActive)
+            return Reject("killer scare controller is already active", out rejectionReason);
+
+        if (targetScareController != null && targetScareController.IsScareActive)
+            return Reject("victim scare controller is already active", out rejectionReason);
+
         GameObject bestTarget = targetFinder?.FindBestTarget(transform);
+
+        if (bestTarget == null)
+            return Reject("no valid target is currently in range", out rejectionReason);
+
         JumpscareTarget bestNetworkTarget = bestTarget.GetComponent<JumpscareTarget>();
+
+        if (bestNetworkTarget == null)
+            return Reject("server selected target has no jumpscare target component", out rejectionReason);
+
+        if (bestNetworkTarget.NetId != victimNetId)
+            return Reject("requested victim is not the server-selected target", out rejectionReason);
 
         return true;
     }

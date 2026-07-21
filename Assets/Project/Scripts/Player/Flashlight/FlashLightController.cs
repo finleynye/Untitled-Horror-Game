@@ -99,7 +99,7 @@ public class FlashLightController : NetworkBehaviour
     {
         playerInput.Player.Flashlight.performed -= ToggleFlashlight;
         playerInput?.Disable();
-        playerInput = null;
+        //playerInput = null;
     }
 
     public override void OnStopAuthority()
@@ -107,5 +107,6 @@ public class FlashLightController : NetworkBehaviour
         base.OnStopAuthority();
         playerInput.Player.Flashlight.performed -= ToggleFlashlight;
         playerInput?.Disable();
+        playerInput = null;
     }
 }
