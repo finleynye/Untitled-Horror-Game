@@ -241,6 +241,8 @@ public class KillerTreePlacementAbility : NetworkBehaviour
             _playerInput.Player.KillerCancelTree.performed -= OnCancelTreePressed;
 
             _playerInput.Disable();
+            _playerInput.Dispose();
+            _playerInput = null;
         }
 
         CancelTreePlacement();

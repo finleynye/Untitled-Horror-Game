@@ -182,6 +182,7 @@ public class KillerTreeDisguiseAbility : NetworkBehaviour
             _playerInput.Player.KillerExitDisguise.performed -= OnToggleDisguisePressed;
 
             _playerInput.Disable();
+            _playerInput.Dispose();
             _playerInput = null;
         }
 

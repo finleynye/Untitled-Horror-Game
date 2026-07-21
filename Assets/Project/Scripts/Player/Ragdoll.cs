@@ -1,37 +1,57 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Ragdoll : MonoBehaviour
 {
-    Rigidbody[] rigidbodies;
-    Animator animator;
+    private Rigidbody[] rigidbodies;
+    private Animator animator;
 
     [SerializeField] private CapsuleCollider capsuleCollider;
 
-    void Start()
+    private void Awake()
+    {
+        ResolveReferences();
+        DeactivateRagdoll();
+    }
+
+    private void ResolveReferences()
     {
         rigidbodies = GetComponentsInChildren<Rigidbody>();
-        animator = GetComponent<Animator>();
-        DeactivateRagdoll();
+
+        if (animator == null)
+            animator = GetComponent<Animator>();
+
+        if (capsuleCollider == null)
+            capsuleCollider = GetComponentInParent<CapsuleCollider>();
+
+        if (capsuleCollider == null)
+            capsuleCollider = GetComponentInParent<CapsuleCollider>();
     }
 
     public void DeactivateRagdoll()
     {
-        foreach (var rigidBody in rigidbodies)
-        {
+        ResolveReferences();
+
+        foreach (Rigidbody rigidBody in rigidbodies)
             rigidBody.isKinematic = true;
-        }
-        animator.enabled = true;
-        capsuleCollider.enabled = true;
+
+        if (animator != null)
+            animator.enabled = true;
+
+        if (capsuleCollider != null)
+            capsuleCollider.enabled = true;
     }
+
     public void ActivateRagdoll()
     {
-        foreach (var rigidBody in rigidbodies)
-        {
+        ResolveReferences();
+
+        foreach (Rigidbody rigidBody in rigidbodies)
             rigidBody.isKinematic = false;
-        }
-        animator.enabled = false;
-        capsuleCollider.enabled = false;
+
+        if (animator != null)
+            animator.enabled = false;
+
+        if (capsuleCollider != null)
+            capsuleCollider.enabled = false;
     }
 }

@@ -39,6 +39,10 @@ public class JumpscareTarget : NetworkBehaviour
 
     public bool IsLocallyOwned => NetworkIdentity != null && NetworkIdentity.isOwned;
 
-    public void ActivateJumpscareRagdoll() => ragdoll.ActivateRagdoll();
+    public void ActivateJumpscareRagdoll()
+    {
+        if (ragdoll != null)
+            ragdoll.ActivateRagdoll();
+    }
     
 }

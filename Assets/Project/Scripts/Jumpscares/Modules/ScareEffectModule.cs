@@ -131,7 +131,10 @@ public class ScareEffectsModule
             colorAdjustments.contrast.value = Mathf.Lerp(originalContrast, scareContrast, amount);
         }
 
-        vignette.intensity.value = Mathf.Lerp(originalVignetteIntensity, scareVignetteIntensity, amount);
-        chromaticAberration.intensity.value = Mathf.Lerp(originalChromaticAberration, scareChromaticAberration, amount);
+        if (vignette != null)
+            vignette.intensity.value = Mathf.Lerp(originalVignetteIntensity, scareVignetteIntensity, amount);
+
+        if (chromaticAberration != null)
+            chromaticAberration.intensity.value = Mathf.Lerp(originalChromaticAberration, scareChromaticAberration, amount);
     }
 }

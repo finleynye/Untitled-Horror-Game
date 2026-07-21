@@ -33,8 +33,13 @@ public class KillerNightVision : MonoBehaviour
 
     public void OnDisable()
     {
-        _playerInput.Player.KillerNightVision.performed -= OnNightVisionPressed;
-        _playerInput.Disable();
+        if (_playerInput != null)
+        {
+            _playerInput.Player.KillerNightVision.performed -= OnNightVisionPressed;
+            _playerInput.Disable();
+            _playerInput.Dispose();
+            _playerInput = null;
+        }
         
         if (NightVisionRenderer.ActiveCamera == killerCamera)
         {
