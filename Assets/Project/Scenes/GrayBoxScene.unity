@@ -48430,6 +48430,10 @@ PrefabInstance:
       value: Survivor1
       objectReference: {fileID: 0}
     - target: {fileID: 7456013228022624286, guid: 029c0d9be6badd2479740ffec1f18364, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7456013228022624286, guid: 029c0d9be6badd2479740ffec1f18364, type: 3}
       propertyPath: m_TagString
       value: Survivor
       objectReference: {fileID: 0}

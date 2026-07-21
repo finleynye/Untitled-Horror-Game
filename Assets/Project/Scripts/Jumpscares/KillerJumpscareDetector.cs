@@ -58,6 +58,7 @@ public class KillerJumpscareDetector : NetworkBehaviour
 
     private void OnDisable()
     {
+        interactionAction.action.Disable();
         if (interactionAction?.action != null)
             interactionAction.action.performed -= OnInteractionPerformed;
 

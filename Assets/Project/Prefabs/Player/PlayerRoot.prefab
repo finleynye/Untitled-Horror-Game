@@ -2506,6 +2506,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d88e8222787c6d45a1c56f3146f8911, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpscareTarget
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  networkIdentity: {fileID: 0}
   facingTransform: {fileID: 0}
   playerRoot: {fileID: 0}
   scareController: {fileID: 0}
@@ -6307,6 +6311,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d88e8222787c6d45a1c56f3146f8911, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpscareTarget
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  networkIdentity: {fileID: 0}
   facingTransform: {fileID: 0}
   playerRoot: {fileID: 0}
   scareController: {fileID: 0}
@@ -7088,6 +7096,7 @@ GameObject:
   - component: {fileID: 5113617189053844008}
   - component: {fileID: 1215375209455025276}
   - component: {fileID: 4576964200087135790}
+  - component: {fileID: 6399101536733788867}
   m_Layer: 0
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -7242,6 +7251,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FallScareAnimationEventRelay
   getUpRestoreLocalOffset: {x: 0, y: 0, z: -0.5}
   jumpscareDetector: {fileID: 0}
+--- !u!114 &6399101536733788867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4341294407156573096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df9b66ce670f2e4484c815d2f8a6daf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdoll
+  capsuleCollider: {fileID: 1988443130366313723}
 --- !u!1 &4374238055239634552
 GameObject:
   m_ObjectHideFlags: 0
@@ -9524,13 +9546,15 @@ GameObject:
   - component: {fileID: 8828924480106302795}
   - component: {fileID: 3155711545329175204}
   - component: {fileID: 2597242148790582705}
+  - component: {fileID: 36632636848521654}
+  - component: {fileID: 1988443130366313723}
   m_Layer: 0
   m_Name: Survivor4
   m_TagString: Survivor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8922323434772184860
 Transform:
   m_ObjectHideFlags: 0
@@ -9751,10 +9775,93 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d88e8222787c6d45a1c56f3146f8911, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpscareTarget
-  facingTransform: {fileID: 0}
-  playerRoot: {fileID: 0}
-  scareController: {fileID: 0}
-  ragdoll: {fileID: 0}
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  networkIdentity: {fileID: 572028861338169411}
+  facingTransform: {fileID: 8922323434772184860}
+  playerRoot: {fileID: 8922323434772184860}
+  scareController: {fileID: 36632636848521654}
+  ragdoll: {fileID: 6399101536733788867}
+--- !u!114 &36632636848521654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5896816843761942664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 876054b66f96ca34388b25412a43aedc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerScareController
+  playerMovement: {fileID: 3249215748298006204}
+  characterController: {fileID: 2367775373728187538}
+  animator: {fileID: 5208184213289259749}
+  localMeshVisibility: {fileID: 8828924480106302795}
+  playerCamera: {fileID: 7178351435989496648}
+  cameraHolder: {fileID: 5098790684055355694}
+  headTarget: {fileID: 2685669841804792316}
+  cameraMovement: {fileID: 1286014109121050320}
+  audioSource: {fileID: 50944966020501271}
+  modelRoot: {fileID: 8922323434772184860}
+  scareEffects:
+    playerCamera: {fileID: 7178351435989496648}
+    scareVolume: {fileID: 4766106871837900024}
+    scareFOV: 95
+    fovInTime: 0.2
+    fovOutTime: 0.8
+    scareFilterColor: {r: 1, g: 0.25, b: 0.25, a: 1}
+    scareSaturation: -35
+    scareContrast: 30
+    scareVignetteIntensity: 0.55
+    scareChromaticAberration: 0.6
+  scareAudio:
+    audioSource: {fileID: 50944966020501271}
+    defaultScareSound: {fileID: 8300000, guid: 2e204d2ec9b260f449962b5207344d7f, type: 3}
+  scareCamera:
+    cameraHolder: {fileID: 5098790684055355694}
+    headTarget: {fileID: 2685669841804792316}
+    cameraMovement: {fileID: 1286014109121050320}
+    cameraFollowSpeed: 12
+    cameraRotationSpeed: 10
+    cameraResetTime: 0.25
+    cameraPositionSmoothTime: 0.08
+    cameraRotationSmoothSpeed: 5
+    followHeadRotationDuringScare: 0
+    scareCameraLocalOffset: {x: 0, y: 0, z: 0}
+  scareTransform:
+    characterController: {fileID: 2367775373728187538}
+    playerRoot: {fileID: 3950242916403147281}
+    animatorRoot: {fileID: 8607919967561395873}
+    modelRoot: {fileID: 8922323434772184860}
+    resetModelRootAfterScare: 1
+  scareAnimation:
+    animator: {fileID: 5208184213289259749}
+  forceLocalMeshVisibleDuringScare: 1
+--- !u!136 &1988443130366313723
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5896816843761942664}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.0802398
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.08858201, z: 0}
 --- !u!1 &5904350509646370833
 GameObject:
   m_ObjectHideFlags: 0
@@ -11665,6 +11772,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d88e8222787c6d45a1c56f3146f8911, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpscareTarget
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  networkIdentity: {fileID: 0}
   facingTransform: {fileID: 0}
   playerRoot: {fileID: 0}
   scareController: {fileID: 0}
@@ -12467,7 +12578,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4874008440003381570
 Transform:
   m_ObjectHideFlags: 0
@@ -12826,7 +12937,6 @@ MonoBehaviour:
   syncInterval: 0
   interactionAction: {fileID: 5195147771413071158, guid: 567367b8d0a446d4d844257659bdffad, type: 3}
   animator: {fileID: 8085842375742727355}
-  jumpscareTriggerName: Jumpscare
   scareDefinition: {fileID: 11400000, guid: 0bf251ef6ad07ab4192e38291570f49f, type: 2}
   killerScareController: {fileID: 4514784424020340575}
   targetFinder:
@@ -12836,7 +12946,6 @@ MonoBehaviour:
     minimumBehindDot: 0.5
   victim:
     victimGrabPoint: {fileID: 6569296974808023197}
-    showDebugLogs: 0
   armIK:
     animator: {fileID: 8085842375742727355}
     leftArm: {fileID: 5646721025186090763}
