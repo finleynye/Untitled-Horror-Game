@@ -21571,6 +21571,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: door
       objectReference: {fileID: 0}
+    - target: {fileID: 3681466391514468767, guid: 24231c52f1317ee4eb8ffd7df9be0c5d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 4679307846144812607, guid: 24231c52f1317ee4eb8ffd7df9be0c5d, type: 3}
       propertyPath: InteractEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
